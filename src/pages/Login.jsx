@@ -1,40 +1,38 @@
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import axios from 'axios';
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import axios from "axios";
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
 const Login = () => {
   const navigate = useNavigate();
-  const [identifier, setIdentifier] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     try {
-      const isEmail = identifier.includes('@');
+      const isEmail = identifier.includes("@");
       const payload = isEmail
         ? { email: identifier, password }
         : { nis: identifier, password };
 
-      const response = await axios.post(
-        'https://smk14-production.up.railway.app/api/auth/login',
-        payload
-      );
+      const response = await axios.post("/api/auth/login", payload);
 
       const token = response.data.token;
       const role = response.data.user.role; // Asumsikan role dikirim dalam user
 
       // Simpan token dan role di localStorage
-      localStorage.setItem('token', token);
-      localStorage.setItem('role', role);
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", role);
 
       // Arahkan ke dashboard umum
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (err) {
       console.error(err);
-      setError('Login gagal. Periksa kembali NIS/Email dan Password Anda.');
+      setError("Login gagal. Periksa kembali NIS/Email dan Password Anda.");
     }
   };
 
@@ -45,10 +43,16 @@ const Login = () => {
     >
       <div className="bg-white bg-opacity-90 p-8 rounded-2xl shadow-2xl w-full max-w-md">
         <div className="flex justify-center mb-4">
-          <img src="/logo1.png" alt="Logo SMK" className="h-20 w-20 object-contain" />
+          <img
+            src="/logo1.png"
+            alt="Logo SMK"
+            className="h-20 w-20 object-contain"
+          />
         </div>
 
-        <h2 className="text-2xl font-bold text-center text-[#003366] mb-6">SILAKAN LOGIN</h2>
+        <h2 className="text-2xl font-bold text-center text-[#003366] mb-6">
+          SILAKAN LOGIN
+        </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -66,7 +70,9 @@ const Login = () => {
           </div>
 
           <div>
-            <label className="block text-[#003366] font-semibold">Password</label>
+            <label className="block text-[#003366] font-semibold">
+              Password
+            </label>
             <input
               type="password"
               value={password}
