@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Sidebar = ({ onKelolaUserClick }) => {
   const [role, setRole] = useState("");
@@ -17,43 +16,113 @@ const Sidebar = ({ onKelolaUserClick }) => {
     navigate("/");
   };
 
+  const toggleUserSubmenu = () => {
+    setShowUserSubmenu(!showUserSubmenu);
+  };
+
   return (
-    <div className="w-64 bg-[#003366] text-white h-screen p-4 flex flex-col justify-between">
+    <div className="w-64 bg-[#003366] text-white min-h-screen flex flex-col justify-between">
       {/* Bagian atas: Header & Menu */}
-      <div>
+      <div className="p-4">
         <h2 className="text-xl font-bold mb-6">{role?.toUpperCase()}</h2>
         <ul className="space-y-4">
-          {role === "siswa" && <li>📊 Lihat Credit Score</li>}
-          {role === "guru" && <li>✍️ Input Credit Score</li>}
+          {role === "siswa" && (
+            <li>
+              <Link to="/siswa/credit-score" className="hover:underline">
+                📊 Lihat Credit Score
+              </Link>
+            </li>
+          )}
+
+          {role === "guru" && (
+            <li>
+              <Link to="/guru/input-score" className="hover:underline">
+                ✍️ Input Credit Score
+              </Link>
+            </li>
+          )}
+
           {role === "bk" && (
             <>
-              <li>👥 Kelola Siswa</li>
-              <li>📄 Lihat Pelanggaran</li>
+              <li>
+                <Link to="/bk/kelola-siswa" className="hover:underline">
+                  👥 Kelola Siswa
+                </Link>
+              </li>
+              <li>
+                <Link to="/bk/pelanggaran" className="hover:underline">
+                  📄 Lihat Pelanggaran
+                </Link>
+              </li>
             </>
           )}
 
           {role === "superadmin" && (
             <>
+              <li
+                className="cursor-pointer hover:underline"
+                onClick={toggleUserSubmenu}
+              >
+                👥 Manajemen User
+              </li>
+
+              {showUserSubmenu && (
+                <ul className="ml-4 mt-2 space-y-2 text-sm">
+                  <li>
+                    <Link
+                      to="/superadmin/kelola-siswa"
+                      className="hover:underline"
+                    >
+                      👦 Kelola Data Siswa
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/superadmin/kelola-guru"
+                      className="hover:underline"
+                    >
+                      👩‍🏫 Kelola Data Guru
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/superadmin/kelola-bk"
+                      className="hover:underline"
+                    >
+                      🧑‍💼 Kelola Data BK
+                    </Link>
+                  </li>
+                </ul>
+              )}
+
               <li>
-                <Link to="/superadmin/kelola-siswa" className="hover:underline">
-                  🛠️ Kelola Data Siswa
+                <Link
+                  to="/superadmin/kelola-sekolah"
+                  className="hover:underline"
+                >
+                  🏫 Kelola Data Sekolah
                 </Link>
               </li>
-              <li>🧑 Kelola Data Guru</li>
-              <li>👨‍🏫 Kelola Data BK</li>
-              <li>🏫 Kelola Data Sekolah</li>
+
+              <li>
+                <Link to="/superadmin/kelola-kelas" className="hover:underline">
+                  🏷️ Kelola Data Kelas
+                </Link>
+              </li>
             </>
           )}
         </ul>
       </div>
 
       {/* Bagian bawah: Tombol Logout */}
-      <button
-        onClick={handleLogout}
-        className="bg-white text-[#003366] px-4 py-2 rounded"
-      >
-        Logout
-      </button>
+      <div className="p-4">
+        <button
+          onClick={handleLogout}
+          className="bg-white text-[#003366] px-4 py-2 rounded w-full hover:bg-gray-100 transition"
+        >
+          Logout
+        </button>
+      </div>
     </div>
   );
 };

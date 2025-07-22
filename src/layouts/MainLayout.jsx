@@ -6,12 +6,19 @@ const Layout = ({ children }) => {
   const [kelolaUserTarget, setKelolaUserTarget] = useState(null);
 
   return (
-    <div className="flex">
+    <div className="flex h-screen overflow-hidden">
       <Sidebar onKelolaUserClick={(target) => setKelolaUserTarget(target)} />
-      <div className="flex-1 p-6 bg-gray-50 min-h-screen">
-        {children}
-      </div>
+      
+      {/* Konten utama */}
+      <div className="flex-1 overflow-y-auto bg-gray-50">{children}</div>
 
+      {/* Modal Kelola User */}
+      {kelolaUserTarget && (
+        <ModalKelolaUser
+          type={kelolaUserTarget}
+          onClose={() => setKelolaUserTarget(null)}
+        />
+      )}
     </div>
   );
 };
