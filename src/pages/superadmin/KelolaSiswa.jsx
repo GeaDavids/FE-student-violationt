@@ -2,17 +2,19 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import * as XLSX from "xlsx";
+import { FiBookOpen } from "react-icons/fi";
 
 const KelolaSiswa = () => {
   const [kelasDipilih, setKelasDipilih] = useState("");
   const [dataSiswa, setDataSiswa] = useState([]);
   const [formVisible, setFormVisible] = useState(false);
-  const [form, setForm] = useState({ nama: "", nis: "", kelas: "" });
+  const [form, setForm] = useState({ name: "", nis: "" });
+  const [errorMsg, setErrorMsg] = useState("");
   const [editingId, setEditingId] = useState(null);
-  const [classList, setclassList] = useState ([]);
-
+  const [kelasList, setKelasList] = useState([]);
 
   const token = localStorage.getItem("token");
+
   const axiosConfig = {
     withCredentials: true,
     headers: {
@@ -24,7 +26,7 @@ const KelolaSiswa = () => {
   useEffect(() => {
     const fetchKelas = async () => {
       try {
-        const res = await axios.get(/api/classrooms, axiosConfig);
+        const res = await axios.get(`/api/classrooms`, axiosConfig);
         setKelasList(res.data);
       } catch (err) {
         console.error("Gagal mengambil data kelas:", err);
@@ -37,10 +39,11 @@ const KelolaSiswa = () => {
     if (kelasDipilih) fetchSiswaByKelas(kelasDipilih);
   }, [kelasDipilih]);
 
-  const fetchSiswaByKelas = async (kelas) => {
+  const fetchSiswaByKelas = async (classroomId) => {
     try {
       const res = await axios.get(
-        `https://smk14-production.up.railway.app/api/users/students?classroomId=${kelas}`
+        `/api/users/students?classroomId=${classroomId}`,
+        axiosConfig
       );
       setDataSiswa(res.data);
     } catch (err) {
@@ -54,32 +57,45 @@ const KelolaSiswa = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMsg("");
+    const kelasObj = kelasList.find((k) => k.id === kelasDipilih);
+    const kelasName = kelasObj ? kelasObj.name : "";
     try {
-      const payload = { ...form, kelas: kelasDipilih };
       if (editingId) {
         await axios.put(
-          `https://smk14-production.up.railway.app/api/siswa/${editingId}`,
-          payload
+          `/api/users/students/${editingId}`,
+          { ...form, classroomId: kelasDipilih, class: kelasName },
+          axiosConfig
         );
-        alert("Data berhasil diperbarui!");
+        setForm({ name: "", nis: "" });
+        setEditingId(null);
+        fetchSiswaByKelas(kelasDipilih);
       } else {
         await axios.post(
-          "https://smk14-production.up.railway.app/api/siswa",
-          payload
+          `/api/users/students`,
+          { ...form, classroomId: kelasDipilih, class: kelasName },
+          axiosConfig
         );
-        alert("Data berhasil ditambahkan!");
+        setForm({ name: "", nis: "" });
+        setEditingId(null);
+        fetchSiswaByKelas(kelasDipilih);
       }
-      setForm({ nama: "", nis: "", kelas: "" });
-      setEditingId(null);
-      setFormVisible(false);
-      fetchSiswaByKelas(kelasDipilih);
     } catch (err) {
+      if (err.response && err.response.data && err.response.data.error) {
+        setErrorMsg(err.response.data.error);
+      } else {
+        setErrorMsg("Gagal menyimpan data siswa.");
+      }
       console.error("Gagal menyimpan:", err);
     }
   };
 
   const handleEdit = (siswa) => {
-    setForm({ nama: siswa.nama, nis: siswa.nis, kelas: siswa.kelas });
+    setErrorMsg("");
+    setForm({
+      name: siswa.user?.name || "",
+      nis: siswa.nis,
+    });
     setEditingId(siswa.id);
     setFormVisible(true);
   };
@@ -87,11 +103,8 @@ const KelolaSiswa = () => {
   const handleDelete = async (id) => {
     const konfirmasi = confirm("Apakah kamu yakin ingin menghapus siswa ini?");
     if (!konfirmasi) return;
-
     try {
-      await axios.delete(
-        `https://smk14-production.up.railway.app/api/siswa/${id}`
-      );
+      await axios.delete(`/api/users/students/${id}`, axiosConfig);
       alert("Siswa berhasil dihapus.");
       fetchSiswaByKelas(kelasDipilih);
     } catch (err) {
@@ -102,23 +115,16 @@ const KelolaSiswa = () => {
   const handleImportExcel = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
-
     try {
-      const data = await file.arrayBuffer();
-      const workbook = XLSX.read(data);
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const json = XLSX.utils.sheet_to_json(sheet);
-
-      const importPromises = json.map((row) =>
-        axios.post("/api/students", {
-          nama: row.nama,
-          nis: row.nis,
-          kelas: row.kelas,
-        })
-      );
-
-      await Promise.all(importPromises);
+      const formData = new FormData();
+      formData.append("file", file);
+      await axios.post("/api/users/students/import", formData, {
+        ...axiosConfig,
+        headers: {
+          ...axiosConfig.headers,
+          "Content-Type": "multipart/form-data",
+        },
+      });
       alert("Data berhasil diimpor!");
       if (kelasDipilih) fetchSiswaByKelas(kelasDipilih);
     } catch (err) {
@@ -144,16 +150,14 @@ const KelolaSiswa = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {kelasList.map((kelas) => (
               <button
-                key={kelas}
-                onClick={() => setKelasDipilih(kelas)}
+                key={kelas.id}
+                onClick={() => setKelasDipilih(kelas.id)}
                 className="bg-white text-[#003366] shadow-md rounded-xl p-6 font-semibold flex flex-col items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg"
               >
-                <div className="text-4xl mb-2">
-                  {kelas === "X" && "🎓"}
-                  {kelas === "XI" && "📚"}
-                  {kelas === "XII" && "🧑‍🎓"}
+                <div className="text-4xl mb-2 flex items-center gap-2 text-[#003366]">
+                  <FiBookOpen />
                 </div>
-                <div className="text-lg">Kelas {kelas}</div>
+                <div className="text-lg">{kelas.name}</div>
               </button>
             ))}
           </div>
@@ -167,7 +171,7 @@ const KelolaSiswa = () => {
             <div className="space-x-3">
               <button
                 onClick={() => {
-                  setForm({ nama: "", nis: "", kelas: kelasDipilih });
+                  setForm({ name: "", nis: "" }); // gunakan key 'name' bukan 'nama'
                   setEditingId(null);
                   setFormVisible(true);
                 }}
@@ -197,9 +201,9 @@ const KelolaSiswa = () => {
               >
                 <input
                   type="text"
-                  name="nama"
+                  name="name"
                   placeholder="Nama Siswa"
-                  value={form.nama}
+                  value={form.name}
                   onChange={handleChange}
                   required
                   className="border p-2 rounded"
@@ -217,6 +221,11 @@ const KelolaSiswa = () => {
                   {editingId ? "Update" : "Tambah"}
                 </button>
               </form>
+              {errorMsg && (
+                <div className="mt-4 text-red-600 font-semibold text-sm text-center">
+                  {errorMsg}
+                </div>
+              )}
             </div>
           )}
 
@@ -224,8 +233,9 @@ const KelolaSiswa = () => {
             <table className="w-full table-auto border border-gray-300 shadow rounded">
               <thead className="bg-[#f1f5f9] text-[#003366]">
                 <tr>
-                  <th className="border px-4 py-2 text-left">Nama</th>
                   <th className="border px-4 py-2 text-left">NIS</th>
+                  <th className="border px-4 py-2 text-left">Nama</th>
+                  <th className="border px-4 py-2 text-left">Email</th>
                   <th className="border px-4 py-2 text-center">Aksi</th>
                 </tr>
               </thead>
@@ -233,8 +243,9 @@ const KelolaSiswa = () => {
                 {dataSiswa.length > 0 ? (
                   dataSiswa.map((siswa) => (
                     <tr key={siswa.id} className="hover:bg-gray-50">
-                      <td className="border px-4 py-2">{siswa.nama}</td>
                       <td className="border px-4 py-2">{siswa.nis}</td>
+                      <td className="border px-4 py-2">{siswa.user?.name}</td>
+                      <td className="border px-4 py-2">{siswa.user?.email}</td>
                       <td className="border px-4 py-2 text-center space-x-2">
                         <button
                           onClick={() => handleEdit(siswa)}
