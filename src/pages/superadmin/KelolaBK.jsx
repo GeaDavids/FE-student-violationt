@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { FiUserCheck, FiEdit2, FiTrash2, FiPlus } from "react-icons/fi";
+import Swal from "sweetalert2";
 
 const KelolaBK = () => {
   const [dataBK, setDataBK] = useState([]);
@@ -20,7 +21,7 @@ const KelolaBK = () => {
 
   const fetchBK = async () => {
     try {
-      const res = await axios.get("/api/users/counselors", axiosConfig); // Ganti sesuai endpoint API BK
+      const res = await axios.get("/api/users/bk", axiosConfig); // Ganti sesuai endpoint API BK
       setDataBK(res.data);
     } catch (err) {
       console.error("Gagal mengambil data BK:", err);
@@ -38,19 +39,31 @@ const KelolaBK = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
+    if (!form.name.trim() || !form.email.trim()) {
+      setErrorMsg("Nama dan email tidak boleh kosong.");
+      Swal.fire("Gagal", "Nama dan email tidak boleh kosong.", "error");
+      return;
+    }
+    const payload = { name: form.name, email: form.email };
     try {
       if (editingId) {
-        await axios.put(`/api/users/counselors/${editingId}`, form, axiosConfig);
+        await axios.put(`/api/users/bk/${editingId}`, payload, axiosConfig);
+        Swal.fire("Berhasil!", "Data BK berhasil diperbarui!", "success");
       } else {
-        await axios.post("/api/users/counselors", form, axiosConfig);
+        await axios.post("/api/users/bk", payload, axiosConfig);
+        Swal.fire("Berhasil!", "BK baru berhasil ditambahkan!", "success");
       }
       setForm({ name: "", email: "" });
       setEditingId(null);
       setFormVisible(false);
       fetchBK();
     } catch (err) {
-      console.error("Gagal menyimpan BK:", err);
-      setErrorMsg("Terjadi kesalahan saat menyimpan.");
+      let msg = "Terjadi kesalahan saat menyimpan.";
+      if (err.response && err.response.data && (err.response.data.error || err.response.data.message)) {
+        msg = err.response.data.error || err.response.data.message;
+      }
+      setErrorMsg(msg);
+      Swal.fire("Gagal", msg, "error");
     }
   };
 
@@ -61,13 +74,27 @@ const KelolaBK = () => {
   };
 
   const handleDelete = async (id) => {
-    const konfirmasi = confirm("Apakah yakin ingin menghapus data BK ini?");
-    if (!konfirmasi) return;
+    const result = await Swal.fire({
+      title: "Hapus Data BK?",
+      text: "Apakah yakin ingin menghapus data BK ini?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Ya, hapus!",
+      cancelButtonText: "Batal"
+    });
+    if (!result.isConfirmed) return;
     try {
-      await axios.delete(`/api/users/counselors/${id}`, axiosConfig);
+      await axios.delete(`/api/users/bk/${id}`, axiosConfig);
+      Swal.fire("Berhasil!", "Data BK berhasil dihapus.", "success");
       fetchBK();
     } catch (err) {
-      console.error("Gagal menghapus BK:", err);
+      let msg = "Gagal menghapus data BK.";
+      if (err.response && err.response.data && (err.response.data.error || err.response.data.message)) {
+        msg = err.response.data.error || err.response.data.message;
+      }
+      Swal.fire("Gagal", msg, "error");
     }
   };
 

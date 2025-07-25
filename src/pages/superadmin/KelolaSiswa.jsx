@@ -70,6 +70,7 @@ const KelolaSiswa = () => {
         setForm({ name: "", nis: "" });
         setEditingId(null);
         fetchSiswaByKelas(kelasDipilih);
+        alert("Data siswa berhasil diupdate!");
       } else {
         await axios.post(
           `/api/users/students`,
@@ -79,6 +80,7 @@ const KelolaSiswa = () => {
         setForm({ name: "", nis: "" });
         setEditingId(null);
         fetchSiswaByKelas(kelasDipilih);
+        alert("Data siswa berhasil ditambahkan!");
       }
     } catch (err) {
       if (err.response && err.response.data && err.response.data.error) {
@@ -98,6 +100,7 @@ const KelolaSiswa = () => {
     });
     setEditingId(siswa.id);
     setFormVisible(true);
+    alert("Silakan edit data siswa, lalu klik Update untuk menyimpan perubahan.");
   };
 
   const handleDelete = async (id) => {
@@ -108,6 +111,7 @@ const KelolaSiswa = () => {
       alert("Siswa berhasil dihapus.");
       fetchSiswaByKelas(kelasDipilih);
     } catch (err) {
+      alert("Gagal menghapus siswa!");
       console.error("Gagal menghapus siswa:", err);
     }
   };
@@ -128,8 +132,8 @@ const KelolaSiswa = () => {
       alert("Data berhasil diimpor!");
       if (kelasDipilih) fetchSiswaByKelas(kelasDipilih);
     } catch (err) {
-      console.error("Gagal impor Excel:", err);
       alert("Format file tidak valid atau terjadi kesalahan saat impor.");
+      console.error("Gagal impor Excel:", err);
     }
   };
 
@@ -151,7 +155,10 @@ const KelolaSiswa = () => {
             {kelasList.map((kelas) => (
               <button
                 key={kelas.id}
-                onClick={() => setKelasDipilih(kelas.id)}
+                onClick={() => {
+                  setKelasDipilih(kelas.id);
+                  alert(`Kelas ${kelas.name} dipilih!`);
+                }}
                 className="bg-white text-[#003366] shadow-md rounded-xl p-6 font-semibold flex flex-col items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg"
               >
                 <div className="text-4xl mb-2 flex items-center gap-2 text-[#003366]">
@@ -185,6 +192,7 @@ const KelolaSiswa = () => {
                   setForm({ nama: "", nis: "", kelas: "" });
                   setEditingId(null);
                   setFormVisible(false);
+                  alert("Kembali ke daftar kelas.");
                 }}
                 className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded shadow-sm"
               >
