@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import * as XLSX from "xlsx";
@@ -12,6 +13,7 @@ const KelolaSiswa = () => {
   const [errorMsg, setErrorMsg] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [kelasList, setKelasList] = useState([]);
+  const [search, setSearch] = useState("");
 
   const token = localStorage.getItem("token");
 
@@ -157,7 +159,12 @@ const KelolaSiswa = () => {
                 key={kelas.id}
                 onClick={() => {
                   setKelasDipilih(kelas.id);
-                  alert(`Kelas ${kelas.name} dipilih!`);
+                  Swal.fire({
+                    title: `Kelas ${kelas.name} dipilih!`,
+                    icon: "success",
+                    timer: 1200,
+                    showConfirmButton: false
+                  });
                 }}
                 className="bg-white text-[#003366] shadow-md rounded-xl p-6 font-semibold flex flex-col items-center justify-center transition-all duration-300 hover:scale-105 hover:shadow-lg"
               >
@@ -178,7 +185,7 @@ const KelolaSiswa = () => {
             <div className="space-x-3">
               <button
                 onClick={() => {
-                  setForm({ name: "", nis: "" }); // gunakan key 'name' bukan 'nama'
+                  setForm({ name: "", nis: "" });
                   setEditingId(null);
                   setFormVisible(true);
                 }}
@@ -192,7 +199,12 @@ const KelolaSiswa = () => {
                   setForm({ nama: "", nis: "", kelas: "" });
                   setEditingId(null);
                   setFormVisible(false);
-                  alert("Kembali ke daftar kelas.");
+                  Swal.fire({
+                    title: "Kembali ke daftar kelas.",
+                    icon: "info",
+                    timer: 1200,
+                    showConfirmButton: false
+                  });
                 }}
                 className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded shadow-sm"
               >
@@ -237,6 +249,16 @@ const KelolaSiswa = () => {
             </div>
           )}
 
+          {/* Search input */}
+          <div className="mb-4 flex justify-end">
+            <input
+              type="text"
+              placeholder="Cari nama atau NIS siswa..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="border rounded px-3 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-200"
+            />
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full table-auto border border-gray-300 shadow rounded">
               <thead className="bg-[#f1f5f9] text-[#003366]">
@@ -248,28 +270,42 @@ const KelolaSiswa = () => {
                 </tr>
               </thead>
               <tbody>
-                {dataSiswa.length > 0 ? (
-                  dataSiswa.map((siswa) => (
-                    <tr key={siswa.id} className="hover:bg-gray-50">
-                      <td className="border px-4 py-2">{siswa.nis}</td>
-                      <td className="border px-4 py-2">{siswa.user?.name}</td>
-                      <td className="border px-4 py-2">{siswa.user?.email}</td>
-                      <td className="border px-4 py-2 text-center space-x-2">
-                        <button
-                          onClick={() => handleEdit(siswa)}
-                          className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(siswa.id)}
-                          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
-                        >
-                          Hapus
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                {dataSiswa.filter(siswa => {
+                  const q = search.toLowerCase();
+                  return (
+                    siswa.nis?.toString().toLowerCase().includes(q) ||
+                    siswa.user?.name?.toLowerCase().includes(q)
+                  );
+                }).length > 0 ? (
+                  dataSiswa
+                    .filter(siswa => {
+                      const q = search.toLowerCase();
+                      return (
+                        siswa.nis?.toString().toLowerCase().includes(q) ||
+                        siswa.user?.name?.toLowerCase().includes(q)
+                      );
+                    })
+                    .map((siswa) => (
+                      <tr key={siswa.id} className="hover:bg-gray-50">
+                        <td className="border px-4 py-2">{siswa.nis}</td>
+                        <td className="border px-4 py-2">{siswa.user?.name}</td>
+                        <td className="border px-4 py-2">{siswa.user?.email}</td>
+                        <td className="border px-4 py-2 text-center space-x-2">
+                          <button
+                            onClick={() => handleEdit(siswa)}
+                            className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(siswa.id)}
+                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+                          >
+                            Hapus
+                          </button>
+                        </td>
+                      </tr>
+                    ))
                 ) : (
                   <tr>
                     <td colSpan={3} className="text-center py-4 text-gray-500">
