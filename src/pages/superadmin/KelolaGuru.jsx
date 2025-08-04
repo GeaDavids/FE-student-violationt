@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 import {
   FiUser,
-  FiEdit2,
-  FiTrash2,
   FiPlus,
   FiSearch,
   FiRefreshCw,
 } from "react-icons/fi";
 
 const KelolaGuru = () => {
+  const navigate = useNavigate();
   const [dataGuru, setDataGuru] = useState([]);
   const [filteredGuru, setFilteredGuru] = useState([]);
   const [formVisible, setFormVisible] = useState(false);
@@ -21,7 +21,6 @@ const KelolaGuru = () => {
     noHp: "",
     alamat: "",
   });
-  const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   const token = localStorage.getItem("token");
@@ -69,21 +68,10 @@ const KelolaGuru = () => {
     };
 
     try {
-      if (editingId) {
-        console.log("Updating teacher with ID:", editingId);
-        const response = await axios.put(
-          `/api/users/teachers/${editingId}`,
-          payload,
-          axiosConfig
-        );
-        Swal.fire("Berhasil!", "Data guru berhasil diperbarui.", "success");
-      } else {
-        await axios.post("/api/users/teachers", payload, axiosConfig);
-        Swal.fire("Berhasil!", "Guru baru berhasil ditambahkan.", "success");
-      }
+      await axios.post("/api/users/teachers", payload, axiosConfig);
+      Swal.fire("Berhasil!", "Guru baru berhasil ditambahkan.", "success");
 
       setForm({ name: "", email: "", nip: "", noHp: "", alamat: "" });
-      setEditingId(null);
       setFormVisible(false);
       fetchGuru();
     } catch (err) {
@@ -96,79 +84,6 @@ const KelolaGuru = () => {
       }
       Swal.fire("Gagal", errorMessage, "error");
     }
-  };
-
-  const handleEdit = (guru) => {
-    setForm({
-      name: guru.user.name,
-      email: guru.user.email,
-      nip: guru.nip || "",
-      noHp: guru.noHp || "",
-      alamat: guru.alamat || "",
-    });
-    setEditingId(guru.user.id); // 🔧 pakai user.id
-    setFormVisible(true);
-  };
-
-  const handleDelete = (userId) => {
-    Swal.fire({
-      title: "Yakin ingin menghapus?",
-      text: "Data guru tidak bisa dikembalikan!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Ya, hapus!",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          console.log("Deleting teacher with ID:", userId);
-          await axios.delete(`/api/users/teachers/${userId}`, axiosConfig);
-          Swal.fire("Terhapus!", "Data guru telah dihapus.", "success");
-          fetchGuru();
-        } catch (err) {
-          console.error("Delete error:", err.response || err);
-          Swal.fire("Gagal", "Gagal menghapus data guru.", "error");
-        }
-      }
-    });
-  };
-
-  const handleResetPassword = (userId) => {
-    Swal.fire({
-      title: "Reset Password?",
-      text: "Password guru akan diatur ulang ke default.",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Reset",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          const res = await axios.put(
-            `/api/users/teachers/${userId}/reset-password`,
-            {},
-            axiosConfig
-          );
-          Swal.fire("Berhasil!", "Password telah di-reset.", "success");
-        } catch (err) {
-          console.error("Reset password error:", err.response || err);
-          Swal.fire("Gagal", "Tidak dapat mereset password.", "error");
-        }
-      }
-    });
-  };
-
-  const handleDetail = (guru) => {
-    Swal.fire({
-      title: `<strong>Detail Guru</strong>`,
-      html: `
-        <p><b>Nama:</b> ${guru.user.name}</p>
-        <p><b>Email:</b> ${guru.user.email}</p>
-        <p><b>Role:</b> ${guru.user.role}</p>
-        <p><b>NIP:</b> ${guru.nip}</p>
-        <p><b>No. HP:</b> ${guru.noHp}</p>
-        <p><b>Alamat:</b> ${guru.alamat}</p>
-      `,
-      icon: "info",
-    });
   };
 
   const handleSearch = (e) => {
@@ -189,7 +104,6 @@ const KelolaGuru = () => {
         <button
           onClick={() => {
             setForm({ name: "", email: "", nip: "", noHp: "", alamat: "" });
-            setEditingId(null);
             setFormVisible(true);
           }}
           className="bg-[#003366] text-white px-4 py-2 rounded flex items-center gap-2"
@@ -275,7 +189,7 @@ const KelolaGuru = () => {
               type="submit"
               className="bg-[#003366] text-white px-4 py-2 rounded h-fit"
             >
-              {editingId ? "Update" : "Tambah"}
+              Tambah
             </button>
           </form>
         </div>
@@ -288,7 +202,6 @@ const KelolaGuru = () => {
               <th className="border px-4 py-2 text-left">Nama</th>
               <th className="border px-4 py-2 text-left">Email</th>
               <th className="border px-4 py-2 text-left">NIP</th>
-              <th className="border px-4 py-2 text-center">Aksi</th>
             </tr>
           </thead>
           <tbody>
@@ -296,41 +209,23 @@ const KelolaGuru = () => {
               filteredGuru.map((guru) => (
                 <tr key={guru.id} className="hover:bg-gray-50">
                   <td
-                    className="border px-4 py-2 text-gray-800 cursor-pointer hover:text-[#003366]"
-                    onClick={() => handleDetail(guru)}
+                    className="border px-4 py-2 text-gray-800 cursor-pointer hover:text-gray-600 hover:bg-gray-50 transition-colors duration-200"
+                    onClick={() => navigate('/superadmin/detail-guru', { 
+                      state: { 
+                        guru: guru,
+                        fromPage: 'kelola-guru'
+                      } 
+                    })}
                   >
                     {guru.user.name}
                   </td>
                   <td className="border px-4 py-2">{guru.user.email}</td>
                   <td className="border px-4 py-2">{guru.nip}</td>
-                  <td className="border px-4 py-2 text-center space-x-2">
-                    <button
-                      onClick={() => handleEdit(guru)}
-                      title="Edit"
-                      className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-2 rounded"
-                    >
-                      <FiEdit2 />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(guru.user.id)}
-                      title="Delete"
-                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded"
-                    >
-                      <FiTrash2 />
-                    </button>
-                    <button
-                      onClick={() => handleResetPassword(guru.user.id)}
-                      title="Reset Password"
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
-                    >
-                      🔁
-                    </button>
-                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="4" className="text-center py-4 text-gray-500">
+                <td colSpan="3" className="text-center py-4 text-gray-500">
                   Tidak ada data guru.
                 </td>
               </tr>

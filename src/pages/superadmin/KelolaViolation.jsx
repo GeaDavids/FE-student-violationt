@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import axios from "axios";
@@ -12,21 +13,32 @@ import {
   FiInfo,
 } from "react-icons/fi";
 
+const kategoriList = [
+  { value: "ringan", label: "Ringan", color: "text-green-600" },
+  { value: "sedang", label: "Sedang", color: "text-yellow-600" },
+  { value: "berat", label: "Berat", color: "text-red-600" },
+];
+const jenisList = [
+  { value: "kedisiplinan", label: "Kedisiplinan" },
+  { value: "akademik", label: "Akademik" },
+  { value: "lainnya", label: "Lainnya" },
+];
+
 const KelolaViolation = () => {
   const [dataViolation, setDataViolation] = useState([]);
   const [filteredViolation, setFilteredViolation] = useState([]);
   const [formVisible, setFormVisible] = useState(false);
   const [form, setForm] = useState({
-    namaViolation: "",
-    kategori: "",
-    tingkatViolation: 1,
-    poin: 0,
-    deskripsi: "",
+    nama: "",
+    kategori: "ringan",
+    jenis: "kedisiplinan",
+    point: 0,
+    isActive: true,
   });
   const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterKategori, setFilterKategori] = useState("");
-  const [filterTingkat, setFilterTingkat] = useState("");
+  const [filterJenis, setFilterJenis] = useState("");
   const [loading, setLoading] = useState(false);
 
   const token = localStorage.getItem("token");
@@ -38,31 +50,14 @@ const KelolaViolation = () => {
     },
   };
 
-  const kategoriList = [
-    "Kedisiplinan",
-    "Ketertiban",
-    "Keamanan",
-    "Kebersihan", 
-    "Akademik",
-    "Sosial",
-    "Lainnya"
-  ];
-
-  const tingkatList = [
-    { value: 1, label: "Ringan", color: "text-green-600" },
-    { value: 2, label: "Sedang", color: "text-yellow-600" },
-    { value: 3, label: "Berat", color: "text-red-600" },
-  ];
 
   const fetchViolation = async () => {
     try {
       setLoading(true);
       const res = await axios.get("/api/violations", axiosConfig);
-      console.log("Data violation types:", res.data);
       setDataViolation(res.data);
       setFilteredViolation(res.data);
     } catch (err) {
-      console.error("Gagal mengambil data violation:", err);
       Swal.fire("Error!", "Gagal mengambil data jenis pelanggaran", "error");
     } finally {
       setLoading(false);
@@ -74,22 +69,19 @@ const KelolaViolation = () => {
   }, []);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    setForm({ ...form, [name]: type === "checkbox" ? checked : value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const payload = {
-      namaViolation: form.namaViolation,
+      nama: form.nama,
       kategori: form.kategori,
-      tingkatViolation: parseInt(form.tingkatViolation),
-      poin: parseInt(form.poin),
-      deskripsi: form.deskripsi,
+      jenis: form.jenis,
+      point: parseInt(form.point),
+      isActive: form.isActive,
     };
-
-    console.log("Payload:", payload);
-
     try {
       if (editingId) {
         await axios.put(`/api/violations/${editingId}`, payload, axiosConfig);
@@ -98,19 +90,11 @@ const KelolaViolation = () => {
         await axios.post("/api/violations", payload, axiosConfig);
         Swal.fire("Berhasil!", "Jenis pelanggaran baru berhasil ditambahkan.", "success");
       }
-
-      setForm({
-        namaViolation: "",
-        kategori: "",
-        tingkatViolation: 1,
-        poin: 0,
-        deskripsi: "",
-      });
+      setForm({ nama: "", kategori: "ringan", jenis: "kedisiplinan", point: 0, isActive: true });
       setEditingId(null);
       setFormVisible(false);
       fetchViolation();
     } catch (err) {
-      console.error("Error:", err.response || err);
       let errorMessage = "Terjadi kesalahan saat menyimpan data jenis pelanggaran.";
       if (err.response?.data?.error) {
         errorMessage = err.response.data.error;
@@ -120,13 +104,12 @@ const KelolaViolation = () => {
   };
 
   const handleEdit = (violation) => {
-    console.log("Editing violation:", violation);
     setForm({
-      namaViolation: violation.namaViolation || "",
-      kategori: violation.kategori || "",
-      tingkatViolation: violation.tingkatViolation || 1,
-      poin: violation.poin || 0,
-      deskripsi: violation.deskripsi || "",
+      nama: violation.nama || "",
+      kategori: violation.kategori || "ringan",
+      jenis: violation.jenis || "kedisiplinan",
+      point: violation.point || 0,
+      isActive: violation.isActive !== undefined ? violation.isActive : true,
     });
     setEditingId(violation.id);
     setFormVisible(true);
@@ -154,18 +137,17 @@ const KelolaViolation = () => {
   };
 
   const handleDetail = (violation) => {
-    const tingkatLabel = tingkatList.find(t => t.value === violation.tingkatViolation)?.label || "Unknown";
-    
+    const kategoriLabel = kategoriList.find(k => k.value === violation.kategori)?.label || violation.kategori;
+    const jenisLabel = jenisList.find(j => j.value === violation.jenis)?.label || violation.jenis;
     Swal.fire({
       title: `<strong>Detail Jenis Pelanggaran</strong>`,
       html: `
         <div class="text-left">
-          <p><b>Nama Pelanggaran:</b> ${violation.namaViolation}</p>
-          <p><b>Kategori:</b> ${violation.kategori}</p>
-          <p><b>Tingkat:</b> ${tingkatLabel}</p>
-          <p><b>Poin:</b> ${violation.poin}</p>
-          <p><b>Deskripsi:</b></p>
-          <p class="text-gray-600 italic">${violation.deskripsi || "Tidak ada deskripsi"}</p>
+          <p><b>Nama Pelanggaran:</b> ${violation.nama}</p>
+          <p><b>Kategori:</b> ${kategoriLabel}</p>
+          <p><b>Jenis:</b> ${jenisLabel}</p>
+          <p><b>Poin:</b> ${violation.point}</p>
+          <p><b>Status:</b> ${violation.isActive ? "Aktif" : "Non-Aktif"}</p>
         </div>
       `,
       icon: "info",
@@ -176,31 +158,29 @@ const KelolaViolation = () => {
   const handleSearch = (e) => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
-    applyFilters(value, filterKategori, filterTingkat);
+    applyFilters(value, filterKategori, filterJenis);
   };
 
   const handleFilterKategori = (e) => {
     const value = e.target.value;
     setFilterKategori(value);
-    applyFilters(searchTerm, value, filterTingkat);
+    applyFilters(searchTerm, value, filterJenis);
   };
 
-  const handleFilterTingkat = (e) => {
+  const handleFilterJenis = (e) => {
     const value = e.target.value;
-    setFilterTingkat(value);
+    setFilterJenis(value);
     applyFilters(searchTerm, filterKategori, value);
   };
 
-  const applyFilters = (search, kategori, tingkat) => {
+  const applyFilters = (search, kategori, jenis) => {
     let filtered = dataViolation.filter((violation) => {
-      const matchSearch = violation.namaViolation.toLowerCase().includes(search) ||
+      const matchSearch = violation.nama.toLowerCase().includes(search) ||
                          violation.kategori.toLowerCase().includes(search) ||
-                         (violation.deskripsi || "").toLowerCase().includes(search);
-      
+                         violation.jenis.toLowerCase().includes(search);
       const matchKategori = !kategori || violation.kategori === kategori;
-      const matchTingkat = !tingkat || violation.tingkatViolation === parseInt(tingkat);
-      
-      return matchSearch && matchKategori && matchTingkat;
+      const matchJenis = !jenis || violation.jenis === jenis;
+      return matchSearch && matchKategori && matchJenis;
     });
     setFilteredViolation(filtered);
   };
@@ -208,18 +188,17 @@ const KelolaViolation = () => {
   const resetFilters = () => {
     setSearchTerm("");
     setFilterKategori("");
-    setFilterTingkat("");
+    setFilterJenis("");
     setFilteredViolation(dataViolation);
   };
 
-  const getTingkatBadge = (tingkat) => {
-    const tingkatInfo = tingkatList.find(t => t.value === tingkat);
-    if (!tingkatInfo) return <span className="text-gray-500">Unknown</span>;
-    
+  const getKategoriBadge = (kategori) => {
+    const kategoriInfo = kategoriList.find(k => k.value === kategori);
+    if (!kategoriInfo) return <span className="text-gray-500">{kategori}</span>;
     return (
-      <span className={`${tingkatInfo.color} font-semibold flex items-center gap-1`}>
+      <span className={`${kategoriInfo.color} font-semibold flex items-center gap-1`}>
         <FiStar size={14} />
-        {tingkatInfo.label}
+        {kategoriInfo.label}
       </span>
     );
   };
@@ -267,20 +246,20 @@ const KelolaViolation = () => {
         >
           <option value="">Semua Kategori</option>
           {kategoriList.map((kategori) => (
-            <option key={kategori} value={kategori}>
-              {kategori}
+            <option key={kategori.value} value={kategori.value}>
+              {kategori.label}
             </option>
           ))}
         </select>
         <select
-          value={filterTingkat}
-          onChange={handleFilterTingkat}
+          value={filterJenis}
+          onChange={handleFilterJenis}
           className="border rounded px-3 py-2"
         >
-          <option value="">Semua Tingkat</option>
-          {tingkatList.map((tingkat) => (
-            <option key={tingkat.value} value={tingkat.value}>
-              {tingkat.label}
+          <option value="">Semua Jenis</option>
+          {jenisList.map((jenis) => (
+            <option key={jenis.value} value={jenis.value}>
+              {jenis.label}
             </option>
           ))}
         </select>
@@ -303,9 +282,9 @@ const KelolaViolation = () => {
           >
             <input
               type="text"
-              name="namaViolation"
+              name="nama"
               placeholder="Nama Pelanggaran"
-              value={form.namaViolation}
+              value={form.nama}
               onChange={handleChange}
               required
               className="border p-3 rounded"
@@ -317,45 +296,47 @@ const KelolaViolation = () => {
               required
               className="border p-3 rounded"
             >
-              <option value="">Pilih Kategori</option>
               {kategoriList.map((kategori) => (
-                <option key={kategori} value={kategori}>
-                  {kategori}
+                <option key={kategori.value} value={kategori.value}>
+                  {kategori.label}
                 </option>
               ))}
             </select>
             <select
-              name="tingkatViolation"
-              value={form.tingkatViolation}
+              name="jenis"
+              value={form.jenis}
               onChange={handleChange}
               required
               className="border p-3 rounded"
             >
-              {tingkatList.map((tingkat) => (
-                <option key={tingkat.value} value={tingkat.value}>
-                  {tingkat.label}
+              {jenisList.map((jenis) => (
+                <option key={jenis.value} value={jenis.value}>
+                  {jenis.label}
                 </option>
               ))}
             </select>
             <input
               type="number"
-              name="poin"
+              name="point"
               placeholder="Poin Pelanggaran"
-              value={form.poin}
+              value={form.point}
               onChange={handleChange}
               required
               min="0"
               max="100"
               className="border p-3 rounded"
             />
-            <textarea
-              name="deskripsi"
-              placeholder="Deskripsi pelanggaran (opsional)"
-              value={form.deskripsi}
-              onChange={handleChange}
-              className="border p-3 rounded md:col-span-2"
-              rows="3"
-            />
+            <div className="flex items-center gap-2 md:col-span-2">
+              <input
+                type="checkbox"
+                name="isActive"
+                checked={form.isActive}
+                onChange={handleChange}
+                className="h-4 w-4"
+                id="isActiveCheckbox"
+              />
+              <label htmlFor="isActiveCheckbox" className="text-sm">Aktif</label>
+            </div>
             <button
               type="submit"
               className="bg-[#003366] text-white px-4 py-3 rounded h-fit md:col-span-2"
@@ -378,8 +359,9 @@ const KelolaViolation = () => {
               <tr>
                 <th className="border px-4 py-2 text-left">Nama Pelanggaran</th>
                 <th className="border px-4 py-2 text-left">Kategori</th>
-                <th className="border px-4 py-2 text-center">Tingkat</th>
+                <th className="border px-4 py-2 text-left">Jenis</th>
                 <th className="border px-4 py-2 text-center">Poin</th>
+                <th className="border px-4 py-2 text-center">Status</th>
                 <th className="border px-4 py-2 text-center">Aksi</th>
               </tr>
             </thead>
@@ -391,18 +373,21 @@ const KelolaViolation = () => {
                       className="border px-4 py-2 cursor-pointer hover:text-[#003366]"
                       onClick={() => handleDetail(violation)}
                     >
-                      {violation.namaViolation}
+                      {violation.nama}
                     </td>
                     <td className="border px-4 py-2">
-                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                        {violation.kategori}
-                      </span>
+                      {getKategoriBadge(violation.kategori)}
                     </td>
-                    <td className="border px-4 py-2 text-center">
-                      {getTingkatBadge(violation.tingkatViolation)}
+                    <td className="border px-4 py-2">
+                      {jenisList.find(j => j.value === violation.jenis)?.label || violation.jenis}
                     </td>
                     <td className="border px-4 py-2 text-center font-semibold">
-                      {violation.poin} poin
+                      {violation.point} poin
+                    </td>
+                    <td className="border px-4 py-2 text-center">
+                      <span className={violation.isActive ? "bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs" : "bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs"}>
+                        {violation.isActive ? "Aktif" : "Non-Aktif"}
+                      </span>
                     </td>
                     <td className="border px-4 py-2 text-center space-x-2">
                       <button
@@ -431,7 +416,7 @@ const KelolaViolation = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="text-center py-4 text-gray-500">
+                  <td colSpan="6" className="text-center py-4 text-gray-500">
                     Tidak ada data jenis pelanggaran.
                   </td>
                 </tr>
@@ -446,19 +431,19 @@ const KelolaViolation = () => {
         <div className="bg-green-100 p-4 rounded-lg">
           <h3 className="font-semibold text-green-800">Pelanggaran Ringan</h3>
           <p className="text-2xl font-bold text-green-600">
-            {dataViolation.filter(v => v.tingkatViolation === 1).length}
+            {dataViolation.filter(v => v.kategori === "ringan").length}
           </p>
         </div>
         <div className="bg-yellow-100 p-4 rounded-lg">
           <h3 className="font-semibold text-yellow-800">Pelanggaran Sedang</h3>
           <p className="text-2xl font-bold text-yellow-600">
-            {dataViolation.filter(v => v.tingkatViolation === 2).length}
+            {dataViolation.filter(v => v.kategori === "sedang").length}
           </p>
         </div>
         <div className="bg-red-100 p-4 rounded-lg">
           <h3 className="font-semibold text-red-800">Pelanggaran Berat</h3>
           <p className="text-2xl font-bold text-red-600">
-            {dataViolation.filter(v => v.tingkatViolation === 3).length}
+            {dataViolation.filter(v => v.kategori === "berat").length}
           </p>
         </div>
         <div className="bg-blue-100 p-4 rounded-lg">

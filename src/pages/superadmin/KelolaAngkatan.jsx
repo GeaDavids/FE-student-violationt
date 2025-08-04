@@ -1,28 +1,30 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import {
   FiCalendar,
-  FiEdit2,
-  FiTrash2,
   FiPlus,
   FiSearch,
   FiRefreshCw,
-  FiUsers,
   FiAward,
+  FiEdit2,
+  FiTrash2,
+  FiUsers,
 } from "react-icons/fi";
 
 const KelolaAngkatan = () => {
+  const navigate = useNavigate();
   const [dataAngkatan, setDataAngkatan] = useState([]);
   const [filteredAngkatan, setFilteredAngkatan] = useState([]);
   const [formVisible, setFormVisible] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
     tahun: "",
     nama: "",
     keterangan: "",
-    status: "aktif",
+    lulusDate: "",
   });
-  const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [loading, setLoading] = useState(false);
@@ -37,9 +39,9 @@ const KelolaAngkatan = () => {
   };
 
   const statusList = [
-    { value: "aktif", label: "Aktif", color: "bg-green-100 text-green-800" },
-    { value: "lulus", label: "Lulus", color: "bg-blue-100 text-blue-800" },
-    { value: "nonaktif", label: "Non-Aktif", color: "bg-gray-100 text-gray-800" },
+    { value: "", label: "Aktif", color: "bg-green-100 text-green-800" },
+    { value: "graduated", label: "Lulus", color: "bg-blue-100 text-blue-800" },
+    { value: "inactive", label: "Non-Aktif", color: "bg-gray-100 text-gray-800" },
   ];
 
   const fetchAngkatan = async () => {
@@ -72,7 +74,7 @@ const KelolaAngkatan = () => {
       tahun: form.tahun,
       nama: form.nama || `Angkatan ${form.tahun}`,
       keterangan: form.keterangan,
-      status: form.status,
+      lulusDate: form.lulusDate || null,
     };
 
     console.log("Payload:", payload);
@@ -90,10 +92,10 @@ const KelolaAngkatan = () => {
         tahun: "",
         nama: "",
         keterangan: "",
-        status: "aktif",
+        lulusDate: "",
       });
-      setEditingId(null);
       setFormVisible(false);
+      setEditingId(null);
       fetchAngkatan();
     } catch (err) {
       console.error("Error:", err.response || err);
@@ -106,14 +108,13 @@ const KelolaAngkatan = () => {
   };
 
   const handleEdit = (angkatan) => {
-    console.log("Editing angkatan:", angkatan);
+    setEditingId(angkatan.id);
     setForm({
       tahun: angkatan.tahun || angkatan.year || "",
       nama: angkatan.nama || angkatan.name || "",
       keterangan: angkatan.keterangan || "",
-      status: angkatan.status || "aktif",
+      lulusDate: angkatan.lulusDate || "",
     });
-    setEditingId(angkatan.id);
     setFormVisible(true);
   };
 
@@ -124,6 +125,8 @@ const KelolaAngkatan = () => {
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Ya, hapus!",
+      confirmButtonColor: "#dc2626",
+      cancelButtonText: "Batal",
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
@@ -131,7 +134,7 @@ const KelolaAngkatan = () => {
           Swal.fire("Terhapus!", "Data angkatan telah dihapus.", "success");
           fetchAngkatan();
         } catch (err) {
-          console.error("Error:", err.response || err);
+          console.error("Delete error:", err.response || err);
           Swal.fire("Gagal", "Gagal menghapus data angkatan.", "error");
         }
       }
@@ -139,22 +142,21 @@ const KelolaAngkatan = () => {
   };
 
   const handleDetail = (angkatan) => {
-    const statusInfo = statusList.find(s => s.value === angkatan.status);
-    
-    Swal.fire({
-      title: `<strong>Detail Angkatan</strong>`,
-      html: `
-        <div class="text-left">
-          <p><b>Tahun:</b> ${angkatan.tahun || angkatan.year}</p>
-          <p><b>Nama:</b> ${angkatan.nama || angkatan.name}</p>
-          <p><b>Status:</b> <span class="px-2 py-1 rounded text-sm ${statusInfo?.color || 'bg-gray-100'}">${statusInfo?.label || angkatan.status}</span></p>
-          <p><b>Jumlah Siswa:</b> ${angkatan.jmlSiswa || 0} siswa</p>
-          <p><b>Keterangan:</b></p>
-          <p class="text-gray-600 italic">${angkatan.keterangan || "Tidak ada keterangan"}</p>
-        </div>
-      `,
-      icon: "info",
-      width: "500px"
+    navigate('/superadmin/detail-angkatan', { 
+      state: { 
+        angkatan: angkatan,
+        fromPage: 'kelola-angkatan'
+      } 
+    });
+  };
+
+  const viewStudents = (angkatan) => {
+    // Navigate to student list for this angkatan
+    navigate('/superadmin/kelola-siswa', { 
+      state: { 
+        filterAngkatan: angkatan.id,
+        angkatanName: angkatan.nama || `Angkatan ${angkatan.tahun}`
+      } 
     });
   };
 
@@ -179,7 +181,15 @@ const KelolaAngkatan = () => {
                          nama.toLowerCase().includes(search) ||
                          (angkatan.keterangan || "").toLowerCase().includes(search);
       
-      const matchStatus = !status || angkatan.status === status;
+      // Filter berdasarkan status lulusDate
+      let matchStatus = true;
+      if (status === "graduated") {
+        matchStatus = angkatan.lulusDate && angkatan.lulusDate !== null;
+      } else if (status === "inactive") {
+        matchStatus = angkatan.status === "inactive";
+      } else if (status === "") {
+        matchStatus = (!angkatan.lulusDate || angkatan.lulusDate === null) && angkatan.status !== "inactive";
+      }
       
       return matchSearch && matchStatus;
     });
@@ -192,23 +202,31 @@ const KelolaAngkatan = () => {
     setFilteredAngkatan(dataAngkatan);
   };
 
-  const getStatusBadge = (status) => {
-    const statusInfo = statusList.find(s => s.value === status);
-    if (!statusInfo) return <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">Unknown</span>;
+  const getStatusBadge = (angkatan) => {
+    let status = "";
+    let color = "";
+    let label = "";
+
+    if (angkatan.lulusDate && angkatan.lulusDate !== null) {
+      const lulusYear = new Date(angkatan.lulusDate).getFullYear();
+      status = "graduated";
+      color = "bg-blue-100 text-blue-800";
+      label = `Lulus ${lulusYear}`;
+    } else if (angkatan.status === "inactive") {
+      status = "inactive";
+      color = "bg-gray-100 text-gray-800";
+      label = "Non-Aktif";
+    } else {
+      status = "active";
+      color = "bg-green-100 text-green-800";
+      label = "Aktif";
+    }
     
     return (
-      <span className={`${statusInfo.color} px-2 py-1 rounded-full text-xs font-medium`}>
-        {statusInfo.label}
+      <span className={`${color} px-2 py-1 rounded-full text-xs font-medium`}>
+        {label}
       </span>
     );
-  };
-
-  const viewStudents = (angkatanId, namaAngkatan) => {
-    Swal.fire({
-      title: `Siswa ${namaAngkatan}`,
-      text: "Fitur ini akan menampilkan daftar siswa di angkatan tersebut",
-      icon: "info",
-    });
   };
 
   // Generate tahun options
@@ -230,7 +248,7 @@ const KelolaAngkatan = () => {
               tahun: "",
               nama: "",
               keterangan: "",
-              status: "aktif",
+              lulusDate: "",
             });
             setEditingId(null);
             setFormVisible(true);
@@ -278,6 +296,9 @@ const KelolaAngkatan = () => {
 
       {formVisible && (
         <div className="bg-white rounded-xl shadow p-6 mb-6">
+          <h3 className="text-lg font-semibold mb-4">
+            {editingId ? "Edit Angkatan" : "Tambah Angkatan Baru"}
+          </h3>
           <form
             onSubmit={handleSubmit}
             className="grid grid-cols-1 md:grid-cols-2 gap-4"
@@ -304,19 +325,14 @@ const KelolaAngkatan = () => {
               onChange={handleChange}
               className="border p-3 rounded"
             />
-            <select
-              name="status"
-              value={form.status}
+            <input
+              type="date"
+              name="lulusDate"
+              placeholder="Tanggal Lulus (opsional)"
+              value={form.lulusDate}
               onChange={handleChange}
-              required
               className="border p-3 rounded"
-            >
-              {statusList.map((status) => (
-                <option key={status.value} value={status.value}>
-                  {status.label}
-                </option>
-              ))}
-            </select>
+            />
             <textarea
               name="keterangan"
               placeholder="Keterangan (opsional)"
@@ -325,12 +341,30 @@ const KelolaAngkatan = () => {
               className="border p-3 rounded"
               rows="1"
             />
-            <button
-              type="submit"
-              className="bg-[#003366] text-white px-4 py-3 rounded h-fit md:col-span-2"
-            >
-              {editingId ? "Update" : "Tambah"}
-            </button>
+            <div className="md:col-span-2 flex gap-2">
+              <button
+                type="submit"
+                className="bg-[#003366] text-white px-4 py-3 rounded flex-1"
+              >
+                {editingId ? "Update" : "Tambah"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormVisible(false);
+                  setEditingId(null);
+                  setForm({
+                    tahun: "",
+                    nama: "",
+                    keterangan: "",
+                    lulusDate: "",
+                  });
+                }}
+                className="bg-gray-500 text-white px-4 py-3 rounded"
+              >
+                Batal
+              </button>
+            </div>
           </form>
         </div>
       )}
@@ -345,10 +379,10 @@ const KelolaAngkatan = () => {
           <table className="w-full table-auto border border-gray-300 shadow rounded">
             <thead className="bg-[#f1f5f9] text-[#003366]">
               <tr>
-                <th className="border px-4 py-2 text-left">Tahun</th>
+                <th className="border px-4 py-2 text-left">Tahun Angkatan</th>
                 <th className="border px-4 py-2 text-left">Nama Angkatan</th>
-                <th className="border px-4 py-2 text-center">Status</th>
-                <th className="border px-4 py-2 text-center">Jumlah Siswa</th>
+                <th className="border px-4 py-2 text-left">Status Kelulusan</th>
+                <th className="border px-4 py-2 text-left">Jumlah Siswa</th>
                 <th className="border px-4 py-2 text-center">Aksi</th>
               </tr>
             </thead>
@@ -356,41 +390,48 @@ const KelolaAngkatan = () => {
               {filteredAngkatan.length > 0 ? (
                 filteredAngkatan.map((angkatan) => (
                   <tr key={angkatan.id} className="hover:bg-gray-50">
-                    <td className="border px-4 py-2 font-semibold">
+                    <td className="border px-4 py-2 font-semibold text-gray-700">
                       {angkatan.tahun || angkatan.year}
                     </td>
-                    <td 
-                      className="border px-4 py-2 cursor-pointer hover:text-[#003366]"
-                      onClick={() => handleDetail(angkatan)}
-                    >
+                    <td className="border px-4 py-2 text-gray-800">
                       {angkatan.nama || angkatan.name || `Angkatan ${angkatan.tahun || angkatan.year}`}
                     </td>
-                    <td className="border px-4 py-2 text-center">
-                      {getStatusBadge(angkatan.status)}
+                    <td className="border px-4 py-2">
+                      {getStatusBadge(angkatan)}
                     </td>
                     <td className="border px-4 py-2 text-center">
                       <button
-                        onClick={() => viewStudents(angkatan.id, angkatan.nama || angkatan.name)}
-                        className="text-blue-600 hover:text-blue-800 flex items-center gap-1 mx-auto"
+                        onClick={() => viewStudents(angkatan)}
+                        className="bg-blue-100 text-blue-700 px-2 py-1 rounded text-sm hover:bg-blue-200 flex items-center gap-1 mx-auto"
                       >
-                        <FiUsers /> {angkatan.jmlSiswa || 0}
+                        <FiUsers size={14} />
+                        {angkatan.jumlah_siswa || 0} siswa
                       </button>
                     </td>
-                    <td className="border px-4 py-2 text-center space-x-2">
-                      <button
-                        onClick={() => handleEdit(angkatan)}
-                        title="Edit"
-                        className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-2 rounded"
-                      >
-                        <FiEdit2 />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(angkatan.id)}
-                        title="Delete"
-                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded"
-                      >
-                        <FiTrash2 />
-                      </button>
+                    <td className="border px-4 py-2">
+                      <div className="flex justify-center gap-2">
+                        <button
+                          onClick={() => handleDetail(angkatan)}
+                          className="text-blue-500 hover:bg-blue-100 p-1 rounded"
+                          title="Detail"
+                        >
+                          <FiUsers size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleEdit(angkatan)}
+                          className="text-green-500 hover:bg-green-100 p-1 rounded"
+                          title="Edit"
+                        >
+                          <FiEdit2 size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(angkatan.id)}
+                          className="text-red-500 hover:bg-red-100 p-1 rounded"
+                          title="Hapus"
+                        >
+                          <FiTrash2 size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -413,19 +454,19 @@ const KelolaAngkatan = () => {
             <FiAward /> Angkatan Aktif
           </h3>
           <p className="text-2xl font-bold text-green-600">
-            {dataAngkatan.filter(a => a.status === 'aktif').length}
+            {dataAngkatan.filter(a => (!a.lulusDate || a.lulusDate === null) && a.status !== "inactive").length}
           </p>
         </div>
         <div className="bg-blue-100 p-4 rounded-lg">
           <h3 className="font-semibold text-blue-800">Angkatan Lulus</h3>
           <p className="text-2xl font-bold text-blue-600">
-            {dataAngkatan.filter(a => a.status === 'lulus').length}
+            {dataAngkatan.filter(a => a.lulusDate && a.lulusDate !== null).length}
           </p>
         </div>
         <div className="bg-gray-100 p-4 rounded-lg">
           <h3 className="font-semibold text-gray-800">Non-Aktif</h3>
           <p className="text-2xl font-bold text-gray-600">
-            {dataAngkatan.filter(a => a.status === 'nonaktif').length}
+            {dataAngkatan.filter(a => a.status === 'inactive').length}
           </p>
         </div>
         <div className="bg-purple-100 p-4 rounded-lg">

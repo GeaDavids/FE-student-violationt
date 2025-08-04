@@ -1,5 +1,7 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { FiAward } from "react-icons/fi";
 
 const Sidebar = ({ onKelolaUserClick }) => {
   const [role, setRole] = useState("");
@@ -52,6 +54,11 @@ const Sidebar = ({ onKelolaUserClick }) => {
               <li>
                 <Link to="/bk/pelanggaran" className="hover:underline">
                   📄 Lihat Pelanggaran
+                </Link>
+              </li>
+              <li>
+                <Link to="/bk/student-violation" className="hover:underline">
+                  📝 Laporan Pelanggaran Siswa
                 </Link>
               </li>
             </>
@@ -107,9 +114,15 @@ const Sidebar = ({ onKelolaUserClick }) => {
                 </Link>
               </li>
 
+
               <li>
                 <Link to="/superadmin/kelola-violation" className="hover:underline">
                   ⚠️ Kelola Jenis Pelanggaran
+                </Link>
+              </li>
+              <li>
+                <Link to="/superadmin/kelola-prestasi" className="hover:underline flex items-center gap-2">
+                  <FiAward /> Kelola Prestasi
                 </Link>
               </li>
 

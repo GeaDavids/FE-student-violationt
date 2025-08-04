@@ -1,14 +1,21 @@
+import StudentViolation from "./pages/bk/StudentViolation";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import MainLayout from "./layouts/MainLayout";
 import KelolaSiswa from "./pages/superadmin/KelolaSiswa";
+import DetailSiswa from "./pages/superadmin/DetailSiswa";
 import ImportSiswa from "./pages/superadmin/ImportSiswa";
 import KelolaKelas from "./pages/superadmin/KelolaKelas";
+import DetailKelas from "./pages/superadmin/DetailKelas";
 import KelolaGuru from "./pages/superadmin/KelolaGuru";
+import DetailGuru from "./pages/superadmin/DetailGuru";
 import KelolaBK from "./pages/superadmin/KelolaBK";
+import DetailBK from "./pages/superadmin/DetailBK";
 import KelolaAngkatan from "./pages/superadmin/KelolaAngkatan";
+import DetailAngkatan from "./pages/superadmin/DetailAngkatan";
 import KelolaViolation from "./pages/superadmin/KelolaViolation";
+import KelolaPrestasi from "./pages/superadmin/KelolaPrestasi";
 import LaporanPelanggaran from "./pages/superadmin/LaporanPelanggaran";
 import MonitoringPelanggaran from "./pages/superadmin/MonitoringPelanggaran";
 import SiswaCreditScore from "./pages/siswa/SiswaCreditScore";
@@ -28,10 +35,28 @@ const App = () => {
         />
 
         <Route
+          path="/superadmin/detail-siswa/:id"
+          element={
+            <MainLayout>
+              <DetailSiswa />
+            </MainLayout>
+          }
+        />
+
+        <Route
           path="/superadmin/kelola-guru"
           element={
             <MainLayout>
               <KelolaGuru />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/superadmin/detail-guru"
+          element={
+            <MainLayout>
+              <DetailGuru />
             </MainLayout>
           }
         />
@@ -46,6 +71,15 @@ const App = () => {
         />
 
         <Route
+          path="/superadmin/detail-bk"
+          element={
+            <MainLayout>
+              <DetailBK />
+            </MainLayout>
+          }
+        />
+
+        <Route
           path="/superadmin/kelola-kelas"
           element={
             <MainLayout>
@@ -55,10 +89,28 @@ const App = () => {
         />
 
         <Route
+          path="/superadmin/detail-kelas"
+          element={
+            <MainLayout>
+              <DetailKelas />
+            </MainLayout>
+          }
+        />
+
+        <Route
           path="/superadmin/kelola-angkatan"
           element={
             <MainLayout>
               <KelolaAngkatan />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/superadmin/detail-angkatan"
+          element={
+            <MainLayout>
+              <DetailAngkatan />
             </MainLayout>
           }
         />
@@ -116,6 +168,25 @@ const App = () => {
             </MainLayout>
           }
         />
+
+        <Route
+          path="/superadmin/kelola-prestasi"
+          element={
+            <MainLayout>
+              <KelolaPrestasi />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/bk/student-violation"
+          element={
+            <MainLayout>
+              <StudentViolation />
+            </MainLayout>
+          }
+        />
+
       </Routes>
     </Router>
   );

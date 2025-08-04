@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { FiUserCheck, FiEdit2, FiTrash2, FiPlus } from "react-icons/fi";
+import { FiUserCheck, FiPlus } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
 const KelolaBK = () => {
+  const navigate = useNavigate();
   const [dataBK, setDataBK] = useState([]);
   const [formVisible, setFormVisible] = useState(false);
   const [form, setForm] = useState({ name: "", email: "" });
-  const [editingId, setEditingId] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
 
   const token = localStorage.getItem("token");
@@ -46,15 +47,10 @@ const KelolaBK = () => {
     }
     const payload = { name: form.name, email: form.email };
     try {
-      if (editingId) {
-        await axios.put(`/api/users/bk/${editingId}`, payload, axiosConfig);
-        Swal.fire("Berhasil!", "Data BK berhasil diperbarui!", "success");
-      } else {
-        await axios.post("/api/users/bk", payload, axiosConfig);
-        Swal.fire("Berhasil!", "BK baru berhasil ditambahkan!", "success");
-      }
+      await axios.post("/api/users/bk", payload, axiosConfig);
+      Swal.fire("Berhasil!", "BK baru berhasil ditambahkan!", "success");
+      
       setForm({ name: "", email: "" });
-      setEditingId(null);
       setFormVisible(false);
       fetchBK();
     } catch (err) {
@@ -63,37 +59,6 @@ const KelolaBK = () => {
         msg = err.response.data.error || err.response.data.message;
       }
       setErrorMsg(msg);
-      Swal.fire("Gagal", msg, "error");
-    }
-  };
-
-  const handleEdit = (bk) => {
-    setForm({ name: bk.name, email: bk.email });
-    setEditingId(bk.id);
-    setFormVisible(true);
-  };
-
-  const handleDelete = async (id) => {
-    const result = await Swal.fire({
-      title: "Hapus Data BK?",
-      text: "Apakah yakin ingin menghapus data BK ini?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Ya, hapus!",
-      cancelButtonText: "Batal"
-    });
-    if (!result.isConfirmed) return;
-    try {
-      await axios.delete(`/api/users/bk/${id}`, axiosConfig);
-      Swal.fire("Berhasil!", "Data BK berhasil dihapus.", "success");
-      fetchBK();
-    } catch (err) {
-      let msg = "Gagal menghapus data BK.";
-      if (err.response && err.response.data && (err.response.data.error || err.response.data.message)) {
-        msg = err.response.data.error || err.response.data.message;
-      }
       Swal.fire("Gagal", msg, "error");
     }
   };
@@ -108,7 +73,6 @@ const KelolaBK = () => {
         <button
           onClick={() => {
             setForm({ name: "", email: "" });
-            setEditingId(null);
             setFormVisible(true);
           }}
           className="bg-[#003366] text-white px-4 py-2 rounded flex items-center gap-2"
@@ -142,7 +106,7 @@ const KelolaBK = () => {
               className="border p-2 rounded"
             />
             <button className="bg-[#003366] text-white px-4 py-2 rounded h-fit">
-              {editingId ? "Update" : "Tambah"}
+              Tambah
             </button>
           </form>
           {errorMsg && (
@@ -157,34 +121,29 @@ const KelolaBK = () => {
             <tr>
               <th className="border px-4 py-2 text-left">Nama</th>
               <th className="border px-4 py-2 text-left">Email</th>
-              <th className="border px-4 py-2 text-center">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {dataBK.length > 0 ? (
               dataBK.map((bk) => (
                 <tr key={bk.id} className="hover:bg-gray-50">
-                  <td className="border px-4 py-2">{bk.name}</td>
-                  <td className="border px-4 py-2">{bk.email}</td>
-                  <td className="border px-4 py-2 text-center space-x-2">
-                    <button
-                      onClick={() => handleEdit(bk)}
-                      className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded"
-                    >
-                      <FiEdit2 />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(bk.id)}
-                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
-                    >
-                      <FiTrash2 />
-                    </button>
+                  <td 
+                    className="border px-4 py-2 text-gray-800 cursor-pointer hover:text-gray-600 hover:bg-gray-50 transition-colors duration-200"
+                    onClick={() => navigate('/superadmin/detail-bk', { 
+                      state: { 
+                        bk: bk,
+                        fromPage: 'kelola-bk'
+                      } 
+                    })}
+                  >
+                    {bk.name}
                   </td>
+                  <td className="border px-4 py-2">{bk.email}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="3" className="text-center py-4 text-gray-500">
+                <td colSpan="2" className="text-center py-4 text-gray-500">
                   Tidak ada data BK.
                 </td>
               </tr>
