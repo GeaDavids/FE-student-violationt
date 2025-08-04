@@ -96,17 +96,32 @@ const Sidebar = ({ onKelolaUserClick }) => {
               )}
 
               <li>
-                <Link
-                  to="/superadmin/kelola-sekolah"
-                  className="hover:underline"
-                >
-                  🏫 Kelola Data Sekolah
+                <Link to="/superadmin/kelola-kelas" className="hover:underline">
+                  🏷️ Kelola Data Kelas
                 </Link>
               </li>
 
               <li>
-                <Link to="/superadmin/kelola-kelas" className="hover:underline">
-                  🏷️ Kelola Data Kelas
+                <Link to="/superadmin/kelola-angkatan" className="hover:underline">
+                  📅 Kelola Angkatan
+                </Link>
+              </li>
+
+              <li>
+                <Link to="/superadmin/kelola-violation" className="hover:underline">
+                  ⚠️ Kelola Jenis Pelanggaran
+                </Link>
+              </li>
+
+              <li>
+                <Link to="/superadmin/laporan-pelanggaran" className="hover:underline">
+                  📋 Laporan Pelanggaran
+                </Link>
+              </li>
+
+              <li>
+                <Link to="/superadmin/monitoring-pelanggaran" className="hover:underline">
+                  📊 Monitoring Pelanggaran
                 </Link>
               </li>
             </>

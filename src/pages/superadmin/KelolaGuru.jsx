@@ -14,7 +14,13 @@ const KelolaGuru = () => {
   const [dataGuru, setDataGuru] = useState([]);
   const [filteredGuru, setFilteredGuru] = useState([]);
   const [formVisible, setFormVisible] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    nip: "",
+    noHp: "",
+    alamat: "",
+  });
   const [editingId, setEditingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -31,7 +37,14 @@ const KelolaGuru = () => {
     try {
       const res = await axios.get("/api/users/teachers", axiosConfig);
       setDataGuru(res.data);
-      setFilteredGuru(res.data);
+      if (searchTerm) {
+        const filtered = res.data.filter((guru) =>
+          guru.user.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setFilteredGuru(filtered);
+      } else {
+        setFilteredGuru(res.data);
+      }
     } catch (err) {
       console.error("Gagal mengambil data guru:", err);
     }
@@ -47,10 +60,18 @@ const KelolaGuru = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const payload = { name: form.name, email: form.email };
+    const payload = {
+      name: form.name,
+      email: form.email,
+      nip: form.nip,
+      noHp: form.noHp,
+      alamat: form.alamat,
+    };
+
     try {
       if (editingId) {
-        await axios.put(
+        console.log("Updating teacher with ID:", editingId);
+        const response = await axios.put(
           `/api/users/teachers/${editingId}`,
           payload,
           axiosConfig
@@ -60,26 +81,36 @@ const KelolaGuru = () => {
         await axios.post("/api/users/teachers", payload, axiosConfig);
         Swal.fire("Berhasil!", "Guru baru berhasil ditambahkan.", "success");
       }
-      setForm({ name: "", email: "" });
+
+      setForm({ name: "", email: "", nip: "", noHp: "", alamat: "" });
       setEditingId(null);
       setFormVisible(false);
       fetchGuru();
     } catch (err) {
-      Swal.fire(
-        "Gagal",
-        "Terjadi kesalahan saat menyimpan data guru.",
-        "error"
-      );
+      console.error("Error:", err.response || err);
+      let errorMessage = "Terjadi kesalahan saat menyimpan data guru.";
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
+      }
+      Swal.fire("Gagal", errorMessage, "error");
     }
   };
 
   const handleEdit = (guru) => {
-    setForm({ name: guru.name, email: guru.email });
-    setEditingId(guru.id);
+    setForm({
+      name: guru.user.name,
+      email: guru.user.email,
+      nip: guru.nip || "",
+      noHp: guru.noHp || "",
+      alamat: guru.alamat || "",
+    });
+    setEditingId(guru.user.id); // 🔧 pakai user.id
     setFormVisible(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (userId) => {
     Swal.fire({
       title: "Yakin ingin menghapus?",
       text: "Data guru tidak bisa dikembalikan!",
@@ -89,17 +120,19 @@ const KelolaGuru = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`/api/users/teachers/${id}`, axiosConfig);
+          console.log("Deleting teacher with ID:", userId);
+          await axios.delete(`/api/users/teachers/${userId}`, axiosConfig);
           Swal.fire("Terhapus!", "Data guru telah dihapus.", "success");
           fetchGuru();
-        } catch {
+        } catch (err) {
+          console.error("Delete error:", err.response || err);
           Swal.fire("Gagal", "Gagal menghapus data guru.", "error");
         }
       }
     });
   };
 
-  const handleResetPassword = (id) => {
+  const handleResetPassword = (userId) => {
     Swal.fire({
       title: "Reset Password?",
       text: "Password guru akan diatur ulang ke default.",
@@ -110,14 +143,13 @@ const KelolaGuru = () => {
       if (result.isConfirmed) {
         try {
           const res = await axios.put(
-            `/api/users/teachers/${id}/reset-password`,
+            `/api/users/teachers/${userId}/reset-password`,
             {},
             axiosConfig
           );
-          console.log("Reset password success:", res.data);
           Swal.fire("Berhasil!", "Password telah di-reset.", "success");
         } catch (err) {
-          console.error("Error saat reset password:", err.response || err);
+          console.error("Reset password error:", err.response || err);
           Swal.fire("Gagal", "Tidak dapat mereset password.", "error");
         }
       }
@@ -128,9 +160,12 @@ const KelolaGuru = () => {
     Swal.fire({
       title: `<strong>Detail Guru</strong>`,
       html: `
-        <p><b>Nama:</b> ${guru.name}</p>
-        <p><b>Email:</b> ${guru.email}</p>
-        <p><b>Role:</b> ${guru.role}</p>
+        <p><b>Nama:</b> ${guru.user.name}</p>
+        <p><b>Email:</b> ${guru.user.email}</p>
+        <p><b>Role:</b> ${guru.user.role}</p>
+        <p><b>NIP:</b> ${guru.nip}</p>
+        <p><b>No. HP:</b> ${guru.noHp}</p>
+        <p><b>Alamat:</b> ${guru.alamat}</p>
       `,
       icon: "info",
     });
@@ -140,7 +175,7 @@ const KelolaGuru = () => {
     const value = e.target.value.toLowerCase();
     setSearchTerm(value);
     const filtered = dataGuru.filter((guru) =>
-      guru.name.toLowerCase().includes(value)
+      guru.user.name.toLowerCase().includes(value)
     );
     setFilteredGuru(filtered);
   };
@@ -153,7 +188,7 @@ const KelolaGuru = () => {
         </h2>
         <button
           onClick={() => {
-            setForm({ name: "", email: "" });
+            setForm({ name: "", email: "", nip: "", noHp: "", alamat: "" });
             setEditingId(null);
             setFormVisible(true);
           }}
@@ -175,7 +210,10 @@ const KelolaGuru = () => {
           />
         </div>
         <button
-          onClick={fetchGuru}
+          onClick={async () => {
+            await fetchGuru();
+            setSearchTerm("");
+          }}
           className="bg-gray-200 px-3 py-2 rounded text-sm flex items-center gap-1"
         >
           <FiRefreshCw /> Reset
@@ -186,7 +224,7 @@ const KelolaGuru = () => {
         <div className="bg-white rounded-xl shadow p-6 mb-6">
           <form
             onSubmit={handleSubmit}
-            className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end"
           >
             <input
               type="text"
@@ -202,6 +240,33 @@ const KelolaGuru = () => {
               name="email"
               placeholder="Email Guru"
               value={form.email}
+              onChange={handleChange}
+              required
+              className="border p-2 rounded"
+            />
+            <input
+              type="text"
+              name="nip"
+              placeholder="NIP"
+              value={form.nip}
+              onChange={handleChange}
+              required
+              className="border p-2 rounded"
+            />
+            <input
+              type="text"
+              name="noHp"
+              placeholder="No. HP"
+              value={form.noHp}
+              onChange={handleChange}
+              required
+              className="border p-2 rounded"
+            />
+            <input
+              type="text"
+              name="alamat"
+              placeholder="Alamat"
+              value={form.alamat}
               onChange={handleChange}
               required
               className="border p-2 rounded"
@@ -222,6 +287,7 @@ const KelolaGuru = () => {
             <tr>
               <th className="border px-4 py-2 text-left">Nama</th>
               <th className="border px-4 py-2 text-left">Email</th>
+              <th className="border px-4 py-2 text-left">NIP</th>
               <th className="border px-4 py-2 text-center">Aksi</th>
             </tr>
           </thead>
@@ -233,9 +299,10 @@ const KelolaGuru = () => {
                     className="border px-4 py-2 text-gray-800 cursor-pointer hover:text-[#003366]"
                     onClick={() => handleDetail(guru)}
                   >
-                    {guru.name}
+                    {guru.user.name}
                   </td>
-                  <td className="border px-4 py-2">{guru.email}</td>
+                  <td className="border px-4 py-2">{guru.user.email}</td>
+                  <td className="border px-4 py-2">{guru.nip}</td>
                   <td className="border px-4 py-2 text-center space-x-2">
                     <button
                       onClick={() => handleEdit(guru)}
@@ -245,14 +312,14 @@ const KelolaGuru = () => {
                       <FiEdit2 />
                     </button>
                     <button
-                      onClick={() => handleDelete(guru.id)}
+                      onClick={() => handleDelete(guru.user.id)}
                       title="Delete"
                       className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded"
                     >
                       <FiTrash2 />
                     </button>
                     <button
-                      onClick={() => handleResetPassword(guru.id)}
+                      onClick={() => handleResetPassword(guru.user.id)}
                       title="Reset Password"
                       className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
                     >
@@ -263,7 +330,7 @@ const KelolaGuru = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="3" className="text-center py-4 text-gray-500">
+                <td colSpan="4" className="text-center py-4 text-gray-500">
                   Tidak ada data guru.
                 </td>
               </tr>

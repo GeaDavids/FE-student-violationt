@@ -3,11 +3,15 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import MainLayout from "./layouts/MainLayout";
 import KelolaSiswa from "./pages/superadmin/KelolaSiswa";
-import Layout from "./layouts/MainLayout";
 import ImportSiswa from "./pages/superadmin/ImportSiswa";
 import KelolaKelas from "./pages/superadmin/KelolaKelas";
 import KelolaGuru from "./pages/superadmin/KelolaGuru";
 import KelolaBK from "./pages/superadmin/KelolaBK";
+import KelolaAngkatan from "./pages/superadmin/KelolaAngkatan";
+import KelolaViolation from "./pages/superadmin/KelolaViolation";
+import LaporanPelanggaran from "./pages/superadmin/LaporanPelanggaran";
+import MonitoringPelanggaran from "./pages/superadmin/MonitoringPelanggaran";
+import SiswaCreditScore from "./pages/siswa/SiswaCreditScore";
 
 const App = () => {
   return (
@@ -26,9 +30,9 @@ const App = () => {
         <Route
           path="/superadmin/kelola-guru"
           element={
-            <Layout>
+            <MainLayout>
               <KelolaGuru />
-            </Layout>
+            </MainLayout>
           }
         />
 
@@ -41,9 +45,69 @@ const App = () => {
           }
         />
 
-        <Route path="/import-siswa" element={<ImportSiswa />} />
-        <Route path="/superadmin/kelola-kelas" element={<KelolaKelas />} />
-        <Route path="/superadmin/kelola-guru" element={<KelolaGuru />} />
+        <Route
+          path="/superadmin/kelola-kelas"
+          element={
+            <MainLayout>
+              <KelolaKelas />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/superadmin/kelola-angkatan"
+          element={
+            <MainLayout>
+              <KelolaAngkatan />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/superadmin/kelola-violation"
+          element={
+            <MainLayout>
+              <KelolaViolation />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/superadmin/laporan-pelanggaran"
+          element={
+            <MainLayout>
+              <LaporanPelanggaran />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/superadmin/monitoring-pelanggaran"
+          element={
+            <MainLayout>
+              <MonitoringPelanggaran />
+            </MainLayout>
+          }
+        />
+
+        <Route 
+          path="/import-siswa" 
+          element={
+            <MainLayout>
+              <ImportSiswa />
+            </MainLayout>
+          } 
+        />
+        
+        <Route
+          path="/siswa/credit-score"
+          element={
+            <MainLayout>
+              <SiswaCreditScore />
+            </MainLayout>
+          }
+        />
+        
         <Route
           path="/dashboard"
           element={

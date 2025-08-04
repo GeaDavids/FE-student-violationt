@@ -1,0 +1,31 @@
+// Test file untuk validasi icon
+import {
+  FiActivity,
+  FiUsers,
+  FiAlertTriangle,
+  FiTrendingUp,
+  FiTrendingDown,
+  FiFilter,
+  FiRefreshCw,
+  FiCalendar,
+  FiBarChart2,
+  FiPieChart,
+  FiEye,
+  FiHome,
+  FiEdit2,
+  FiTrash2,
+  FiPlus,
+  FiSearch,
+  FiInfo,
+  FiStar,
+  FiAward,
+  FiUser,
+  FiMapPin,
+  FiFileText,
+  FiDownload,
+  FiAlertCircle,
+  FiBookOpen,
+  FiUserCheck,
+} from "react-icons/fi";
+
+console.log("All icons imported successfully");
