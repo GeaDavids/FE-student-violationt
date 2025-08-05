@@ -1,40 +1,56 @@
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import axios from 'axios';
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { login, setAuthData, getIdentifierType } from "../api/auth";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [identifier, setIdentifier] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     try {
-      const isEmail = identifier.includes('@');
-      const payload = isEmail
-        ? { email: identifier, password }
-        : { nis: identifier, password };
+      const response = await login(identifier, password);
 
-      const response = await axios.post(
-        'https://smk14-production.up.railway.app/api/auth/login',
-        payload
-      );
+      const token = response.token;
+      const role = response.user.role;
+      const user = response.user;
 
-      const token = response.data.token;
-      const role = response.data.user.role; // Asumsikan role dikirim dalam user
+      // Simpan data auth menggunakan utility function
+      setAuthData(token, role, user);
 
-      // Simpan token dan role di localStorage
-      localStorage.setItem('token', token);
-      localStorage.setItem('role', role);
-
-      // Arahkan ke dashboard umum
-      navigate('/dashboard');
+      // Arahkan ke dashboard berdasarkan role
+      switch (role) {
+        case "student":
+          navigate("/dashboard");
+          break;
+        case "teacher":
+          navigate("/dashboard");
+          break;
+        case "bk":
+          navigate("/dashboard");
+          break;
+        case "superadmin":
+          navigate("/dashboard");
+          break;
+        default:
+          navigate("/dashboard");
+      }
     } catch (err) {
-      console.error(err);
-      setError('Login gagal. Periksa kembali NIS/Email dan Password Anda.');
+      console.error("Login error:", err);
+      const identifierType = getIdentifierType(identifier);
+      let errorMessage = "Login gagal. Periksa kembali data Anda.";
+
+      if (identifierType === "nisn") {
+        errorMessage = "Login gagal. Periksa kembali NISN dan Password Anda.";
+      } else if (identifierType === "email") {
+        errorMessage = "Login gagal. Periksa kembali Email dan Password Anda.";
+      }
+
+      setError(err.message || errorMessage);
     }
   };
 
@@ -45,10 +61,16 @@ const Login = () => {
     >
       <div className="bg-white bg-opacity-90 p-8 rounded-2xl shadow-2xl w-full max-w-md">
         <div className="flex justify-center mb-4">
-          <img src="/logo1.png" alt="Logo SMK" className="h-20 w-20 object-contain" />
+          <img
+            src="/logo1.png"
+            alt="Logo SMK"
+            className="h-20 w-20 object-contain"
+          />
         </div>
 
-        <h2 className="text-2xl font-bold text-center text-[#003366] mb-6">SILAKAN LOGIN</h2>
+        <h2 className="text-2xl font-bold text-center text-[#003366] mb-6">
+          SILAKAN LOGIN
+        </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -59,14 +81,16 @@ const Login = () => {
               type="text"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
-              placeholder="Masukkan NIS atau Email"
+              placeholder="Masukkan NISN atau Email"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003366]"
               required
             />
           </div>
 
           <div>
-            <label className="block text-[#003366] font-semibold">Password</label>
+            <label className="block text-[#003366] font-semibold">
+              Password
+            </label>
             <input
               type="password"
               value={password}
@@ -92,3 +116,4 @@ const Login = () => {
 };
 
 export default Login;
+

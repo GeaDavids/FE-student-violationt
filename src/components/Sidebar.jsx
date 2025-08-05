@@ -37,28 +37,45 @@ const Sidebar = ({ onKelolaUserClick }) => {
           )}
 
           {role === "guru" && (
-            <li>
-              <Link to="/guru/input-score" className="hover:underline">
-                ✍️ Input Credit Score
-              </Link>
-            </li>
+            <>
+              <li>
+                <Link to="/guru/input-pelanggaran" className="hover:underline flex items-center gap-2">
+                  📝 Input Pelanggaran
+                </Link>
+              </li>
+            </>
           )}
 
           {role === "bk" && (
             <>
               <li>
-                <Link to="/bk/kelola-siswa" className="hover:underline">
-                  👥 Kelola Siswa
+                <Link to="/bk/dashboard" className="hover:underline flex items-center gap-2">
+                  🏠 Dashboard
                 </Link>
               </li>
               <li>
-                <Link to="/bk/pelanggaran" className="hover:underline">
-                  📄 Lihat Pelanggaran
+                <Link to="/bk/student-violations" className="hover:underline flex items-center gap-2">
+                  📝 Kelola Pelanggaran Siswa
                 </Link>
               </li>
               <li>
-                <Link to="/bk/student-violation" className="hover:underline">
-                  📝 Laporan Pelanggaran Siswa
+                <Link to="/bk/add-violation" className="hover:underline flex items-center gap-2">
+                  ⚠️ Input Pelanggaran
+                </Link>
+              </li>
+              <li>
+                <Link to="/bk/add-achievement" className="hover:underline flex items-center gap-2">
+                  🏆 Input Prestasi
+                </Link>
+              </li>
+              <li>
+                <Link to="/bk/achievements" className="hover:underline flex items-center gap-2">
+                  🌟 Kelola Prestasi Siswa
+                </Link>
+              </li>
+              <li>
+                <Link to="/bk/export-violations" className="hover:underline flex items-center gap-2">
+                  📊 Ekspor Data Pelanggaran
                 </Link>
               </li>
             </>
@@ -121,8 +138,25 @@ const Sidebar = ({ onKelolaUserClick }) => {
                 </Link>
               </li>
               <li>
+                <Link to="/superadmin/kelola-kategori" className="hover:underline">
+                  🏷️ Kelola Kategori Pelanggaran
+                </Link>
+              </li>
+              <li>
                 <Link to="/superadmin/kelola-prestasi" className="hover:underline flex items-center gap-2">
                   <FiAward /> Kelola Prestasi
+                </Link>
+              </li>
+              
+              <li>
+                <Link to="/superadmin/add-achievement" className="hover:underline flex items-center gap-2">
+                  🏆 Input Prestasi
+                </Link>
+              </li>
+              
+              <li>
+                <Link to="/superadmin/add-violation" className="hover:underline flex items-center gap-2">
+                  ⚠️ Input Pelanggaran
                 </Link>
               </li>
 

@@ -1,4 +1,12 @@
+import TambahLaporan from "./pages/bk/TambahLaporan";
 import StudentViolation from "./pages/bk/StudentViolation";
+import DetailViolation from "./pages/bk/DetailViolation";
+import AddViolation from "./pages/bk/AddViolation";
+import AddAchievement from "./pages/bk/AddAchievement";
+import DashboardBK from "./pages/bk/DashboardBK";
+import StudentAchievements from "./pages/bk/StudentAchievements";
+import ExportViolations from "./pages/bk/ExportViolations";
+import CategoryViolation from "./pages/superadmin/CategoryViolation";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -19,6 +27,7 @@ import KelolaPrestasi from "./pages/superadmin/KelolaPrestasi";
 import LaporanPelanggaran from "./pages/superadmin/LaporanPelanggaran";
 import MonitoringPelanggaran from "./pages/superadmin/MonitoringPelanggaran";
 import SiswaCreditScore from "./pages/siswa/SiswaCreditScore";
+import InputPelanggaran from "./pages/guru/InputPelanggaran";
 
 const App = () => {
   return (
@@ -123,6 +132,33 @@ const App = () => {
             </MainLayout>
           }
         />
+        
+        <Route
+          path="/superadmin/kelola-kategori"
+          element={
+            <MainLayout>
+              <CategoryViolation />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/superadmin/add-achievement"
+          element={
+            <MainLayout>
+              <AddAchievement />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/superadmin/add-violation"
+          element={
+            <MainLayout>
+              <AddViolation />
+            </MainLayout>
+          }
+        />
 
         <Route
           path="/superadmin/laporan-pelanggaran"
@@ -179,10 +215,81 @@ const App = () => {
         />
 
         <Route
-          path="/bk/student-violation"
+          path="/bk/student-violations"
           element={
             <MainLayout>
               <StudentViolation />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/bk/student-violations/:id"
+          element={
+            <MainLayout>
+              <DetailViolation />
+            </MainLayout>
+          }
+        />
+        
+        <Route
+          path="/bk/add-violation"
+          element={
+            <MainLayout>
+              <AddViolation />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/bk/dashboard"
+          element={
+            <MainLayout>
+              <DashboardBK />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/bk/tambah-laporan"
+          element={
+            <MainLayout>
+              <TambahLaporan />
+            </MainLayout>
+          }
+        />
+        
+        <Route
+          path="/bk/export-violations"
+          element={
+            <MainLayout>
+              <ExportViolations />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/bk/add-achievement"
+          element={
+            <MainLayout>
+              <AddAchievement />
+            </MainLayout>
+          }
+        />
+        
+        <Route
+          path="/bk/achievements"
+          element={
+            <MainLayout>
+              <StudentAchievements />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/guru/input-pelanggaran"
+          element={
+            <MainLayout>
+              <InputPelanggaran />
             </MainLayout>
           }
         />
