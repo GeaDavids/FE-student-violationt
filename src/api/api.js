@@ -1,26 +1,20 @@
-import axios from 'axios';
-
-// Determine which API URL to use based on environment
-// For production, use the Railway deployed API
-// For development, try the local server first, then fall back to the production URL
-const PROD_API_URL = 'https://smk14-production.up.railway.app';
-const DEV_API_URL = 'http://localhost:3000';
+import axios from "axios";
 
 // Use environment variable if defined, otherwise use the production URL
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || PROD_API_URL;
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-console.log('API Base URL:', BASE_URL);
+console.log("API Base URL:", BASE_URL);
 
 // Create an axios instance with the base URL for the API
 const API = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,  // 10 seconds timeout
+  timeout: 10000, // 10 seconds timeout
 });
 
 // Add a request interceptor to automatically add authentication token
 API.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -37,35 +31,37 @@ API.interceptors.response.use(
     if (error.response) {
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
-      console.error('API Error Response:', {
+      console.error("API Error Response:", {
         status: error.response.status,
         headers: error.response.headers,
-        data: error.response.data
+        data: error.response.data,
       });
-      
+
       // Handle session expiry or unauthorized errors (401)
       if (error.response.status === 401) {
-        console.warn('Session expired or unauthorized. Redirecting to login...');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/';  // Redirect to login page
+        console.warn(
+          "Session expired or unauthorized. Redirecting to login..."
+        );
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "/"; // Redirect to login page
       }
     } else if (error.request) {
       // The request was made but no response was received
-      console.error('API No Response:', error.request);
-      
+      console.error("API No Response:", error.request);
+
       // If using localhost and got connection refused, try the production URL as fallback
-      if (API.defaults.baseURL === 'http://localhost:3000') {
-        console.warn('Local API connection failed, trying production API...');
+      if (API.defaults.baseURL === "http://localhost:3000") {
+        console.warn("Local API connection failed, trying production API...");
         API.defaults.baseURL = PROD_API_URL;
         // Recreate the request that just failed
         return API(error.config);
       }
     } else {
       // Something happened in setting up the request that triggered an Error
-      console.error('API Request Error:', error.message);
+      console.error("API Request Error:", error.message);
     }
-    
+
     return Promise.reject(error);
   }
 );

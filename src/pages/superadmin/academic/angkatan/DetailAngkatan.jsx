@@ -31,19 +31,16 @@ const DetailAngkatan = () => {
   };
 
   const statusList = [
-    { value: "", label: "Aktif", color: "bg-green-100 text-green-800" },
-    { value: "graduated", label: "Lulus", color: "bg-blue-100 text-blue-800" },
-    { value: "inactive", label: "Non-Aktif", color: "bg-gray-100 text-gray-800" },
+    { value: "aktif", label: "Aktif", color: "bg-green-100 text-green-800" },
+    { value: "lulus", label: "Lulus", color: "bg-blue-100 text-blue-800" },
   ];
 
   useEffect(() => {
     if (location.state?.angkatan) {
       setAngkatan(location.state.angkatan);
       setEditForm({
-        tahun: location.state.angkatan.tahun || location.state.angkatan.year || "",
-        nama: location.state.angkatan.nama || location.state.angkatan.name || "",
-        keterangan: location.state.angkatan.keterangan || "",
-        lulusDate: location.state.angkatan.lulusDate || "",
+        tahun: location.state.angkatan.tahun,
+        status: location.state.angkatan.status,
       });
     } else {
       navigate("/superadmin/kelola-angkatan");
@@ -61,13 +58,11 @@ const DetailAngkatan = () => {
     try {
       const payload = {
         tahun: editForm.tahun,
-        nama: editForm.nama || `Angkatan ${editForm.tahun}`,
-        keterangan: editForm.keterangan,
-        lulusDate: editForm.lulusDate || null,
+        status: editForm.status,
       };
 
       await axios.put(
-        `/api/angkatan/${angkatan.id}`,
+        `/api/superadmin/masterdata/angkatan/${angkatan.id}`,
         payload,
         axiosConfig
       );
@@ -76,9 +71,7 @@ const DetailAngkatan = () => {
       setAngkatan({
         ...angkatan,
         tahun: editForm.tahun,
-        nama: editForm.nama,
-        keterangan: editForm.keterangan,
-        lulusDate: editForm.lulusDate,
+        status: editForm.status,
       });
 
       setIsEditing(false);
@@ -107,7 +100,10 @@ const DetailAngkatan = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`/api/angkatan/${angkatan.id}`, axiosConfig);
+          await axios.delete(
+            `/api/superadmin/masterdata/angkatan/${angkatan.id}`,
+            axiosConfig
+          );
           Swal.fire("Terhapus!", "Data angkatan telah dihapus.", "success");
           navigate("/superadmin/kelola-angkatan");
         } catch (err) {
@@ -120,7 +116,7 @@ const DetailAngkatan = () => {
 
   const viewStudents = () => {
     Swal.fire({
-      title: `Siswa ${angkatan.nama || angkatan.name}`,
+      title: `Siswa Angkatan ${angkatan.tahun}`,
       text: "Fitur ini akan menampilkan daftar siswa di angkatan tersebut",
       icon: "info",
     });
@@ -128,10 +124,8 @@ const DetailAngkatan = () => {
 
   const handleCancel = () => {
     setEditForm({
-      tahun: angkatan.tahun || angkatan.year || "",
-      nama: angkatan.nama || angkatan.name || "",
-      keterangan: angkatan.keterangan || "",
-      status: angkatan.status || "aktif",
+      tahun: angkatan.tahun,
+      status: angkatan.status,
     });
     setIsEditing(false);
   };
@@ -141,25 +135,17 @@ const DetailAngkatan = () => {
   };
 
   const getStatusBadge = (angkatan) => {
-    let status = "";
     let color = "";
     let label = "";
 
-    if (angkatan.lulusDate && angkatan.lulusDate !== null) {
-      const lulusYear = new Date(angkatan.lulusDate).getFullYear();
-      status = "graduated";
+    if (angkatan.status === "lulus") {
       color = "bg-blue-100 text-blue-800";
-      label = `Lulus ${lulusYear}`;
-    } else if (angkatan.status === "inactive") {
-      status = "inactive";
-      color = "bg-gray-100 text-gray-800";
-      label = "Non-Aktif";
+      label = "Lulus";
     } else {
-      status = "active";
       color = "bg-green-100 text-green-800";
       label = "Aktif";
     }
-    
+
     return (
       <span className={`${color} px-2 py-1 rounded-full text-xs font-medium`}>
         {label}
@@ -207,15 +193,15 @@ const DetailAngkatan = () => {
                 <FiCalendar className="text-4xl text-orange-600" />
               </div>
               <h2 className="text-xl font-bold text-white">
-                {angkatan.nama || angkatan.name || `Angkatan ${angkatan.tahun || angkatan.year}`}
+                Angkatan {angkatan.tahun}
               </h2>
-              <p className="text-orange-100">Tahun {angkatan.tahun || angkatan.year}</p>
+              <p className="text-orange-100">Tahun {angkatan.tahun}</p>
             </div>
             <div className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <FiCalendar className="text-gray-500" />
-                  <span className="text-gray-700">Tahun: {angkatan.tahun || angkatan.year}</span>
+                  <span className="text-gray-700">Tahun: {angkatan.tahun}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <FiTag className="text-gray-500" />
@@ -224,7 +210,7 @@ const DetailAngkatan = () => {
                 <div className="flex items-center gap-3">
                   <FiUsers className="text-gray-500" />
                   <span className="text-gray-700">
-                    {angkatan.jmlSiswa || 0} Siswa
+                    {angkatan.jumlahSiswa || 0} Siswa
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -320,31 +306,7 @@ const DetailAngkatan = () => {
                           ))}
                         </select>
                       ) : (
-                        <span className="text-gray-800">{angkatan.tahun || angkatan.year}</span>
-                      )}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-2 font-medium text-gray-700">
-                      <div className="flex items-center gap-2">
-                        <FiTag className="text-green-500" />
-                        Nama Angkatan
-                      </div>
-                    </td>
-                    <td className="py-4 px-2">
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          name="nama"
-                          value={editForm.nama}
-                          onChange={handleInputChange}
-                          placeholder="Nama Angkatan (opsional)"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      ) : (
-                        <span className="text-gray-800">
-                          {angkatan.nama || angkatan.name || `Angkatan ${angkatan.tahun || angkatan.year}`}
-                        </span>
+                        <span className="text-gray-800">{angkatan.tahun}</span>
                       )}
                     </td>
                   </tr>
@@ -352,33 +314,22 @@ const DetailAngkatan = () => {
                     <td className="py-4 px-2 font-medium text-gray-700">
                       <div className="flex items-center gap-2">
                         <FiAward className="text-purple-500" />
-                        Status Kelulusan
-                      </div>
-                    </td>
-                    <td className="py-4 px-2">
-                      <span>{getStatusBadge(angkatan)}</span>
-                    </td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-2 font-medium text-gray-700">
-                      <div className="flex items-center gap-2">
-                        <FiCalendar className="text-blue-500" />
-                        Tanggal Lulus
+                        Status
                       </div>
                     </td>
                     <td className="py-4 px-2">
                       {isEditing ? (
-                        <input
-                          type="date"
-                          name="lulusDate"
-                          value={editForm.lulusDate}
+                        <select
+                          name="status"
+                          value={editForm.status}
                           onChange={handleInputChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
+                        >
+                          <option value="aktif">Aktif</option>
+                          <option value="lulus">Lulus</option>
+                        </select>
                       ) : (
-                        <span className="text-gray-700">
-                          {angkatan.lulusDate ? new Date(angkatan.lulusDate).toLocaleDateString('id-ID') : "Belum lulus"}
-                        </span>
+                        <span>{getStatusBadge(angkatan)}</span>
                       )}
                     </td>
                   </tr>
@@ -391,7 +342,9 @@ const DetailAngkatan = () => {
                     </td>
                     <td className="py-4 px-2">
                       <div className="flex items-center gap-3">
-                        <span className="text-gray-800">{angkatan.jmlSiswa || 0} siswa</span>
+                        <span className="text-gray-800">
+                          {angkatan.jumlahSiswa || 0} siswa
+                        </span>
                         <button
                           onClick={viewStudents}
                           className="text-sm px-3 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors duration-200"
@@ -399,30 +352,6 @@ const DetailAngkatan = () => {
                           Lihat Detail
                         </button>
                       </div>
-                    </td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-2 font-medium text-gray-700">
-                      <div className="flex items-center gap-2">
-                        <FiFileText className="text-red-500" />
-                        Keterangan
-                      </div>
-                    </td>
-                    <td className="py-4 px-2">
-                      {isEditing ? (
-                        <textarea
-                          name="keterangan"
-                          value={editForm.keterangan}
-                          onChange={handleInputChange}
-                          placeholder="Keterangan (opsional)"
-                          rows={3}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                        />
-                      ) : (
-                        <span className="text-gray-800">
-                          {angkatan.keterangan || "Tidak ada keterangan"}
-                        </span>
-                      )}
                     </td>
                   </tr>
                   <tr className="border-b border-gray-100">

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import axios from "axios";
@@ -50,14 +49,16 @@ const KelolaViolation = () => {
     },
   };
 
-
   const fetchViolation = async () => {
     try {
       setLoading(true);
+      console.log("Fetching violations...");
       const res = await axios.get("/api/violations", axiosConfig);
+      console.log("Violations data received:", res.data);
       setDataViolation(res.data);
       setFilteredViolation(res.data);
     } catch (err) {
+      console.error("Error fetching violations:", err);
       Swal.fire("Error!", "Gagal mengambil data jenis pelanggaran", "error");
     } finally {
       setLoading(false);
@@ -82,20 +83,39 @@ const KelolaViolation = () => {
       point: parseInt(form.point),
       isActive: form.isActive,
     };
+
+    console.log("Submitting violation data:", payload);
+
     try {
       if (editingId) {
         await axios.put(`/api/violations/${editingId}`, payload, axiosConfig);
-        Swal.fire("Berhasil!", "Data jenis pelanggaran berhasil diperbarui.", "success");
+        Swal.fire(
+          "Berhasil!",
+          "Data jenis pelanggaran berhasil diperbarui.",
+          "success"
+        );
       } else {
         await axios.post("/api/violations", payload, axiosConfig);
-        Swal.fire("Berhasil!", "Jenis pelanggaran baru berhasil ditambahkan.", "success");
+        Swal.fire(
+          "Berhasil!",
+          "Jenis pelanggaran baru berhasil ditambahkan.",
+          "success"
+        );
       }
-      setForm({ nama: "", kategori: "ringan", jenis: "kedisiplinan", point: 0, isActive: true });
+      setForm({
+        nama: "",
+        kategori: "ringan",
+        jenis: "kedisiplinan",
+        point: 0,
+        isActive: true,
+      });
       setEditingId(null);
       setFormVisible(false);
       fetchViolation();
     } catch (err) {
-      let errorMessage = "Terjadi kesalahan saat menyimpan data jenis pelanggaran.";
+      console.error("Error submitting violation:", err);
+      let errorMessage =
+        "Terjadi kesalahan saat menyimpan data jenis pelanggaran.";
       if (err.response?.data?.error) {
         errorMessage = err.response.data.error;
       }
@@ -126,19 +146,38 @@ const KelolaViolation = () => {
       if (result.isConfirmed) {
         try {
           await axios.delete(`/api/violations/${id}`, axiosConfig);
-          Swal.fire("Terhapus!", "Data jenis pelanggaran telah dihapus.", "success");
+          Swal.fire(
+            "Terhapus!",
+            "Data jenis pelanggaran telah dihapus.",
+            "success"
+          );
           fetchViolation();
         } catch (err) {
           console.error("Error:", err.response || err);
-          Swal.fire("Gagal", "Gagal menghapus data jenis pelanggaran.", "error");
+          Swal.fire(
+            "Gagal",
+            "Gagal menghapus data jenis pelanggaran.",
+            "error"
+          );
         }
       }
     });
   };
 
   const handleDetail = (violation) => {
-    const kategoriLabel = kategoriList.find(k => k.value === violation.kategori)?.label || violation.kategori;
-    const jenisLabel = jenisList.find(j => j.value === violation.jenis)?.label || violation.jenis;
+    const kategoriLabel =
+      kategoriList.find((k) => k.value === violation.kategori)?.label ||
+      violation.kategori;
+    const jenisLabel =
+      jenisList.find((j) => j.value === violation.jenis)?.label ||
+      violation.jenis;
+    const statusLabel =
+      violation.isActive !== undefined
+        ? violation.isActive
+          ? "Aktif"
+          : "Non-Aktif"
+        : "Tidak diketahui";
+
     Swal.fire({
       title: `<strong>Detail Jenis Pelanggaran</strong>`,
       html: `
@@ -147,11 +186,11 @@ const KelolaViolation = () => {
           <p><b>Kategori:</b> ${kategoriLabel}</p>
           <p><b>Jenis:</b> ${jenisLabel}</p>
           <p><b>Poin:</b> ${violation.point}</p>
-          <p><b>Status:</b> ${violation.isActive ? "Aktif" : "Non-Aktif"}</p>
+          <p><b>Status:</b> ${statusLabel}</p>
         </div>
       `,
       icon: "info",
-      width: "500px"
+      width: "500px",
     });
   };
 
@@ -175,9 +214,10 @@ const KelolaViolation = () => {
 
   const applyFilters = (search, kategori, jenis) => {
     let filtered = dataViolation.filter((violation) => {
-      const matchSearch = violation.nama.toLowerCase().includes(search) ||
-                         violation.kategori.toLowerCase().includes(search) ||
-                         violation.jenis.toLowerCase().includes(search);
+      const matchSearch =
+        violation.nama.toLowerCase().includes(search) ||
+        violation.kategori.toLowerCase().includes(search) ||
+        violation.jenis.toLowerCase().includes(search);
       const matchKategori = !kategori || violation.kategori === kategori;
       const matchJenis = !jenis || violation.jenis === jenis;
       return matchSearch && matchKategori && matchJenis;
@@ -193,10 +233,12 @@ const KelolaViolation = () => {
   };
 
   const getKategoriBadge = (kategori) => {
-    const kategoriInfo = kategoriList.find(k => k.value === kategori);
+    const kategoriInfo = kategoriList.find((k) => k.value === kategori);
     if (!kategoriInfo) return <span className="text-gray-500">{kategori}</span>;
     return (
-      <span className={`${kategoriInfo.color} font-semibold flex items-center gap-1`}>
+      <span
+        className={`${kategoriInfo.color} font-semibold flex items-center gap-1`}
+      >
         <FiStar size={14} />
         {kategoriInfo.label}
       </span>
@@ -212,11 +254,11 @@ const KelolaViolation = () => {
         <button
           onClick={() => {
             setForm({
-              namaViolation: "",
-              kategori: "",
-              tingkatViolation: 1,
-              poin: 0,
-              deskripsi: "",
+              nama: "",
+              kategori: "ringan",
+              jenis: "kedisiplinan",
+              point: 0,
+              isActive: true,
             });
             setEditingId(null);
             setFormVisible(true);
@@ -335,7 +377,9 @@ const KelolaViolation = () => {
                 className="h-4 w-4"
                 id="isActiveCheckbox"
               />
-              <label htmlFor="isActiveCheckbox" className="text-sm">Aktif</label>
+              <label htmlFor="isActiveCheckbox" className="text-sm">
+                Aktif
+              </label>
             </div>
             <button
               type="submit"
@@ -369,7 +413,7 @@ const KelolaViolation = () => {
               {filteredViolation.length > 0 ? (
                 filteredViolation.map((violation) => (
                   <tr key={violation.id} className="hover:bg-gray-50">
-                    <td 
+                    <td
                       className="border px-4 py-2 cursor-pointer hover:text-[#003366]"
                       onClick={() => handleDetail(violation)}
                     >
@@ -379,14 +423,27 @@ const KelolaViolation = () => {
                       {getKategoriBadge(violation.kategori)}
                     </td>
                     <td className="border px-4 py-2">
-                      {jenisList.find(j => j.value === violation.jenis)?.label || violation.jenis}
+                      {jenisList.find((j) => j.value === violation.jenis)
+                        ?.label || violation.jenis}
                     </td>
                     <td className="border px-4 py-2 text-center font-semibold">
                       {violation.point} poin
                     </td>
                     <td className="border px-4 py-2 text-center">
-                      <span className={violation.isActive ? "bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs" : "bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs"}>
-                        {violation.isActive ? "Aktif" : "Non-Aktif"}
+                      <span
+                        className={
+                          violation.isActive !== undefined
+                            ? violation.isActive
+                              ? "bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs"
+                              : "bg-gray-200 text-gray-600 px-2 py-1 rounded-full text-xs"
+                            : "bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs"
+                        }
+                      >
+                        {violation.isActive !== undefined
+                          ? violation.isActive
+                            ? "Aktif"
+                            : "Non-Aktif"
+                          : "Tidak diketahui"}
                       </span>
                     </td>
                     <td className="border px-4 py-2 text-center space-x-2">
@@ -431,19 +488,19 @@ const KelolaViolation = () => {
         <div className="bg-green-100 p-4 rounded-lg">
           <h3 className="font-semibold text-green-800">Pelanggaran Ringan</h3>
           <p className="text-2xl font-bold text-green-600">
-            {dataViolation.filter(v => v.kategori === "ringan").length}
+            {dataViolation.filter((v) => v.kategori === "ringan").length}
           </p>
         </div>
         <div className="bg-yellow-100 p-4 rounded-lg">
           <h3 className="font-semibold text-yellow-800">Pelanggaran Sedang</h3>
           <p className="text-2xl font-bold text-yellow-600">
-            {dataViolation.filter(v => v.kategori === "sedang").length}
+            {dataViolation.filter((v) => v.kategori === "sedang").length}
           </p>
         </div>
         <div className="bg-red-100 p-4 rounded-lg">
           <h3 className="font-semibold text-red-800">Pelanggaran Berat</h3>
           <p className="text-2xl font-bold text-red-600">
-            {dataViolation.filter(v => v.kategori === "berat").length}
+            {dataViolation.filter((v) => v.kategori === "berat").length}
           </p>
         </div>
         <div className="bg-blue-100 p-4 rounded-lg">

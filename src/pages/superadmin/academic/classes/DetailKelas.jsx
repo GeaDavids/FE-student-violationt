@@ -3,25 +3,26 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
 import {
+  FiHome,
   FiUser,
-  FiMail,
-  FiPhone,
-  FiMapPin,
+  FiUsers,
   FiEdit,
   FiSave,
   FiX,
   FiTrash2,
   FiArrowLeft,
-  FiKey,
+  FiTag,
   FiUserCheck,
+  FiBook,
 } from "react-icons/fi";
 
-const DetailGuru = () => {
+const DetailKelas = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [guru, setGuru] = useState(null);
+  const [kelas, setKelas] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({});
+  const [guruList, setGuruList] = useState([]);
 
   const token = localStorage.getItem("token");
   const axiosConfig = {
@@ -32,19 +33,50 @@ const DetailGuru = () => {
   };
 
   useEffect(() => {
-    if (location.state?.guru) {
-      setGuru(location.state.guru);
-      setEditForm({
-        name: location.state.guru.user.name,
-        email: location.state.guru.user.email,
-        nip: location.state.guru.nip || "",
-        noHp: location.state.guru.noHp || "",
-        alamat: location.state.guru.alamat || "",
-      });
+    if (location.state?.kelas) {
+      fetchClassroomDetail(location.state.kelas.id);
+      fetchGuru();
     } else {
-      navigate("/superadmin/kelola-guru");
+      navigate("/superadmin/kelola-kelas");
     }
   }, [location.state, navigate]);
+
+  const fetchClassroomDetail = async (classroomId) => {
+    try {
+      const res = await axios.get(
+        `/api/superadmin/masterdata/classrooms/${classroomId}`,
+        axiosConfig
+      );
+      const classroomData = res.data.data;
+      setKelas(classroomData);
+      setEditForm({
+        namaKelas: classroomData.namaKelas || "",
+        waliKelasId: classroomData.waliKelasId || "",
+      });
+    } catch (err) {
+      console.error("Gagal mengambil detail kelas:", err);
+      // Fallback to location state data
+      setKelas(location.state.kelas);
+      setEditForm({
+        namaKelas:
+          location.state.kelas.namaKelas || location.state.kelas.nama || "",
+        waliKelasId: location.state.kelas.waliKelasId || "",
+      });
+    }
+  };
+
+  const fetchGuru = async () => {
+    try {
+      // Menggunakan endpoint masterData untuk mendapatkan semua guru
+      const res = await axios.get(
+        "/api/superadmin/masterdata/teachers",
+        axiosConfig
+      );
+      setGuruList(res.data.data);
+    } catch (err) {
+      console.error("Gagal mengambil data guru:", err);
+    }
+  };
 
   const handleInputChange = (e) => {
     setEditForm({
@@ -56,41 +88,40 @@ const DetailGuru = () => {
   const handleSave = async () => {
     try {
       const payload = {
-        name: editForm.name,
-        email: editForm.email,
-        nip: editForm.nip,
-        noHp: editForm.noHp,
-        alamat: editForm.alamat,
+        namaKelas: editForm.namaKelas,
+        waliKelasId: editForm.waliKelasId
+          ? parseInt(editForm.waliKelasId)
+          : null,
       };
 
+      // Menggunakan endpoint masterData controller
       await axios.put(
-        `/api/users/teachers/${guru.user.id}`,
+        `/api/superadmin/masterdata/classrooms/${kelas.id}`,
         payload,
         axiosConfig
       );
 
       // Update local state
-      setGuru({
-        ...guru,
-        user: {
-          ...guru.user,
-          name: editForm.name,
-          email: editForm.email,
-        },
-        nip: editForm.nip,
-        noHp: editForm.noHp,
-        alamat: editForm.alamat,
+      const updatedWaliKelas = editForm.waliKelasId
+        ? guruList.find((guru) => guru.id === parseInt(editForm.waliKelasId))
+            ?.name
+        : null;
+
+      setKelas({
+        ...kelas,
+        namaKelas: editForm.namaKelas,
+        waliKelas: updatedWaliKelas,
       });
 
       setIsEditing(false);
-      Swal.fire("Berhasil!", "Data guru berhasil diperbarui.", "success");
+      Swal.fire("Berhasil!", "Data kelas berhasil diperbarui.", "success");
     } catch (err) {
-      console.error("Error updating teacher:", err.response || err);
-      let errorMessage = "Terjadi kesalahan saat memperbarui data guru.";
-      if (err.response?.data?.message) {
-        errorMessage = err.response.data.message;
-      } else if (err.response?.data?.error) {
+      console.error("Error updating class:", err.response || err);
+      let errorMessage = "Terjadi kesalahan saat memperbarui data kelas.";
+      if (err.response?.data?.error) {
         errorMessage = err.response.data.error;
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
       }
       Swal.fire("Gagal", errorMessage, "error");
     }
@@ -99,7 +130,7 @@ const DetailGuru = () => {
   const handleDelete = () => {
     Swal.fire({
       title: "Yakin ingin menghapus?",
-      text: "Data guru tidak bisa dikembalikan!",
+      text: "Data kelas tidak bisa dikembalikan!",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Ya, hapus!",
@@ -108,58 +139,46 @@ const DetailGuru = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`/api/users/teachers/${guru.user.id}`, axiosConfig);
-          Swal.fire("Terhapus!", "Data guru telah dihapus.", "success");
-          navigate("/superadmin/kelola-guru");
+          // Menggunakan endpoint masterData controller
+          await axios.delete(
+            `/api/superadmin/masterdata/classrooms/${kelas.id}`,
+            axiosConfig
+          );
+          Swal.fire("Terhapus!", "Data kelas telah dihapus.", "success");
+          navigate("/superadmin/kelola-kelas");
         } catch (err) {
           console.error("Delete error:", err.response || err);
-          Swal.fire("Gagal", "Gagal menghapus data guru.", "error");
+          let errorMessage = "Gagal menghapus data kelas.";
+          if (err.response?.data?.error) {
+            errorMessage = err.response.data.error;
+          }
+          Swal.fire("Gagal", errorMessage, "error");
         }
       }
     });
   };
 
-  const handleResetPassword = () => {
+  const viewStudents = () => {
     Swal.fire({
-      title: "Reset Password?",
-      text: "Password guru akan diatur ulang ke default.",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Reset",
-      cancelButtonText: "Batal",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          await axios.put(
-            `/api/users/teachers/${guru.user.id}/reset-password`,
-            {},
-            axiosConfig
-          );
-          Swal.fire("Berhasil!", "Password telah di-reset.", "success");
-        } catch (err) {
-          console.error("Reset password error:", err.response || err);
-          Swal.fire("Gagal", "Tidak dapat mereset password.", "error");
-        }
-      }
+      title: `Siswa di Kelas ${kelas.namaKelas}`,
+      text: "Fitur ini akan menampilkan daftar siswa di kelas tersebut",
+      icon: "info",
     });
   };
 
   const handleCancel = () => {
     setEditForm({
-      name: guru.user.name,
-      email: guru.user.email,
-      nip: guru.nip || "",
-      noHp: guru.noHp || "",
-      alamat: guru.alamat || "",
+      namaKelas: kelas.namaKelas || kelas.nama || "",
+      waliKelasId: kelas.waliKelasId || "",
     });
     setIsEditing(false);
   };
 
   const handleBack = () => {
-    navigate("/superadmin/kelola-guru");
+    navigate("/superadmin/kelola-kelas");
   };
 
-  if (!guru) {
+  if (!kelas) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="text-lg text-gray-600">Loading...</div>
@@ -179,7 +198,7 @@ const DetailGuru = () => {
             <FiArrowLeft />
             Kembali
           </button>
-          <h1 className="text-2xl font-bold text-gray-800">Detail Guru</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Detail Kelas</h1>
         </div>
       </div>
 
@@ -187,31 +206,50 @@ const DetailGuru = () => {
         {/* Profile Card */}
         <div className="lg:col-span-1">
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-center">
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-center">
               <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
-                <FiUser className="text-4xl text-blue-600" />
+                <FiHome className="text-4xl text-indigo-600" />
               </div>
-              <h2 className="text-xl font-bold text-white">{guru.user.name}</h2>
-              <p className="text-blue-100">{guru.user.role}</p>
+              <h2 className="text-xl font-bold text-white">
+                {kelas.namaKelas || kelas.nama}
+              </h2>
+              <p className="text-indigo-100">{kelas.kodeKelas || kelas.id}</p>
             </div>
             <div className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <FiMail className="text-gray-500" />
-                  <span className="text-gray-700">{guru.user.email}</span>
+                  <FiTag className="text-gray-500" />
+                  <span className="text-gray-700">
+                    Kode: {kelas.kodeKelas || kelas.id}
+                  </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <FiUserCheck className="text-gray-500" />
-                  <span className="text-gray-700">NIP: {guru.nip || "-"}</span>
+                  <span className="text-gray-700">
+                    Wali:{" "}
+                    {kelas.waliKelas?.user?.name ||
+                      kelas.waliKelas?.nama ||
+                      kelas.waliKelas ||
+                      "Belum ditentukan"}
+                  </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <FiPhone className="text-gray-500" />
-                  <span className="text-gray-700">{guru.noHp || "-"}</span>
+                  <FiUsers className="text-gray-500" />
+                  <span className="text-gray-700">
+                    {kelas.jmlSiswa || kelas.jumlahSiswa || 0} Siswa
+                  </span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <FiMapPin className="text-gray-500" />
-                  <span className="text-gray-700">{guru.alamat || "-"}</span>
-                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="mt-6 pt-4 border-t border-gray-200">
+                <button
+                  onClick={viewStudents}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-200 shadow-md"
+                >
+                  <FiUsers />
+                  Lihat Siswa
+                </button>
               </div>
             </div>
           </div>
@@ -233,13 +271,6 @@ const DetailGuru = () => {
                     >
                       <FiEdit />
                       Edit
-                    </button>
-                    <button
-                      onClick={handleResetPassword}
-                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 shadow-md"
-                    >
-                      <FiKey />
-                      Reset Password
                     </button>
                     <button
                       onClick={handleDelete}
@@ -276,44 +307,25 @@ const DetailGuru = () => {
                   <tr className="border-b border-gray-100">
                     <td className="py-4 px-2 font-medium text-gray-700 w-1/3">
                       <div className="flex items-center gap-2">
-                        <FiUser className="text-blue-500" />
-                        Nama Lengkap
+                        <FiHome className="text-green-500" />
+                        Nama Kelas
                       </div>
                     </td>
                     <td className="py-4 px-2">
                       {isEditing ? (
                         <input
                           type="text"
-                          name="name"
-                          value={editForm.name}
+                          name="namaKelas"
+                          value={editForm.namaKelas}
                           onChange={handleInputChange}
+                          placeholder="XII RPL 1"
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           required
                         />
                       ) : (
-                        <span className="text-gray-800">{guru.user.name}</span>
-                      )}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-2 font-medium text-gray-700">
-                      <div className="flex items-center gap-2">
-                        <FiMail className="text-green-500" />
-                        Email
-                      </div>
-                    </td>
-                    <td className="py-4 px-2">
-                      {isEditing ? (
-                        <input
-                          type="email"
-                          name="email"
-                          value={editForm.email}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          required
-                        />
-                      ) : (
-                        <span className="text-gray-800">{guru.user.email}</span>
+                        <span className="text-gray-800">
+                          {kelas.namaKelas || kelas.nama}
+                        </span>
                       )}
                     </td>
                   </tr>
@@ -321,63 +333,66 @@ const DetailGuru = () => {
                     <td className="py-4 px-2 font-medium text-gray-700">
                       <div className="flex items-center gap-2">
                         <FiUserCheck className="text-purple-500" />
-                        NIP
+                        Wali Kelas
                       </div>
                     </td>
                     <td className="py-4 px-2">
                       {isEditing ? (
-                        <input
-                          type="text"
-                          name="nip"
-                          value={editForm.nip}
+                        <select
+                          name="waliKelasId"
+                          value={editForm.waliKelasId}
                           onChange={handleInputChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
+                        >
+                          <option value="">Pilih Wali Kelas</option>
+                          {guruList.map((guru) => (
+                            <option key={guru.id} value={guru.id}>
+                              {guru.name} - {guru.nip}
+                            </option>
+                          ))}
+                        </select>
                       ) : (
-                        <span className="text-gray-800">{guru.nip || "-"}</span>
+                        <span className="text-gray-800">
+                          {kelas.waliKelas?.user?.name ||
+                            kelas.waliKelas?.nama ||
+                            kelas.waliKelas ||
+                            "Belum ditentukan"}
+                        </span>
                       )}
                     </td>
                   </tr>
                   <tr className="border-b border-gray-100">
                     <td className="py-4 px-2 font-medium text-gray-700">
                       <div className="flex items-center gap-2">
-                        <FiPhone className="text-orange-500" />
-                        No. HP
+                        <FiUser className="text-orange-500" />
+                        NIP Wali Kelas
                       </div>
                     </td>
                     <td className="py-4 px-2">
-                      {isEditing ? (
-                        <input
-                          type="tel"
-                          name="noHp"
-                          value={editForm.noHp}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      ) : (
-                        <span className="text-gray-800">{guru.noHp || "-"}</span>
-                      )}
+                      <span className="text-gray-800">
+                        {kelas.waliKelas?.nip || "-"}
+                      </span>
                     </td>
                   </tr>
                   <tr className="border-b border-gray-100">
                     <td className="py-4 px-2 font-medium text-gray-700">
                       <div className="flex items-center gap-2">
-                        <FiMapPin className="text-red-500" />
-                        Alamat
+                        <FiUsers className="text-red-500" />
+                        Jumlah Siswa
                       </div>
                     </td>
                     <td className="py-4 px-2">
-                      {isEditing ? (
-                        <textarea
-                          name="alamat"
-                          value={editForm.alamat}
-                          onChange={handleInputChange}
-                          rows={3}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                        />
-                      ) : (
-                        <span className="text-gray-800">{guru.alamat || "-"}</span>
-                      )}
+                      <div className="flex items-center gap-3">
+                        <span className="text-gray-800">
+                          {kelas.jmlSiswa || kelas.jumlahSiswa || 0} siswa
+                        </span>
+                        <button
+                          onClick={viewStudents}
+                          className="text-sm px-3 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors duration-200"
+                        >
+                          Lihat Detail
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 </tbody>
@@ -390,4 +405,4 @@ const DetailGuru = () => {
   );
 };
 
-export default DetailGuru;
+export default DetailKelas;

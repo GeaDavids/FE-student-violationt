@@ -14,9 +14,6 @@ import {
   FiAward,
   FiPlus,
   FiEdit,
-  FiMonitor,
-  FiShield,
-  FiAlertTriangle,
   FiActivity,
 } from "react-icons/fi";
 
@@ -167,30 +164,9 @@ const DashboardBK = () => {
       color: "bg-green-500",
     },
     {
-      title: "Monitoring Siswa",
-      description: "Monitor dan ranking siswa per kelas",
-      icon: FiMonitor,
-      path: "/bk/monitoring-siswa",
-      color: "bg-purple-500",
-    },
-    {
-      title: "Manajemen Resiko",
-      description: "Identifikasi dan kelola siswa beresiko",
-      icon: FiShield,
-      path: "/bk/manajemen-resiko",
-      color: "bg-orange-500",
-    },
-    {
-      title: "Adjustment Poin",
-      description: "Kurangi atau tambah poin siswa",
-      icon: FiEdit,
-      path: "/bk/adjustment-poin",
-      color: "bg-indigo-500",
-    },
-    {
       title: "Kelola Jenis Pelanggaran",
       description: "Tambah atau edit jenis pelanggaran",
-      icon: FiAlertTriangle,
+      icon: FiEdit,
       path: "/bk/kelola-violations",
       color: "bg-red-500",
     },
@@ -324,7 +300,7 @@ const DashboardBK = () => {
       {/* Quick Actions */}
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Aksi Cepat</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {quickActions.map((action, index) => (
             <Link
               key={index}
@@ -335,11 +311,11 @@ const DashboardBK = () => {
                 <div className={`p-2 rounded ${action.color} text-white`}>
                   <action.icon className="h-5 w-5" />
                 </div>
-                <h3 className="ml-3 font-medium text-gray-900 text-sm">
+                <h3 className="ml-3 font-medium text-gray-900">
                   {action.title}
                 </h3>
               </div>
-              <p className="text-xs text-gray-600">{action.description}</p>
+              <p className="text-sm text-gray-600">{action.description}</p>
             </Link>
           ))}
         </div>

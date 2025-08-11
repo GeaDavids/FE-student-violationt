@@ -6,27 +6,38 @@ import AddAchievement from "./pages/bk/AddAchievement";
 import DashboardBK from "./pages/bk/DashboardBK";
 import StudentAchievements from "./pages/bk/StudentAchievements";
 import ExportViolations from "./pages/bk/ExportViolations";
-import CategoryViolation from "./pages/superadmin/CategoryViolation";
+import LaporanSiswa from "./pages/bk/LaporanSiswa";
+import KelolaViolations from "./pages/bk/KelolaViolations";
+import KelolaAchievements from "./pages/bk/KelolaAchievements";
+import MonitoringSiswa from "./pages/bk/MonitoringSiswa";
+import ManajemenResiko from "./pages/bk/ManajemenResiko";
+import AdjustmentPoin from "./pages/bk/AdjustmentPoin";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import MainLayout from "./layouts/MainLayout";
-import KelolaSiswa from "./pages/superadmin/KelolaSiswa";
-import DetailSiswa from "./pages/superadmin/DetailSiswa";
-import ImportSiswa from "./pages/superadmin/ImportSiswa";
-import KelolaKelas from "./pages/superadmin/KelolaKelas";
-import DetailKelas from "./pages/superadmin/DetailKelas";
-import KelolaGuru from "./pages/superadmin/KelolaGuru";
-import DetailGuru from "./pages/superadmin/DetailGuru";
-import KelolaBK from "./pages/superadmin/KelolaBK";
-import DetailBK from "./pages/superadmin/DetailBK";
-import KelolaAngkatan from "./pages/superadmin/KelolaAngkatan";
-import DetailAngkatan from "./pages/superadmin/DetailAngkatan";
-import KelolaViolation from "./pages/superadmin/KelolaViolation";
-import KelolaPrestasi from "./pages/superadmin/KelolaPrestasi";
-import LaporanPelanggaran from "./pages/superadmin/LaporanPelanggaran";
-import MonitoringPelanggaran from "./pages/superadmin/MonitoringPelanggaran";
-import SiswaCreditScore from "./pages/siswa/SiswaCreditScore";
+import SiswaDashboard from "./pages/siswa/SiswaDashboard";
+// Import all superadmin components from the new structured folders
+import {
+  DetailSiswa,
+  ImportSiswa,
+  KelolaKelas,
+  DetailKelas,
+  KelolaGuru,
+  DetailGuru,
+  KelolaBK,
+  DetailBK,
+  KelolaAngkatan,
+  DetailAngkatan,
+  KelolaViolation,
+  KelolaPrestasi,
+  LaporanPelanggaran,
+  MonitoringPelanggaran,
+} from "./pages/superadmin";
+import PilihKelas from "./pages/superadmin/users/students/PilihKelas";
+import DaftarSiswa from "./pages/superadmin/users/students/DaftarSiswa";
+import SiswaNotifikasi from "./pages/siswa/SiswaNotifikasi";
+import SiswaProfile from "./pages/siswa/SiswaProfile";
 import InputPelanggaran from "./pages/guru/InputPelanggaran";
 
 const App = () => {
@@ -35,14 +46,30 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route
-          path="/superadmin/kelola-siswa"
+          path="/superadmin/pilih-kelas"
           element={
             <MainLayout>
-              <KelolaSiswa />
+              <PilihKelas />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/superadmin/kelola-siswa/:kelasId"
+          element={
+            <MainLayout>
+              <DaftarSiswa />
             </MainLayout>
           }
         />
 
+        <Route
+          path="/siswa/dashboard"
+          element={
+            <MainLayout>
+              <SiswaDashboard />
+            </MainLayout>
+          }
+        />
         <Route
           path="/superadmin/detail-siswa/:id"
           element={
@@ -66,24 +93,6 @@ const App = () => {
           element={
             <MainLayout>
               <DetailGuru />
-            </MainLayout>
-          }
-        />
-
-        <Route
-          path="/superadmin/kelola-bk"
-          element={
-            <MainLayout>
-              <KelolaBK />
-            </MainLayout>
-          }
-        />
-
-        <Route
-          path="/superadmin/detail-bk"
-          element={
-            <MainLayout>
-              <DetailBK />
             </MainLayout>
           }
         />
@@ -132,15 +141,6 @@ const App = () => {
             </MainLayout>
           }
         />
-        
-        <Route
-          path="/superadmin/kelola-kategori"
-          element={
-            <MainLayout>
-              <CategoryViolation />
-            </MainLayout>
-          }
-        />
 
         <Route
           path="/superadmin/add-achievement"
@@ -178,24 +178,33 @@ const App = () => {
           }
         />
 
-        <Route 
-          path="/import-siswa" 
+        <Route
+          path="/import-siswa"
           element={
             <MainLayout>
               <ImportSiswa />
             </MainLayout>
-          } 
+          }
         />
-        
+
         <Route
-          path="/siswa/credit-score"
+          path="/siswa/notifikasi"
           element={
             <MainLayout>
-              <SiswaCreditScore />
+              <SiswaNotifikasi />
             </MainLayout>
           }
         />
-        
+
+        <Route
+          path="/siswa/profile"
+          element={
+            <MainLayout>
+              <SiswaProfile />
+            </MainLayout>
+          }
+        />
+
         <Route
           path="/dashboard"
           element={
@@ -230,7 +239,7 @@ const App = () => {
             </MainLayout>
           }
         />
-        
+
         <Route
           path="/bk/add-violation"
           element={
@@ -257,7 +266,7 @@ const App = () => {
             </MainLayout>
           }
         />
-        
+
         <Route
           path="/bk/export-violations"
           element={
@@ -275,12 +284,67 @@ const App = () => {
             </MainLayout>
           }
         />
-        
+
         <Route
           path="/bk/achievements"
           element={
             <MainLayout>
               <StudentAchievements />
+            </MainLayout>
+          }
+        />
+
+        {/* New BK Routes */}
+        <Route
+          path="/bk/laporan-siswa"
+          element={
+            <MainLayout>
+              <LaporanSiswa />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/bk/kelola-violations"
+          element={
+            <MainLayout>
+              <KelolaViolations />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/bk/kelola-achievements"
+          element={
+            <MainLayout>
+              <KelolaAchievements />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/bk/monitoring-siswa"
+          element={
+            <MainLayout>
+              <MonitoringSiswa />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/bk/manajemen-resiko"
+          element={
+            <MainLayout>
+              <ManajemenResiko />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/bk/adjustment-poin"
+          element={
+            <MainLayout>
+              <AdjustmentPoin />
             </MainLayout>
           }
         />
@@ -293,7 +357,6 @@ const App = () => {
             </MainLayout>
           }
         />
-
       </Routes>
     </Router>
   );

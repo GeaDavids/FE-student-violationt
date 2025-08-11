@@ -63,7 +63,7 @@ const ImportSiswa = () => {
   };
 
   const handleBack = () => {
-    navigate("/superadmin/kelola-siswa");
+    navigate("/superadmin/pilih-kelas");
   };
 
   return (

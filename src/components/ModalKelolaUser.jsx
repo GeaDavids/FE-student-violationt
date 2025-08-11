@@ -1,5 +1,5 @@
 import { useState } from "react";
-import KelolaSiswa from "../pages/superadmin/KelolaSiswa";
+import { PilihKelas } from "../pages/superadmin";
 
 const ModalKelolaUser = ({ type, onClose }) => {
   const [subType, setSubType] = useState(null); // siswa | guru | bk
@@ -39,7 +39,9 @@ const ModalKelolaUser = ({ type, onClose }) => {
       return (
         <>
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-[#003366]">Kelola Data Siswa</h2>
+            <h2 className="text-xl font-bold text-[#003366]">
+              Kelola Data Siswa
+            </h2>
             <button
               onClick={() => setSubType(null)}
               className="text-sm text-blue-600 hover:underline"
@@ -47,7 +49,7 @@ const ModalKelolaUser = ({ type, onClose }) => {
               ← Kembali
             </button>
           </div>
-          <KelolaSiswa />
+          <PilihKelas />
         </>
       );
     }

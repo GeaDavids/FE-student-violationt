@@ -44,7 +44,7 @@ const MonitoringPelanggaran = () => {
     if (!dateString) return "-";
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "-";
-    return date.toLocaleDateString('id-ID');
+    return date.toLocaleDateString("id-ID");
   };
 
   const fetchStats = async () => {
@@ -59,7 +59,10 @@ const MonitoringPelanggaran = () => {
 
   const fetchRecentViolations = async () => {
     try {
-      const res = await axios.get(`/api/monitoring/recent-violations?limit=10`, axiosConfig);
+      const res = await axios.get(
+        `/api/monitoring/recent-violations?limit=10`,
+        axiosConfig
+      );
       setRecentViolations(res.data);
     } catch (err) {
       console.error("Gagal mengambil pelanggaran terbaru:", err);
@@ -68,7 +71,10 @@ const MonitoringPelanggaran = () => {
 
   const fetchTopViolators = async () => {
     try {
-      const res = await axios.get(`/api/monitoring/top-violators?period=${filterPeriod}&classId=${selectedClass}`, axiosConfig);
+      const res = await axios.get(
+        `/api/monitoring/top-violators?period=${filterPeriod}&classId=${selectedClass}`,
+        axiosConfig
+      );
       setTopViolators(res.data);
     } catch (err) {
       console.error("Gagal mengambil data pelanggar terbanyak:", err);
@@ -77,7 +83,10 @@ const MonitoringPelanggaran = () => {
 
   const fetchViolationsByClass = async () => {
     try {
-      const res = await axios.get(`/api/monitoring/violations-by-class?period=${filterPeriod}`, axiosConfig);
+      const res = await axios.get(
+        `/api/monitoring/violations-by-class?period=${filterPeriod}`,
+        axiosConfig
+      );
       setViolationsByClass(res.data);
     } catch (err) {
       console.error("Gagal mengambil data pelanggaran per kelas:", err);
@@ -86,7 +95,10 @@ const MonitoringPelanggaran = () => {
 
   const fetchViolationsByType = async () => {
     try {
-      const res = await axios.get(`/api/monitoring/violations-by-type?period=${filterPeriod}`, axiosConfig);
+      const res = await axios.get(
+        `/api/monitoring/violations-by-type?period=${filterPeriod}`,
+        axiosConfig
+      );
       setViolationsByType(res.data);
     } catch (err) {
       console.error("Gagal mengambil data pelanggaran per jenis:", err);
@@ -147,11 +159,17 @@ const MonitoringPelanggaran = () => {
           <p><b>Kelas:</b> ${siswa.classroom?.namaKelas || "-"}</p>
           <p><b>Total Pelanggaran:</b> ${siswa.totalViolations || 0}</p>
           <p><b>Total Poin:</b> ${siswa.totalPoin || 0}</p>
-          <p><b>Status:</b> ${siswa.totalPoin >= 100 ? '<span class="text-red-600 font-bold">BERESIKO TINGGI</span>' : siswa.totalPoin >= 50 ? '<span class="text-yellow-600 font-bold">PERLU PERHATIAN</span>' : '<span class="text-green-600">BAIK</span>'}</p>
+          <p><b>Status:</b> ${
+            siswa.totalPoin >= 100
+              ? '<span class="text-red-600 font-bold">BERESIKO TINGGI</span>'
+              : siswa.totalPoin >= 50
+              ? '<span class="text-yellow-600 font-bold">PERLU PERHATIAN</span>'
+              : '<span class="text-green-600">BAIK</span>'
+          }</p>
         </div>
       `,
       icon: "info",
-      width: "500px"
+      width: "500px",
     });
   };
 
@@ -160,7 +178,9 @@ const MonitoringPelanggaran = () => {
       title: `<strong>Detail Pelanggaran</strong>`,
       html: `
         <div class="text-left">
-          <p><b>Siswa:</b> ${violation.siswa?.name || violation.siswa?.user?.name}</p>
+          <p><b>Siswa:</b> ${
+            violation.siswa?.name || violation.siswa?.user?.name
+          }</p>
           <p><b>Kelas:</b> ${violation.siswa?.classroom?.namaKelas || "-"}</p>
           <p><b>Jenis Pelanggaran:</b> ${violation.violation?.namaViolation}</p>
           <p><b>Kategori:</b> ${violation.violation?.kategori}</p>
@@ -170,25 +190,29 @@ const MonitoringPelanggaran = () => {
           <p><b>Status:</b> ${violation.status}</p>
           <div class="mt-3">
             <p><b>Deskripsi:</b></p>
-            <p class="text-gray-600 italic bg-gray-50 p-2 rounded">${violation.deskripsi || "Tidak ada deskripsi"}</p>
+            <p class="text-gray-600 italic bg-gray-50 p-2 rounded">${
+              violation.deskripsi || "Tidak ada deskripsi"
+            }</p>
           </div>
         </div>
       `,
       icon: "info",
-      width: "600px"
+      width: "600px",
     });
   };
 
   const getRiskLevel = (poin) => {
-    if (poin >= 100) return { level: "TINGGI", color: "text-red-600", bg: "bg-red-100" };
-    if (poin >= 50) return { level: "SEDANG", color: "text-yellow-600", bg: "bg-yellow-100" };
+    if (poin >= 100)
+      return { level: "TINGGI", color: "text-red-600", bg: "bg-red-100" };
+    if (poin >= 50)
+      return { level: "SEDANG", color: "text-yellow-600", bg: "bg-yellow-100" };
     return { level: "RENDAH", color: "text-green-600", bg: "bg-green-100" };
   };
 
   const periodLabels = {
     week: "Minggu Ini",
-    month: "Bulan Ini", 
-    year: "Tahun Ini"
+    month: "Bulan Ini",
+    year: "Tahun Ini",
   };
 
   return (
@@ -235,7 +259,9 @@ const MonitoringPelanggaran = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Laporan</p>
-              <p className="text-2xl font-bold text-[#003366]">{stats.totalLaporan}</p>
+              <p className="text-2xl font-bold text-[#003366]">
+                {stats.totalLaporan}
+              </p>
             </div>
             <div className="bg-blue-100 p-3 rounded-full">
               <FiBarChart2 className="text-blue-600" size={24} />
@@ -246,8 +272,12 @@ const MonitoringPelanggaran = () => {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">{periodLabels[filterPeriod]}</p>
-              <p className="text-2xl font-bold text-green-600">{stats.laporanBulanIni}</p>
+              <p className="text-sm font-medium text-gray-600">
+                {periodLabels[filterPeriod]}
+              </p>
+              <p className="text-2xl font-bold text-green-600">
+                {stats.laporanBulanIni}
+              </p>
             </div>
             <div className="bg-green-100 p-3 rounded-full">
               <FiTrendingUp className="text-green-600" size={24} />
@@ -258,8 +288,12 @@ const MonitoringPelanggaran = () => {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Siswa Beresiko</p>
-              <p className="text-2xl font-bold text-red-600">{stats.siswaBeresiko}</p>
+              <p className="text-sm font-medium text-gray-600">
+                Siswa Beresiko
+              </p>
+              <p className="text-2xl font-bold text-red-600">
+                {stats.siswaBeresiko}
+              </p>
             </div>
             <div className="bg-red-100 p-3 rounded-full">
               <FiAlertTriangle className="text-red-600" size={24} />
@@ -270,7 +304,9 @@ const MonitoringPelanggaran = () => {
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Pelanggaran Terbanyak</p>
+              <p className="text-sm font-medium text-gray-600">
+                Pelanggaran Terbanyak
+              </p>
               <p className="text-lg font-bold text-purple-600">
                 {stats.pelanggaranTerbanyak?.namaViolation || "Tidak ada data"}
               </p>
@@ -291,16 +327,22 @@ const MonitoringPelanggaran = () => {
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {recentViolations.length > 0 ? (
               recentViolations.map((violation) => (
-                <div 
-                  key={violation.id} 
+                <div
+                  key={violation.id}
                   className="border-l-4 border-blue-400 pl-4 py-2 hover:bg-gray-50 cursor-pointer"
                   onClick={() => viewViolationDetail(violation)}
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="font-medium">{violation.siswa?.name || violation.siswa?.user?.name}</p>
-                      <p className="text-sm text-gray-600">{violation.violation?.namaViolation}</p>
-                      <p className="text-xs text-gray-500">{formatDateForDisplay(violation.tglKejadian)}</p>
+                      <p className="font-medium">
+                        {violation.siswa?.name || violation.siswa?.user?.name}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {violation.violation?.namaViolation}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {formatDateForDisplay(violation.tglKejadian)}
+                      </p>
                     </div>
                     <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">
                       {violation.violation?.poin} poin
@@ -309,7 +351,9 @@ const MonitoringPelanggaran = () => {
                 </div>
               ))
             ) : (
-              <p className="text-gray-500 text-center py-4">Tidak ada pelanggaran terbaru</p>
+              <p className="text-gray-500 text-center py-4">
+                Tidak ada pelanggaran terbaru
+              </p>
             )}
           </div>
         </div>
@@ -324,8 +368,8 @@ const MonitoringPelanggaran = () => {
               topViolators.map((siswa, index) => {
                 const risk = getRiskLevel(siswa.totalPoin);
                 return (
-                  <div 
-                    key={siswa.id} 
+                  <div
+                    key={siswa.id}
                     className="flex items-center justify-between p-3 border rounded hover:bg-gray-50 cursor-pointer"
                     onClick={() => viewStudentDetail(siswa)}
                   >
@@ -334,13 +378,21 @@ const MonitoringPelanggaran = () => {
                         {index + 1}
                       </div>
                       <div>
-                        <p className="font-medium">{siswa.name || siswa.user?.name}</p>
-                        <p className="text-sm text-gray-600">{siswa.classroom?.namaKelas}</p>
+                        <p className="font-medium">
+                          {siswa.name || siswa.user?.name}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {siswa.classroom?.namaKelas}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-red-600">{siswa.totalPoin} poin</p>
-                      <span className={`${risk.bg} ${risk.color} px-2 py-1 rounded text-xs`}>
+                      <p className="font-bold text-red-600">
+                        {siswa.totalPoin} poin
+                      </p>
+                      <span
+                        className={`${risk.bg} ${risk.color} px-2 py-1 rounded text-xs`}
+                      >
                         {risk.level}
                       </span>
                     </div>
@@ -348,7 +400,9 @@ const MonitoringPelanggaran = () => {
                 );
               })
             ) : (
-              <p className="text-gray-500 text-center py-4">Tidak ada data pelanggar</p>
+              <p className="text-gray-500 text-center py-4">
+                Tidak ada data pelanggar
+              </p>
             )}
           </div>
         </div>
@@ -363,19 +417,28 @@ const MonitoringPelanggaran = () => {
           <div className="space-y-3">
             {violationsByClass.length > 0 ? (
               violationsByClass.map((kelas) => (
-                <div key={kelas.id} className="flex items-center justify-between">
+                <div
+                  key={kelas.id}
+                  className="flex items-center justify-between"
+                >
                   <div>
                     <p className="font-medium">{kelas.namaKelas}</p>
-                    <p className="text-sm text-gray-600">{kelas.jmlSiswa} siswa</p>
+                    <p className="text-sm text-gray-600">
+                      {kelas.jmlSiswa} siswa
+                    </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-red-600">{kelas.totalViolations || 0}</p>
+                    <p className="font-bold text-red-600">
+                      {kelas.totalViolations || 0}
+                    </p>
                     <p className="text-xs text-gray-500">pelanggaran</p>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-gray-500 text-center py-4">Tidak ada data kelas</p>
+              <p className="text-gray-500 text-center py-4">
+                Tidak ada data kelas
+              </p>
             )}
           </div>
         </div>
@@ -388,19 +451,28 @@ const MonitoringPelanggaran = () => {
           <div className="space-y-3">
             {violationsByType.length > 0 ? (
               violationsByType.map((violation) => (
-                <div key={violation.id} className="flex items-center justify-between">
+                <div
+                  key={violation.id}
+                  className="flex items-center justify-between"
+                >
                   <div>
                     <p className="font-medium">{violation.namaViolation}</p>
-                    <p className="text-sm text-gray-600">{violation.kategori}</p>
+                    <p className="text-sm text-gray-600">
+                      {violation.kategori}
+                    </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-blue-600">{violation.count || 0}</p>
+                    <p className="font-bold text-blue-600">
+                      {violation.count || 0}
+                    </p>
                     <p className="text-xs text-gray-500">kasus</p>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-gray-500 text-center py-4">Tidak ada data jenis pelanggaran</p>
+              <p className="text-gray-500 text-center py-4">
+                Tidak ada data jenis pelanggaran
+              </p>
             )}
           </div>
         </div>
@@ -408,28 +480,32 @@ const MonitoringPelanggaran = () => {
 
       {/* Quick Actions */}
       <div className="mt-8 bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold text-[#003366] mb-4">Aksi Cepat</h3>
+        <h3 className="text-lg font-semibold text-[#003366] mb-4">
+          Aksi Cepat
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <button
-            onClick={() => window.location.href = '/laporan-pelanggaran'}
+            onClick={() => (window.location.href = "/laporan-pelanggaran")}
             className="bg-blue-500 text-white px-4 py-2 rounded flex items-center gap-2 justify-center"
           >
             <FiEye /> Lihat Semua Laporan
           </button>
           <button
-            onClick={() => window.location.href = '/kelola-siswa'}
+            onClick={() => (window.location.href = "/pilih-kelas")}
             className="bg-green-500 text-white px-4 py-2 rounded flex items-center gap-2 justify-center"
           >
             <FiUsers /> Kelola Siswa
           </button>
           <button
-            onClick={() => window.location.href = '/kelola-violation'}
+            onClick={() => (window.location.href = "/kelola-violation")}
             className="bg-yellow-500 text-white px-4 py-2 rounded flex items-center gap-2 justify-center"
           >
             <FiAlertTriangle /> Kelola Pelanggaran
           </button>
           <button
-            onClick={() => Swal.fire("Info", "Fitur export akan segera tersedia", "info")}
+            onClick={() =>
+              Swal.fire("Info", "Fitur export akan segera tersedia", "info")
+            }
             className="bg-purple-500 text-white px-4 py-2 rounded flex items-center gap-2 justify-center"
           >
             <FiTrendingUp /> Export Report

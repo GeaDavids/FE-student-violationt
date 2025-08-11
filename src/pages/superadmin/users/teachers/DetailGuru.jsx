@@ -3,26 +3,24 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Swal from "sweetalert2";
 import {
-  FiHome,
   FiUser,
-  FiUsers,
+  FiMail,
   FiEdit,
   FiSave,
   FiX,
   FiTrash2,
   FiArrowLeft,
-  FiTag,
   FiUserCheck,
-  FiBook,
+  FiPhone,
+  FiHash,
 } from "react-icons/fi";
 
-const DetailKelas = () => {
+const DetailGuru = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [kelas, setKelas] = useState(null);
+  const [guru, setGuru] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({});
-  const [guruList, setGuruList] = useState([]);
 
   const token = localStorage.getItem("token");
   const axiosConfig = {
@@ -33,27 +31,18 @@ const DetailKelas = () => {
   };
 
   useEffect(() => {
-    if (location.state?.kelas) {
-      setKelas(location.state.kelas);
+    if (location.state?.guru) {
+      setGuru(location.state.guru);
       setEditForm({
-        kodeKelas: location.state.kelas.kodeKelas || "",
-        namaKelas: location.state.kelas.namaKelas || "",
-        waliKelasId: location.state.kelas.waliKelas?.id || "",
+        nama: location.state.guru.nama,
+        email: location.state.guru.email,
+        nip: location.state.guru.nip || "",
+        noHp: location.state.guru.noHp || "",
       });
-      fetchGuru();
     } else {
-      navigate("/superadmin/kelola-kelas");
+      navigate("/superadmin/kelola-guru");
     }
   }, [location.state, navigate]);
-
-  const fetchGuru = async () => {
-    try {
-      const res = await axios.get("/api/users/teachers", axiosConfig);
-      setGuruList(res.data);
-    } catch (err) {
-      console.error("Gagal mengambil data guru:", err);
-    }
-  };
 
   const handleInputChange = (e) => {
     setEditForm({
@@ -65,47 +54,52 @@ const DetailKelas = () => {
   const handleSave = async () => {
     try {
       const payload = {
-        kodeKelas: editForm.kodeKelas,
-        namaKelas: editForm.namaKelas,
-        waliKelasId: editForm.waliKelasId ? parseInt(editForm.waliKelasId) : null,
+        nama: editForm.nama,
+        email: editForm.email,
+        nip: editForm.nip,
+        noHp: editForm.noHp,
       };
 
+      // Menggunakan endpoint teacher management yang sudah dibuat
       await axios.put(
-        `/api/classrooms/${kelas.id}`,
+        `/api/superadmin/teachers/${guru.id}`,
         payload,
         axiosConfig
       );
 
       // Update local state
-      const updatedWaliKelas = editForm.waliKelasId 
-        ? guruList.find(guru => guru.id === parseInt(editForm.waliKelasId))
-        : null;
-
-      setKelas({
-        ...kelas,
-        kodeKelas: editForm.kodeKelas,
-        namaKelas: editForm.namaKelas,
-        waliKelas: updatedWaliKelas,
+      setGuru({
+        ...guru,
+        nama: editForm.nama,
+        email: editForm.email,
+        nip: editForm.nip,
+        noHp: editForm.noHp,
       });
 
       setIsEditing(false);
-      Swal.fire("Berhasil!", "Data kelas berhasil diperbarui.", "success");
+      const roleLabel = guru.role === "bk" ? "BK" : "Guru";
+      Swal.fire(
+        "Berhasil!",
+        `Data ${roleLabel} berhasil diperbarui.`,
+        "success"
+      );
     } catch (err) {
-      console.error("Error updating class:", err.response || err);
-      let errorMessage = "Terjadi kesalahan saat memperbarui data kelas.";
-      if (err.response?.data?.error) {
-        errorMessage = err.response.data.error;
-      } else if (err.response?.data?.message) {
+      console.error("Error updating teacher/BK:", err.response || err);
+      let errorMessage = "Terjadi kesalahan saat memperbarui data.";
+      if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
+      } else if (err.response?.data?.error) {
+        errorMessage = err.response.data.error;
       }
       Swal.fire("Gagal", errorMessage, "error");
     }
   };
 
   const handleDelete = () => {
+    const roleLabel = guru.role === "bk" ? "BK" : "Guru";
     Swal.fire({
       title: "Yakin ingin menghapus?",
-      text: "Data kelas tidak bisa dikembalikan!",
+      text: `Data ${roleLabel} tidak bisa dikembalikan!`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Ya, hapus!",
@@ -114,45 +108,50 @@ const DetailKelas = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`/api/classrooms/${kelas.id}`, axiosConfig);
-          Swal.fire("Terhapus!", "Data kelas telah dihapus.", "success");
-          navigate("/superadmin/kelola-kelas");
+          // Menggunakan endpoint teacher management yang sudah dibuat
+          await axios.delete(
+            `/api/superadmin/teachers/${guru.id}`,
+            axiosConfig
+          );
+          Swal.fire("Terhapus!", `Data ${roleLabel} telah dihapus.`, "success");
+          navigate("/superadmin/kelola-guru");
         } catch (err) {
           console.error("Delete error:", err.response || err);
-          Swal.fire("Gagal", "Gagal menghapus data kelas.", "error");
+          let errorMessage = "Gagal menghapus data guru/BK.";
+          if (err.response?.data?.error) {
+            errorMessage = err.response.data.error;
+          }
+          Swal.fire("Gagal", errorMessage, "error");
         }
       }
     });
   };
 
-  const viewStudents = () => {
-    Swal.fire({
-      title: `Siswa di Kelas ${kelas.namaKelas}`,
-      text: "Fitur ini akan menampilkan daftar siswa di kelas tersebut",
-      icon: "info",
-    });
-  };
-
   const handleCancel = () => {
     setEditForm({
-      kodeKelas: kelas.kodeKelas || "",
-      namaKelas: kelas.namaKelas || "",
-      waliKelasId: kelas.waliKelas?.id || "",
+      nama: guru.nama,
+      email: guru.email,
+      nip: guru.nip || "",
+      noHp: guru.noHp || "",
     });
     setIsEditing(false);
   };
 
   const handleBack = () => {
-    navigate("/superadmin/kelola-kelas");
+    navigate("/superadmin/kelola-guru");
   };
 
-  if (!kelas) {
+  if (!guru) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="text-lg text-gray-600">Loading...</div>
       </div>
     );
   }
+
+  const isGuru = guru.role === "guru";
+  const roleLabel = isGuru ? "Guru" : "BK";
+  const roleColor = isGuru ? "blue" : "purple";
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -166,7 +165,9 @@ const DetailKelas = () => {
             <FiArrowLeft />
             Kembali
           </button>
-          <h1 className="text-2xl font-bold text-gray-800">Detail Kelas</h1>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Detail {roleLabel}
+          </h1>
         </div>
       </div>
 
@@ -174,46 +175,66 @@ const DetailKelas = () => {
         {/* Profile Card */}
         <div className="lg:col-span-1">
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-center">
+            <div
+              className={`bg-gradient-to-r ${
+                isGuru
+                  ? "from-blue-600 to-indigo-600"
+                  : "from-purple-600 to-pink-600"
+              } p-6 text-center`}
+            >
               <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
-                <FiHome className="text-4xl text-indigo-600" />
+                <FiUserCheck
+                  className={`text-4xl ${
+                    isGuru ? "text-blue-600" : "text-purple-600"
+                  }`}
+                />
               </div>
-              <h2 className="text-xl font-bold text-white">{kelas.namaKelas}</h2>
-              <p className="text-indigo-100">{kelas.kodeKelas}</p>
+              <h2 className="text-xl font-bold text-white">{guru.nama}</h2>
+              <p className={`${isGuru ? "text-blue-100" : "text-purple-100"}`}>
+                {roleLabel}
+              </p>
+              {guru.nip && (
+                <p
+                  className={`${
+                    isGuru ? "text-blue-200" : "text-purple-200"
+                  } text-sm mt-1`}
+                >
+                  NIP: {guru.nip}
+                </p>
+              )}
             </div>
             <div className="p-6">
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <FiTag className="text-gray-500" />
-                  <span className="text-gray-700">Kode: {kelas.kodeKelas}</span>
+                  <FiMail className="text-gray-500" />
+                  <span className="text-gray-700">{guru.email}</span>
                 </div>
+                {guru.noHp && (
+                  <div className="flex items-center gap-3">
+                    <FiPhone className="text-gray-500" />
+                    <span className="text-gray-700">{guru.noHp}</span>
+                  </div>
+                )}
+                {guru.waliKelas && (
+                  <div className="flex items-center gap-3">
+                    <FiUserCheck className="text-gray-500" />
+                    <span className="text-gray-700">
+                      Wali Kelas: {guru.waliKelas}
+                    </span>
+                  </div>
+                )}
                 <div className="flex items-center gap-3">
                   <FiUserCheck className="text-gray-500" />
-                  <span className="text-gray-700">
-                    Wali: {kelas.waliKelas?.user?.name || "Belum ditentukan"}
+                  <span
+                    className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
+                      isGuru
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-purple-100 text-purple-800"
+                    }`}
+                  >
+                    {roleLabel}
                   </span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <FiUsers className="text-gray-500" />
-                  <span className="text-gray-700">
-                    {kelas.jmlSiswa || 0} Siswa
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <FiBook className="text-gray-500" />
-                  <span className="text-gray-700">ID: {kelas.id}</span>
-                </div>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="mt-6 pt-4 border-t border-gray-200">
-                <button
-                  onClick={viewStudents}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-200 shadow-md"
-                >
-                  <FiUsers />
-                  Lihat Siswa
-                </button>
               </div>
             </div>
           </div>
@@ -271,74 +292,89 @@ const DetailKelas = () => {
                   <tr className="border-b border-gray-100">
                     <td className="py-4 px-2 font-medium text-gray-700 w-1/3">
                       <div className="flex items-center gap-2">
-                        <FiTag className="text-blue-500" />
-                        Kode Kelas
+                        <FiUser className="text-blue-500" />
+                        Nama Lengkap
                       </div>
                     </td>
                     <td className="py-4 px-2">
                       {isEditing ? (
                         <input
                           type="text"
-                          name="kodeKelas"
-                          value={editForm.kodeKelas}
+                          name="nama"
+                          value={editForm.nama}
                           onChange={handleInputChange}
-                          placeholder="XII-RPL-1"
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           required
                         />
                       ) : (
-                        <span className="text-gray-800">{kelas.kodeKelas}</span>
+                        <span className="text-gray-800">{guru.nama}</span>
                       )}
                     </td>
                   </tr>
                   <tr className="border-b border-gray-100">
                     <td className="py-4 px-2 font-medium text-gray-700">
                       <div className="flex items-center gap-2">
-                        <FiHome className="text-green-500" />
-                        Nama Kelas
+                        <FiMail className="text-green-500" />
+                        Email
+                      </div>
+                    </td>
+                    <td className="py-4 px-2">
+                      {isEditing ? (
+                        <input
+                          type="email"
+                          name="email"
+                          value={editForm.email}
+                          onChange={handleInputChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required
+                        />
+                      ) : (
+                        <span className="text-gray-800">{guru.email}</span>
+                      )}
+                    </td>
+                  </tr>
+                  <tr className="border-b border-gray-100">
+                    <td className="py-4 px-2 font-medium text-gray-700">
+                      <div className="flex items-center gap-2">
+                        <FiHash className="text-purple-500" />
+                        NIP
                       </div>
                     </td>
                     <td className="py-4 px-2">
                       {isEditing ? (
                         <input
                           type="text"
-                          name="namaKelas"
-                          value={editForm.namaKelas}
+                          name="nip"
+                          value={editForm.nip}
                           onChange={handleInputChange}
-                          placeholder="XII RPL 1"
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          required
+                          placeholder="Masukkan NIP"
                         />
                       ) : (
-                        <span className="text-gray-800">{kelas.namaKelas}</span>
+                        <span className="text-gray-800">{guru.nip || "-"}</span>
                       )}
                     </td>
                   </tr>
                   <tr className="border-b border-gray-100">
                     <td className="py-4 px-2 font-medium text-gray-700">
                       <div className="flex items-center gap-2">
-                        <FiUserCheck className="text-purple-500" />
-                        Wali Kelas
+                        <FiPhone className="text-orange-500" />
+                        No. HP
                       </div>
                     </td>
                     <td className="py-4 px-2">
                       {isEditing ? (
-                        <select
-                          name="waliKelasId"
-                          value={editForm.waliKelasId}
+                        <input
+                          type="text"
+                          name="noHp"
+                          value={editForm.noHp}
                           onChange={handleInputChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="">Pilih Wali Kelas</option>
-                          {guruList.map((guru) => (
-                            <option key={guru.id} value={guru.id}>
-                              {guru.user.name} - {guru.nip}
-                            </option>
-                          ))}
-                        </select>
+                          placeholder="Masukkan No. HP"
+                        />
                       ) : (
                         <span className="text-gray-800">
-                          {kelas.waliKelas?.user?.name || "Belum ditentukan"}
+                          {guru.noHp || "-"}
                         </span>
                       )}
                     </td>
@@ -346,46 +382,43 @@ const DetailKelas = () => {
                   <tr className="border-b border-gray-100">
                     <td className="py-4 px-2 font-medium text-gray-700">
                       <div className="flex items-center gap-2">
-                        <FiUser className="text-orange-500" />
-                        NIP Wali Kelas
+                        <FiUserCheck
+                          className={`${
+                            roleColor === "blue"
+                              ? "text-blue-500"
+                              : "text-purple-500"
+                          }`}
+                        />
+                        Role
                       </div>
                     </td>
                     <td className="py-4 px-2">
-                      <span className="text-gray-800">
-                        {kelas.waliKelas?.nip || "-"}
+                      <span
+                        className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
+                          isGuru
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-purple-100 text-purple-800"
+                        }`}
+                      >
+                        {roleLabel}
                       </span>
                     </td>
                   </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-2 font-medium text-gray-700">
-                      <div className="flex items-center gap-2">
-                        <FiUsers className="text-red-500" />
-                        Jumlah Siswa
-                      </div>
-                    </td>
-                    <td className="py-4 px-2">
-                      <div className="flex items-center gap-3">
-                        <span className="text-gray-800">{kelas.jmlSiswa || 0} siswa</span>
-                        <button
-                          onClick={viewStudents}
-                          className="text-sm px-3 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors duration-200"
-                        >
-                          Lihat Detail
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-2 font-medium text-gray-700">
-                      <div className="flex items-center gap-2">
-                        <FiBook className="text-indigo-500" />
-                        ID Kelas
-                      </div>
-                    </td>
-                    <td className="py-4 px-2">
-                      <span className="text-gray-800">{kelas.id}</span>
-                    </td>
-                  </tr>
+                  {guru.waliKelas && (
+                    <tr className="border-b border-gray-100">
+                      <td className="py-4 px-2 font-medium text-gray-700">
+                        <div className="flex items-center gap-2">
+                          <FiUserCheck className="text-green-500" />
+                          Wali Kelas
+                        </div>
+                      </td>
+                      <td className="py-4 px-2">
+                        <span className="inline-flex px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                          {guru.waliKelas}
+                        </span>
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -396,4 +429,4 @@ const DetailKelas = () => {
   );
 };
 
-export default DetailKelas;
+export default DetailGuru;

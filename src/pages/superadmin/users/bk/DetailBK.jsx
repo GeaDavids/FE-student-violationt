@@ -36,7 +36,7 @@ const DetailBK = () => {
         email: location.state.bk.email,
       });
     } else {
-      navigate("/superadmin/kelola-bk");
+      navigate("/superadmin/kelola-guru");
     }
   }, [location.state, navigate]);
 
@@ -54,11 +54,7 @@ const DetailBK = () => {
         email: editForm.email,
       };
 
-      await axios.put(
-        `/api/users/bk/${bk.id}`,
-        payload,
-        axiosConfig
-      );
+      await axios.put(`/api/users/bk/${bk.id}`, payload, axiosConfig);
 
       // Update local state
       setBk({
@@ -95,7 +91,7 @@ const DetailBK = () => {
         try {
           await axios.delete(`/api/users/bk/${bk.id}`, axiosConfig);
           Swal.fire("Terhapus!", "Data BK telah dihapus.", "success");
-          navigate("/superadmin/kelola-bk");
+          navigate("/superadmin/kelola-guru");
         } catch (err) {
           console.error("Delete error:", err.response || err);
           Swal.fire("Gagal", "Gagal menghapus data BK.", "error");
@@ -113,7 +109,7 @@ const DetailBK = () => {
   };
 
   const handleBack = () => {
-    navigate("/superadmin/kelola-bk");
+    navigate("/superadmin/kelola-guru");
   };
 
   if (!bk) {

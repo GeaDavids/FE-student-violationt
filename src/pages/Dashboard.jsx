@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ModalKelolaUser from "../components/ModalKelolaUser";
-import KelolaSiswa from "../pages/superadmin/KelolaSiswa";
+import { PilihKelas } from "./superadmin";
 
 const Dashboard = () => {
   const [role, setRole] = useState("");
@@ -24,19 +24,24 @@ const Dashboard = () => {
     <div className="h-full w-full flex items-center justify-center px-4">
       {role === "siswa" && (
         <div className="text-center text-lg font-medium text-gray-700">
-          Credit Score Kamu: <span className="italic text-blue-600">Coming Soon</span>
+          Credit Score Kamu:{" "}
+          <span className="italic text-blue-600">Coming Soon</span>
         </div>
       )}
 
       {role === "guru" && (
         <div className="text-center text-lg font-medium text-gray-700">
-          Form Input Credit Score: <span className="italic text-blue-600">Sementara</span>
+          Form Input Credit Score:{" "}
+          <span className="italic text-blue-600">Sementara</span>
         </div>
       )}
 
       {role === "bk" && (
         <div className="text-center text-lg font-medium text-gray-700">
-          Fitur: <span className="italic text-blue-600">Kelola Data Siswa & Pelanggaran</span>
+          Fitur:{" "}
+          <span className="italic text-blue-600">
+            Kelola Data Siswa & Pelanggaran
+          </span>
         </div>
       )}
 
@@ -51,12 +56,13 @@ const Dashboard = () => {
             Selamat Datang, Super Admin!
           </h1>
           <p className="text-gray-600 text-lg max-w-xl">
-            Kelola seluruh data pengguna dan informasi sekolah melalui menu yang telah disediakan.
+            Kelola seluruh data pengguna dan informasi sekolah melalui menu yang
+            telah disediakan.
           </p>
 
           {/* Modal jika dibutuhkan */}
           {showKelolaUser && <ModalKelolaUser onClose={handleCloseModal} />}
-          {showKelolaUser && selectedUserOption === "siswa" && <KelolaSiswa />}
+          {showKelolaUser && selectedUserOption === "siswa" && <PilihKelas />}
         </div>
       )}
     </div>
