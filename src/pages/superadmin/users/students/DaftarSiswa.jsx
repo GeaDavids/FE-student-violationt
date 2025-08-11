@@ -103,7 +103,10 @@ const DaftarSiswa = () => {
         },
       };
 
-      const res = await axios.get(`/api/angkatan`, axiosConfig);
+      const res = await axios.get(
+        `/api/superadmin/masterdata/angkatan`,
+        axiosConfig
+      );
       console.log("Data angkatan response:", res.data);
       setAngkatanList(res.data.data || res.data || []);
     } catch (err) {

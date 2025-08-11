@@ -136,7 +136,7 @@ const LaporanPelanggaran = () => {
       const [studentsRes, classroomsRes, violationsRes, achievementsRes] =
         await Promise.all([
           axios.get("/api/master/reports/students", axiosConfig),
-          axios.get("/api/classrooms", axiosConfig),
+          axios.get("/api/superadmin/masterdata/classrooms", axiosConfig),
           axios.get("/api/violations", axiosConfig),
           axios.get("/api/achievements", axiosConfig),
         ]);
