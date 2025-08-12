@@ -1,548 +1,631 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import Swal from "sweetalert2";
-import API from "../../api/api";
 import {
-  FiMinus,
-  FiPlus,
+  FiSettings,
   FiSearch,
-  FiFilter,
-  FiRefreshCw,
-  FiEdit,
-  FiTrash2,
-  FiCalendar,
   FiUser,
-  FiFileText,
-  FiCheckCircle,
+  FiPlus,
+  FiMinus,
+  FiSave,
+  FiRefreshCw,
+  FiClock,
+  FiEye,
 } from "react-icons/fi";
 
-const AdjustmentPoin = () => {
-  const [siswaList, setSiswaList] = useState([]);
-  const [selectedSiswa, setSelectedSiswa] = useState("");
-  const [siswaViolations, setSiswaViolations] = useState([]);
-  const [siswaAchievements, setSiswaAchievements] = useState([]);
+const AdjustmentPoint = () => {
+  const [students, setStudents] = useState([]);
+  const [classrooms, setClassrooms] = useState([]);
+  const [selectedStudent, setSelectedStudent] = useState(null);
   const [adjustmentHistory, setAdjustmentHistory] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [formVisible, setFormVisible] = useState(false);
-  const [adjustmentForm, setAdjustmentForm] = useState({
-    type: "reduce", // reduce or add
-    category: "violation", // violation or achievement
-    amount: "",
-    reason: "",
-    description: "",
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  // Form state
+  const [form, setForm] = useState({
+    studentId: "",
+    pointAdjustment: "",
+    alasan: "",
+    kategori: "Rehabilitasi",
   });
 
-  const adjustmentReasons = [
-    "Perbaikan Perilaku",
-    "Prestasi Tambahan",
-    "Kompensasi Kesalahan",
-    "Program Pembinaan",
-    "Kegiatan Sosial",
-    "Partisipasi Aktif",
-    "Koreksi Data",
-    "Kebijakan Khusus",
-  ];
+  // Filter state
+  const [filters, setFilters] = useState({
+    search: "",
+    classroomId: "",
+  });
 
-  const fetchSiswa = async () => {
-    try {
-      const res = await API.get("/api/users/students");
-      setSiswaList(res.data);
-    } catch (err) {
-      console.error("Gagal mengambil data siswa:", err);
-    }
+  // Pagination state
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 0,
+  });
+
+  const token = localStorage.getItem("token");
+  const axiosConfig = {
+    withCredentials: true,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   };
 
-  const fetchSiswaData = useCallback(async (siswaId) => {
-    if (!siswaId) return;
+  // Format date for display
+  const formatDateForDisplay = (dateString) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "-";
+    return date.toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
+  // Fetch students
+  const fetchStudents = async () => {
     try {
       setLoading(true);
+      const params = new URLSearchParams();
 
-      // Fetch violations and achievements for selected student
-      const [violationsRes, achievementsRes] = await Promise.all([
-        API.get("/api/student-violations"),
-        API.get("/api/student-achievements"),
-      ]);
+      if (filters.search) params.append("search", filters.search);
+      if (filters.classroomId)
+        params.append("classroomId", filters.classroomId);
 
-      const violations = violationsRes.data.filter(
-        (v) => v.studentId === parseInt(siswaId)
-      );
-      const achievements = achievementsRes.data.filter(
-        (a) => a.studentId === parseInt(siswaId)
+      const res = await axios.get(
+        `/api/master/reports/students?${params}`,
+        axiosConfig
       );
 
-      setSiswaViolations(violations);
-      setSiswaAchievements(achievements);
-
-      // Note: In real implementation, you would fetch actual adjustment history from API
-      // For now, we'll simulate some data
-      setAdjustmentHistory([
-        {
-          id: 1,
-          type: "reduce",
-          category: "violation",
-          amount: 10,
-          reason: "Perbaikan Perilaku",
-          description: "Siswa menunjukkan perbaikan dalam kedisiplinan",
-          date: "2024-01-15",
-          adjustedBy: "BK Staff",
-        },
-        {
-          id: 2,
-          type: "add",
-          category: "achievement",
-          amount: 15,
-          reason: "Prestasi Tambahan",
-          description: "Meraih juara dalam lomba debat internal",
-          date: "2024-01-10",
-          adjustedBy: "BK Staff",
-        },
-      ]);
+      setStudents(res.data.data || []);
     } catch (err) {
-      console.error("Gagal mengambil data siswa:", err);
+      console.error("Error fetching students:", err);
       Swal.fire("Error!", "Gagal mengambil data siswa", "error");
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
-  useEffect(() => {
-    fetchSiswa();
-  }, []);
-
-  useEffect(() => {
-    if (selectedSiswa) {
-      fetchSiswaData(selectedSiswa);
+  // Fetch classrooms
+  const fetchClassrooms = async () => {
+    try {
+      const res = await axios.get("/api/classrooms", axiosConfig);
+      setClassrooms(res.data.data || []);
+    } catch (err) {
+      console.error("Error fetching classrooms:", err);
     }
-  }, [selectedSiswa, fetchSiswaData]);
-
-  const handleSiswaChange = (e) => {
-    setSelectedSiswa(e.target.value);
   };
 
+  // Fetch adjustment history for specific student
+  const fetchAdjustmentHistory = async (studentId, page = 1) => {
+    try {
+      setHistoryLoading(true);
+      const res = await axios.get(
+        `/api/master/reports/point-history/${studentId}?page=${page}&limit=${pagination.limit}`,
+        axiosConfig
+      );
+
+      setAdjustmentHistory(res.data.data || []);
+      setPagination({
+        ...pagination,
+        page: res.data.pagination?.page || 1,
+        total: res.data.pagination?.total || 0,
+        totalPages: res.data.pagination?.totalPages || 0,
+      });
+    } catch (err) {
+      console.error("Error fetching adjustment history:", err);
+      Swal.fire("Error!", "Gagal mengambil riwayat penyesuaian", "error");
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchClassrooms();
+    fetchStudents();
+  }, []);
+
+  useEffect(() => {
+    fetchStudents();
+  }, [filters]);
+
+  // Handle form changes
   const handleFormChange = (e) => {
-    setAdjustmentForm({ ...adjustmentForm, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+
+    // When student is selected, fetch their adjustment history
+    if (name === "studentId" && value) {
+      const student = students.find((s) => s.id === parseInt(value));
+      setSelectedStudent(student);
+      fetchAdjustmentHistory(value);
+    }
   };
 
-  const handleSubmitAdjustment = async (e) => {
+  // Handle filter changes
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters({ ...filters, [name]: value });
+  };
+
+  // Reset form
+  const resetForm = () => {
+    setForm({
+      studentId: "",
+      pointAdjustment: "",
+      alasan: "",
+      kategori: "Rehabilitasi",
+    });
+    setSelectedStudent(null);
+    setAdjustmentHistory([]);
+  };
+
+  // Handle point adjustment
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!selectedSiswa) {
-      Swal.fire("Error!", "Pilih siswa terlebih dahulu", "error");
+    if (!form.studentId || !form.pointAdjustment || !form.alasan) {
+      Swal.fire("Error!", "Siswa, poin, dan alasan wajib diisi", "error");
       return;
     }
 
-    if (parseInt(adjustmentForm.amount) <= 0) {
-      Swal.fire("Error!", "Jumlah poin harus lebih dari 0", "error");
+    const pointAdjustment = parseInt(form.pointAdjustment);
+    if (pointAdjustment === 0) {
+      Swal.fire("Error!", "Penyesuaian tidak boleh 0", "error");
       return;
     }
-
-    const adjustmentData = {
-      studentId: parseInt(selectedSiswa),
-      type: adjustmentForm.type,
-      category: adjustmentForm.category,
-      amount: parseInt(adjustmentForm.amount),
-      reason: adjustmentForm.reason,
-      description: adjustmentForm.description,
-      adjustedBy: JSON.parse(localStorage.getItem("user"))?.name || "BK Staff",
-      date: new Date().toISOString().split("T")[0],
-    };
 
     try {
-      // In real implementation, you would send this to API
-      // await API.post("/api/point-adjustments", adjustmentData);
+      const payload = {
+        studentId: parseInt(form.studentId),
+        pointAdjustment,
+        alasan: form.alasan,
+        kategori: form.kategori,
+      };
+
+      const res = await axios.post(
+        "/api/master/reports/adjust-points",
+        payload,
+        axiosConfig
+      );
 
       Swal.fire({
-        title: "Adjustment Berhasil!",
+        title: "Berhasil!",
         html: `
           <div class="text-left">
-            <p><strong>Tipe:</strong> ${
-              adjustmentForm.type === "reduce" ? "Pengurangan" : "Penambahan"
-            }</p>
-            <p><strong>Kategori:</strong> ${
-              adjustmentForm.category === "violation"
-                ? "Pelanggaran"
-                : "Prestasi"
-            }</p>
-            <p><strong>Jumlah:</strong> ${adjustmentForm.amount} poin</p>
-            <p><strong>Alasan:</strong> ${adjustmentForm.reason}</p>
-            <p><strong>Deskripsi:</strong> ${adjustmentForm.description}</p>
+            <p><b>Siswa:</b> ${res.data.data.student.nama}</p>
+            <p><b>Poin Lama:</b> ${res.data.data.adjustment.pointLama}</p>
+            <p><b>Poin Baru:</b> ${res.data.data.adjustment.pointBaru}</p>
+            <p><b>Perubahan:</b> ${
+              pointAdjustment > 0 ? "+" : ""
+            }${pointAdjustment}</p>
+            <p><b>Alasan:</b> ${res.data.data.adjustment.alasan}</p>
           </div>
         `,
         icon: "success",
       });
 
-      // Add to history (simulation)
-      const newAdjustment = {
-        id: adjustmentHistory.length + 1,
-        ...adjustmentData,
-      };
-      setAdjustmentHistory([newAdjustment, ...adjustmentHistory]);
+      // Update selected student data
+      if (selectedStudent) {
+        setSelectedStudent({
+          ...selectedStudent,
+          totalScore: res.data.data.adjustment.pointBaru,
+        });
+      }
 
-      // Reset form
-      setAdjustmentForm({
-        type: "reduce",
-        category: "violation",
-        amount: "",
-        reason: "",
-        description: "",
+      // Refresh data
+      fetchStudents();
+      fetchAdjustmentHistory(form.studentId);
+
+      // Reset form except student selection
+      setForm({
+        ...form,
+        pointAdjustment: "",
+        alasan: "",
+        kategori: "Rehabilitasi",
       });
-      setFormVisible(false);
     } catch (err) {
-      console.error("Error:", err);
-      Swal.fire(
-        "Gagal",
-        "Terjadi kesalahan saat menyimpan adjustment",
-        "error"
-      );
+      console.error("Error adjusting points:", err);
+      const message =
+        err.response?.data?.error || "Gagal melakukan penyesuaian poin";
+      Swal.fire("Error!", message, "error");
     }
   };
 
-  const calculateTotalScore = () => {
-    const totalViolations = siswaViolations.reduce(
-      (sum, v) => sum + (v.violation?.point || v.pointSaat || 0),
-      0
-    );
-    const totalAchievements = siswaAchievements.reduce(
-      (sum, a) => sum + (a.achievement?.point || a.pointSaat || 0),
-      0
-    );
-
-    // Apply adjustments
-    const violationAdjustments = adjustmentHistory
-      .filter((h) => h.category === "violation")
-      .reduce((sum, h) => {
-        return h.type === "reduce" ? sum - h.amount : sum + h.amount;
-      }, 0);
-
-    const achievementAdjustments = adjustmentHistory
-      .filter((h) => h.category === "achievement")
-      .reduce((sum, h) => {
-        return h.type === "add" ? sum + h.amount : sum - h.amount;
-      }, 0);
-
-    const adjustedViolations = Math.max(
-      0,
-      totalViolations + violationAdjustments
-    );
-    const adjustedAchievements = Math.max(
-      0,
-      totalAchievements + achievementAdjustments
-    );
-
-    return {
-      totalViolations,
-      totalAchievements,
-      adjustedViolations,
-      adjustedAchievements,
-      finalScore: adjustedAchievements - adjustedViolations,
-    };
+  // Quick adjustment buttons
+  const quickAdjust = (amount) => {
+    setForm({ ...form, pointAdjustment: amount.toString() });
   };
 
-  const selectedSiswaData = siswaList.find(
-    (s) => s.id === parseInt(selectedSiswa)
-  );
-  const scoreData = calculateTotalScore();
+  // View student detail
+  const viewStudentDetail = (student) => {
+    Swal.fire({
+      title: `<strong>Detail Siswa</strong>`,
+      html: `
+        <div class="text-left">
+          <div class="bg-gray-50 p-3 rounded mb-3">
+            <h4 class="font-semibold text-gray-900 mb-2">Informasi Dasar</h4>
+            <p><b>Nama:</b> ${student.nama}</p>
+            <p><b>NISN:</b> ${student.nisn}</p>
+            <p><b>Kelas:</b> ${student.kelas || "-"}</p>
+          </div>
+          
+          <div class="bg-blue-50 p-3 rounded">
+            <h4 class="font-semibold text-gray-900 mb-2">Status Poin</h4>
+            <p><b>Total Poin Saat Ini:</b> ${student.totalScore}</p>
+            <p><b>Status:</b> ${
+              student.totalScore <= -100
+                ? '<span class="text-red-600 font-bold">BERESIKO TINGGI</span>'
+                : student.totalScore <= -50
+                ? '<span class="text-yellow-600 font-bold">PERLU PERHATIAN</span>'
+                : '<span class="text-green-600">BAIK</span>'
+            }</p>
+          </div>
+        </div>
+      `,
+      icon: "info",
+      width: "500px",
+    });
+  };
+
+  const getRiskLevel = (score) => {
+    if (score <= -100)
+      return {
+        level: "BERESIKO TINGGI",
+        color: "text-red-600",
+        bg: "bg-red-100",
+      };
+    if (score <= -50)
+      return {
+        level: "PERLU PERHATIAN",
+        color: "text-yellow-600",
+        bg: "bg-yellow-100",
+      };
+    return { level: "BAIK", color: "text-green-600", bg: "bg-green-100" };
+  };
 
   return (
-    <div className="p-8">
+    <div className="p-8 bg-gray-50 min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-[#003366] flex items-center gap-2">
-          <FiEdit /> Adjustment Poin Siswa
+        <h2 className="text-3xl font-bold text-[#003366] flex items-center gap-3">
+          <FiSettings className="text-blue-600" />
+          Penyesuaian Poin Siswa
         </h2>
         <button
-          onClick={() => {
-            setAdjustmentForm({
-              type: "reduce",
-              category: "violation",
-              amount: "",
-              reason: "",
-              description: "",
-            });
-            setFormVisible(true);
-          }}
-          disabled={!selectedSiswa}
-          className={`px-4 py-2 rounded flex items-center gap-2 ${
-            selectedSiswa
-              ? "bg-[#003366] text-white hover:bg-[#004080]"
-              : "bg-gray-300 text-gray-500 cursor-not-allowed"
-          }`}
+          onClick={() => fetchStudents()}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+          disabled={loading}
         >
-          <FiPlus /> Buat Adjustment
+          <FiRefreshCw className={loading ? "animate-spin" : ""} />
+          {loading ? "Loading..." : "Refresh"}
         </button>
       </div>
 
-      {/* Student Selection */}
-      <div className="bg-white rounded-xl shadow p-6 mb-6">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <FiUser /> Pilih Siswa
-        </h3>
-        <select
-          value={selectedSiswa}
-          onChange={handleSiswaChange}
-          className="w-full border rounded px-3 py-2"
-        >
-          <option value="">Pilih Siswa...</option>
-          {siswaList.map((siswa) => (
-            <option key={siswa.id} value={siswa.id}>
-              {siswa.nisn} - {siswa.name || siswa.user?.name} (
-              {siswa.classroom?.namaKelas || "No Class"})
-            </option>
-          ))}
-        </select>
-      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Left Column - Student Selection & Adjustment Form */}
+        <div className="space-y-6">
+          {/* Filters */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Cari Siswa
+            </h3>
+            <div className="space-y-4">
+              <div className="relative">
+                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  name="search"
+                  placeholder="Cari nama atau NISN..."
+                  value={filters.search}
+                  onChange={handleFilterChange}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
 
-      {selectedSiswa && (
-        <>
-          {/* Student Score Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-            <div className="bg-blue-100 p-4 rounded-lg">
-              <h3 className="font-semibold text-blue-800">
-                Original Violations
-              </h3>
-              <p className="text-2xl font-bold text-red-600">
-                -{scoreData.totalViolations}
-              </p>
-            </div>
-            <div className="bg-green-100 p-4 rounded-lg">
-              <h3 className="font-semibold text-green-800">
-                Original Achievements
-              </h3>
-              <p className="text-2xl font-bold text-green-600">
-                +{scoreData.totalAchievements}
-              </p>
-            </div>
-            <div className="bg-yellow-100 p-4 rounded-lg">
-              <h3 className="font-semibold text-yellow-800">
-                Adjusted Violations
-              </h3>
-              <p className="text-2xl font-bold text-red-600">
-                -{scoreData.adjustedViolations}
-              </p>
-            </div>
-            <div className="bg-purple-100 p-4 rounded-lg">
-              <h3 className="font-semibold text-purple-800">
-                Adjusted Achievements
-              </h3>
-              <p className="text-2xl font-bold text-green-600">
-                +{scoreData.adjustedAchievements}
-              </p>
-            </div>
-            <div className="bg-gray-100 p-4 rounded-lg">
-              <h3 className="font-semibold text-gray-800">Final Score</h3>
-              <p
-                className={`text-2xl font-bold ${
-                  scoreData.finalScore >= 0 ? "text-green-600" : "text-red-600"
-                }`}
+              <select
+                name="classroomId"
+                value={filters.classroomId}
+                onChange={handleFilterChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                {scoreData.finalScore}
-              </p>
+                <option value="">Semua Kelas</option>
+                {classrooms.map((kelas) => (
+                  <option key={kelas.id} value={kelas.id}>
+                    {kelas.namaKelas}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
-          {/* Adjustment Form Modal */}
-          {formVisible && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-                <h3 className="text-lg font-semibold mb-4">
-                  Buat Adjustment untuk{" "}
-                  {selectedSiswaData?.name || selectedSiswaData?.user?.name}
-                </h3>
-                <form onSubmit={handleSubmitAdjustment} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Tipe
-                      </label>
-                      <select
-                        name="type"
-                        value={adjustmentForm.type}
-                        onChange={handleFormChange}
-                        required
-                        className="w-full border rounded px-3 py-2"
-                      >
-                        <option value="reduce">Kurangi</option>
-                        <option value="add">Tambah</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Kategori
-                      </label>
-                      <select
-                        name="category"
-                        value={adjustmentForm.category}
-                        onChange={handleFormChange}
-                        required
-                        className="w-full border rounded px-3 py-2"
-                      >
-                        <option value="violation">Pelanggaran</option>
-                        <option value="achievement">Prestasi</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Jumlah Poin
-                    </label>
-                    <input
-                      type="number"
-                      name="amount"
-                      placeholder="Masukkan jumlah poin"
-                      value={adjustmentForm.amount}
-                      onChange={handleFormChange}
-                      required
-                      min="1"
-                      className="w-full border rounded px-3 py-2"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Alasan
-                    </label>
-                    <select
-                      name="reason"
-                      value={adjustmentForm.reason}
-                      onChange={handleFormChange}
-                      required
-                      className="w-full border rounded px-3 py-2"
+          {/* Student List */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Daftar Siswa
+            </h3>
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {students.length > 0 ? (
+                students.map((student) => {
+                  const risk = getRiskLevel(student.totalScore);
+                  return (
+                    <div
+                      key={student.id}
+                      className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                        selectedStudent?.id === student.id
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-200 hover:bg-gray-50"
+                      }`}
+                      onClick={() => {
+                        setForm({ ...form, studentId: student.id.toString() });
+                        setSelectedStudent(student);
+                        fetchAdjustmentHistory(student.id);
+                      }}
                     >
-                      <option value="">Pilih Alasan</option>
-                      {adjustmentReasons.map((reason) => (
-                        <option key={reason} value={reason}>
-                          {reason}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {student.nama}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {student.kelas} • {student.nisn}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-gray-900">
+                            {student.totalScore} poin
+                          </p>
+                          <span
+                            className={`${risk.bg} ${risk.color} px-2 py-1 rounded text-xs font-medium`}
+                          >
+                            {risk.level}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          viewStudentDetail(student);
+                        }}
+                        className="mt-2 text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1"
+                      >
+                        <FiEye size={14} /> Detail
+                      </button>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-gray-500 text-center py-4">
+                  Tidak ada data siswa
+                </p>
+              )}
+            </div>
+          </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Deskripsi
-                    </label>
-                    <textarea
-                      name="description"
-                      placeholder="Deskripsi detail adjustment..."
-                      value={adjustmentForm.description}
-                      onChange={handleFormChange}
-                      required
-                      className="w-full border rounded px-3 py-2"
-                      rows="3"
-                    />
-                  </div>
+          {/* Adjustment Form */}
+          {selectedStudent && (
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Penyesuaian Poin untuk {selectedStudent.nama}
+              </h3>
+              <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+                <p className="text-sm text-gray-700">
+                  <b>Poin Saat Ini:</b> {selectedStudent.totalScore}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <b>Kelas:</b> {selectedStudent.kelas}
+                </p>
+              </div>
 
-                  <div className="flex gap-2">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Kategori
+                  </label>
+                  <select
+                    name="kategori"
+                    value={form.kategori}
+                    onChange={handleFormChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="Rehabilitasi">Rehabilitasi</option>
+                    <option value="Reward">Reward</option>
+                    <option value="Koreksi">Koreksi</option>
+                    <option value="Penalty">Penalty</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Penyesuaian Poin *
+                  </label>
+                  <div className="flex gap-2 mb-2">
                     <button
-                      type="submit"
-                      className="flex-1 bg-[#003366] text-white py-2 rounded"
+                      type="button"
+                      onClick={() => quickAdjust(-50)}
+                      className="bg-red-100 text-red-700 px-3 py-1 rounded text-sm hover:bg-red-200"
                     >
-                      Simpan
+                      -50
                     </button>
                     <button
                       type="button"
-                      onClick={() => setFormVisible(false)}
-                      className="flex-1 bg-gray-500 text-white py-2 rounded"
+                      onClick={() => quickAdjust(-25)}
+                      className="bg-red-100 text-red-700 px-3 py-1 rounded text-sm hover:bg-red-200"
                     >
-                      Batal
+                      -25
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => quickAdjust(-10)}
+                      className="bg-red-100 text-red-700 px-3 py-1 rounded text-sm hover:bg-red-200"
+                    >
+                      -10
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => quickAdjust(10)}
+                      className="bg-green-100 text-green-700 px-3 py-1 rounded text-sm hover:bg-green-200"
+                    >
+                      +10
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => quickAdjust(25)}
+                      className="bg-green-100 text-green-700 px-3 py-1 rounded text-sm hover:bg-green-200"
+                    >
+                      +25
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => quickAdjust(50)}
+                      className="bg-green-100 text-green-700 px-3 py-1 rounded text-sm hover:bg-green-200"
+                    >
+                      +50
                     </button>
                   </div>
-                </form>
-              </div>
+                  <input
+                    type="number"
+                    name="pointAdjustment"
+                    value={form.pointAdjustment}
+                    onChange={handleFormChange}
+                    placeholder="Masukkan poin (+ untuk tambah, - untuk kurang)"
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Nilai positif untuk menambah poin, negatif untuk mengurangi
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Alasan *
+                  </label>
+                  <textarea
+                    name="alasan"
+                    value={form.alasan}
+                    onChange={handleFormChange}
+                    rows="3"
+                    placeholder="Jelaskan alasan penyesuaian poin..."
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 flex-1"
+                  >
+                    <FiSave /> Simpan Penyesuaian
+                  </button>
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg flex-1"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+        </div>
+
+        {/* Right Column - Adjustment History */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <FiClock /> Riwayat Penyesuaian
+            {selectedStudent && (
+              <span className="text-sm text-gray-600 font-normal">
+                - {selectedStudent.nama}
+              </span>
+            )}
+          </h3>
+
+          {!selectedStudent ? (
+            <div className="text-center py-8 text-gray-500">
+              <FiUser className="text-4xl text-gray-300 mb-2 mx-auto" />
+              <p>Pilih siswa untuk melihat riwayat penyesuaian</p>
+            </div>
+          ) : (
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {historyLoading ? (
+                <div className="text-center py-4">
+                  <FiRefreshCw className="animate-spin mx-auto mb-2" />
+                  <p className="text-gray-500">Memuat riwayat...</p>
+                </div>
+              ) : adjustmentHistory.length > 0 ? (
+                adjustmentHistory.map((history) => (
+                  <div
+                    key={history.id}
+                    className="border-l-4 border-blue-400 pl-4 py-3 bg-gray-50 rounded-r"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <p className="text-sm text-gray-600">
+                          {formatDateForDisplay(history.tanggal)}
+                        </p>
+                        <p className="font-medium text-gray-900">
+                          {history.alasan}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-gray-600">
+                          {history.pointLama} → {history.pointBaru}
+                        </p>
+                        <span
+                          className={`inline-flex px-2 py-1 rounded text-xs font-bold ${
+                            history.pointBaru > history.pointLama
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {history.pointBaru > history.pointLama ? "+" : ""}
+                          {history.pointBaru - history.pointLama}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <FiClock className="text-4xl text-gray-300 mb-2 mx-auto" />
+                  <p>Belum ada riwayat penyesuaian</p>
+                </div>
+              )}
             </div>
           )}
 
-          {/* Adjustment History */}
-          <div className="bg-white rounded-xl shadow p-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <FiFileText /> Riwayat Adjustment
-            </h3>
-            {adjustmentHistory.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full table-auto border border-gray-300">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="border px-4 py-2 text-left">Tanggal</th>
-                      <th className="border px-4 py-2 text-left">Tipe</th>
-                      <th className="border px-4 py-2 text-left">Kategori</th>
-                      <th className="border px-4 py-2 text-center">Jumlah</th>
-                      <th className="border px-4 py-2 text-left">Alasan</th>
-                      <th className="border px-4 py-2 text-left">Deskripsi</th>
-                      <th className="border px-4 py-2 text-left">Oleh</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {adjustmentHistory.map((adjustment) => (
-                      <tr key={adjustment.id} className="hover:bg-gray-50">
-                        <td className="border px-4 py-2">
-                          {new Date(adjustment.date).toLocaleDateString(
-                            "id-ID"
-                          )}
-                        </td>
-                        <td className="border px-4 py-2">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              adjustment.type === "reduce"
-                                ? "bg-red-100 text-red-800"
-                                : "bg-green-100 text-green-800"
-                            }`}
-                          >
-                            {adjustment.type === "reduce"
-                              ? "Kurangi"
-                              : "Tambah"}
-                          </span>
-                        </td>
-                        <td className="border px-4 py-2">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              adjustment.category === "violation"
-                                ? "bg-orange-100 text-orange-800"
-                                : "bg-blue-100 text-blue-800"
-                            }`}
-                          >
-                            {adjustment.category === "violation"
-                              ? "Pelanggaran"
-                              : "Prestasi"}
-                          </span>
-                        </td>
-                        <td className="border px-4 py-2 text-center font-bold">
-                          <span
-                            className={
-                              adjustment.type === "reduce"
-                                ? "text-red-600"
-                                : "text-green-600"
-                            }
-                          >
-                            {adjustment.type === "reduce" ? "-" : "+"}
-                            {adjustment.amount}
-                          </span>
-                        </td>
-                        <td className="border px-4 py-2">
-                          {adjustment.reason}
-                        </td>
-                        <td className="border px-4 py-2 max-w-xs">
-                          <div className="text-sm text-gray-600 truncate">
-                            {adjustment.description}
-                          </div>
-                        </td>
-                        <td className="border px-4 py-2 text-sm text-gray-600">
-                          {adjustment.adjustedBy}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-gray-500 text-center py-4">
-                Belum ada riwayat adjustment untuk siswa ini.
-              </p>
-            )}
-          </div>
-        </>
-      )}
+          {/* Pagination for history */}
+          {selectedStudent && pagination.totalPages > 1 && (
+            <div className="mt-4 flex justify-center gap-2">
+              {Array.from(
+                { length: pagination.totalPages },
+                (_, i) => i + 1
+              ).map((page) => (
+                <button
+                  key={page}
+                  onClick={() =>
+                    fetchAdjustmentHistory(selectedStudent.id, page)
+                  }
+                  className={`px-3 py-1 rounded ${
+                    page === pagination.page
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-600 border hover:bg-gray-50"
+                  } transition-colors`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
 
-export default AdjustmentPoin;
+export default AdjustmentPoint;

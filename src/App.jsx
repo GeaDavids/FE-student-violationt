@@ -10,6 +10,7 @@ import LaporanSiswa from "./pages/bk/LaporanSiswa";
 import KelolaViolations from "./pages/bk/KelolaViolations";
 import KelolaAchievements from "./pages/bk/KelolaAchievements";
 import MonitoringSiswa from "./pages/bk/MonitoringSiswa";
+import DetailMonitoringSiswa from "./pages/bk/DetailSiswa";
 import ManajemenResiko from "./pages/bk/ManajemenResiko";
 import AdjustmentPoin from "./pages/bk/AdjustmentPoin";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -327,6 +328,15 @@ const App = () => {
           element={
             <MainLayout>
               <MonitoringSiswa />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/bk/siswa/:studentId"
+          element={
+            <MainLayout>
+              <DetailMonitoringSiswa />
             </MainLayout>
           }
         />

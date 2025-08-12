@@ -31,7 +31,7 @@ const Login = () => {
           navigate("/dashboard");
           break;
         case "bk":
-          navigate("/dashboard");
+          navigate("/bk/dashboard");
           break;
         case "superadmin":
           navigate("/dashboard");
@@ -116,4 +116,3 @@ const Login = () => {
 };
 
 export default Login;
-

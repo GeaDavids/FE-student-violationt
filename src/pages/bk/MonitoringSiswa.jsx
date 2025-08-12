@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import Swal from "sweetalert2";
-import API from "../../api/api";
 import {
   FiMonitor,
   FiUsers,
@@ -17,6 +18,15 @@ import {
 } from "react-icons/fi";
 
 const MonitoringSiswa = () => {
+  const navigate = useNavigate();
+
+  // Axios config
+  const axiosConfig = {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  };
+
   const [siswaData, setSiswaData] = useState([]);
   const [filteredSiswa, setFilteredSiswa] = useState([]);
   const [kelasList, setKelasList] = useState([]);
@@ -31,107 +41,74 @@ const MonitoringSiswa = () => {
     riskLow: 0,
     avgScore: 0,
   });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
 
   const fetchSiswaWithScores = useCallback(async () => {
     try {
       setLoading(true);
 
-      // Fetch students with their classroom data
-      const studentsRes = await API.get("/api/users/students");
-      const students = studentsRes.data;
-
-      // Fetch violations and achievements for each student
-      const [violationsRes, achievementsRes] = await Promise.all([
-        API.get("/api/student-violations"),
-        API.get("/api/student-achievements"),
-      ]);
-
-      const violations = violationsRes.data;
-      const achievements = achievementsRes.data;
-
-      // Calculate scores for each student
-      const siswaWithScores = students.map((siswa) => {
-        // Get violations for this student
-        const siswaViolations = violations.filter(
-          (v) => v.studentId === siswa.id
-        );
-        const totalViolationPoints = siswaViolations.reduce(
-          (sum, v) => sum + (v.violation?.point || v.pointSaat || 0),
-          0
-        );
-
-        // Get achievements for this student
-        const siswaAchievements = achievements.filter(
-          (a) => a.studentId === siswa.id
-        );
-        const totalAchievementPoints = siswaAchievements.reduce(
-          (sum, a) => sum + (a.achievement?.point || a.pointSaat || 0),
-          0
-        );
-
-        // Calculate total score (achievements - violations)
-        const totalScore = totalAchievementPoints - totalViolationPoints;
-
-        // Determine risk level
-        let riskLevel = "LOW";
-        let riskColor = "text-green-600";
-        let riskBg = "bg-green-100";
-
-        if (totalViolationPoints >= 50) {
-          riskLevel = "HIGH";
-          riskColor = "text-red-600";
-          riskBg = "bg-red-100";
-        } else if (totalViolationPoints >= 25) {
-          riskLevel = "MEDIUM";
-          riskColor = "text-yellow-600";
-          riskBg = "bg-yellow-100";
-        }
-
-        return {
-          ...siswa,
-          totalScore,
-          totalViolationPoints,
-          totalAchievementPoints,
-          violationCount: siswaViolations.length,
-          achievementCount: siswaAchievements.length,
-          riskLevel,
-          riskColor,
-          riskBg,
-        };
+      // Build query parameters
+      const params = new URLSearchParams({
+        page: pagination.page.toString(),
+        limit: pagination.limit.toString(),
       });
 
-      // Sort by total score (descending)
-      siswaWithScores.sort((a, b) => b.totalScore - a.totalScore);
+      if (selectedKelas) params.append("classroomId", selectedKelas);
+      if (filterRisk) params.append("riskLevel", filterRisk);
+      if (searchTerm) params.append("search", searchTerm);
 
-      setSiswaData(siswaWithScores);
-      setFilteredSiswa(siswaWithScores);
+      // Fetch students from new monitoring endpoint
+      const response = await axios.get(
+        `/api/bk/students?${params}`,
+        axiosConfig
+      );
 
-      // Calculate statistics
-      const stats = {
-        totalSiswa: siswaWithScores.length,
-        riskHigh: siswaWithScores.filter((s) => s.riskLevel === "HIGH").length,
-        riskMedium: siswaWithScores.filter((s) => s.riskLevel === "MEDIUM")
-          .length,
-        riskLow: siswaWithScores.filter((s) => s.riskLevel === "LOW").length,
-        avgScore:
-          siswaWithScores.length > 0
-            ? siswaWithScores.reduce((sum, s) => sum + s.totalScore, 0) /
-              siswaWithScores.length
-            : 0,
-      };
-      setStatistics(stats);
+      const studentsData = response.data.data || [];
+      const paginationData = response.data.pagination || {};
+
+      setSiswaData(studentsData);
+      setFilteredSiswa(studentsData);
+      setPagination(paginationData);
     } catch (err) {
-      console.error("Gagal mengambil data monitoring:", err);
-      Swal.fire("Error!", "Gagal mengambil data monitoring siswa", "error");
+      console.error("Error fetching students for monitoring:", err);
+      Swal.fire("Error!", "Gagal mengambil data siswa", "error");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [
+    selectedKelas,
+    filterRisk,
+    searchTerm,
+    pagination.page,
+    pagination.limit,
+  ]);
+
+  const fetchDashboardStats = async () => {
+    try {
+      const response = await axios.get("/api/bk/dashboard", axiosConfig);
+      const dashboardData = response.data.data;
+
+      setStatistics({
+        totalSiswa: dashboardData.totalStudents,
+        riskHigh: dashboardData.highRiskStudents,
+        riskMedium: dashboardData.mediumRiskStudents,
+        riskLow: dashboardData.lowRiskStudents,
+        avgScore: dashboardData.averageScore || 0,
+      });
+    } catch (err) {
+      console.error("Error fetching dashboard stats:", err);
+    }
+  };
 
   const fetchKelas = async () => {
     try {
-      const res = await API.get("/api/classrooms");
-      setKelasList(res.data);
+      const res = await axios.get("/api/bk/classrooms", axiosConfig);
+      setKelasList(res.data.data || []);
     } catch (err) {
       console.error("Gagal mengambil data kelas:", err);
     }
@@ -140,116 +117,33 @@ const MonitoringSiswa = () => {
   useEffect(() => {
     fetchSiswaWithScores();
     fetchKelas();
+    fetchDashboardStats();
   }, [fetchSiswaWithScores]);
 
-  const applyFilters = (search, kelas, risk) => {
-    let filtered = siswaData.filter((siswa) => {
-      const siswaName = siswa.name || siswa.user?.name || "";
-      const nisn = siswa.nisn || "";
-
-      const matchSearch =
-        siswaName.toLowerCase().includes(search.toLowerCase()) ||
-        nisn.includes(search);
-
-      const matchKelas = !kelas || siswa.classroom?.id === parseInt(kelas);
-      const matchRisk = !risk || siswa.riskLevel === risk;
-
-      return matchSearch && matchKelas && matchRisk;
-    });
-
-    setFilteredSiswa(filtered);
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
-  const handleSearch = (e) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-    applyFilters(value, selectedKelas, filterRisk);
+  const handleKelasChange = (e) => {
+    setSelectedKelas(e.target.value);
+    setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
-  const handleKelasFilter = (e) => {
-    const value = e.target.value;
-    setSelectedKelas(value);
-    applyFilters(searchTerm, value, filterRisk);
-  };
-
-  const handleRiskFilter = (e) => {
-    const value = e.target.value;
-    setFilterRisk(value);
-    applyFilters(searchTerm, selectedKelas, value);
+  const handleRiskFilterChange = (e) => {
+    setFilterRisk(e.target.value);
+    setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
   const resetFilters = () => {
     setSearchTerm("");
     setSelectedKelas("");
     setFilterRisk("");
-    setFilteredSiswa(siswaData);
+    setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
   const handleDetailSiswa = (siswa) => {
-    Swal.fire({
-      title: `<strong>Detail Monitoring - ${
-        siswa.name || siswa.user?.name
-      }</strong>`,
-      html: `
-        <div class="text-left space-y-3">
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <p><b>NISN:</b> ${siswa.nisn || "-"}</p>
-              <p><b>Kelas:</b> ${siswa.classroom?.namaKelas || "-"}</p>
-              <p><b>Level Resiko:</b> <span class="${siswa.riskColor}">${
-        siswa.riskLevel
-      }</span></p>
-            </div>
-            <div>
-              <p><b>Total Score:</b> <span class="${
-                siswa.totalScore >= 0 ? "text-green-600" : "text-red-600"
-              }">${siswa.totalScore}</span></p>
-              <p><b>Ranking:</b> #${
-                filteredSiswa.findIndex((s) => s.id === siswa.id) + 1
-              }</p>
-            </div>
-          </div>
-          
-          <hr class="my-3">
-          
-          <div class="grid grid-cols-2 gap-4">
-            <div class="bg-red-50 p-3 rounded">
-              <h4 class="font-semibold text-red-800 mb-2">Pelanggaran</h4>
-              <p><b>Total Poin:</b> <span class="text-red-600">-${
-                siswa.totalViolationPoints
-              }</span></p>
-              <p><b>Jumlah Kasus:</b> ${siswa.violationCount}</p>
-            </div>
-            <div class="bg-green-50 p-3 rounded">
-              <h4 class="font-semibold text-green-800 mb-2">Prestasi</h4>
-              <p><b>Total Poin:</b> <span class="text-green-600">+${
-                siswa.totalAchievementPoints
-              }</span></p>
-              <p><b>Jumlah Prestasi:</b> ${siswa.achievementCount}</p>
-            </div>
-          </div>
-          
-          <div class="mt-4 p-3 ${siswa.riskBg} rounded">
-            <h4 class="font-semibold ${
-              siswa.riskColor
-            } mb-2">Rekomendasi Tindakan:</h4>
-            <p class="text-sm">
-              ${
-                siswa.riskLevel === "HIGH"
-                  ? "Siswa memerlukan perhatian khusus dan konseling intensif. Pertimbangkan panggilan orang tua."
-                  : siswa.riskLevel === "MEDIUM"
-                  ? "Siswa perlu pemantauan lebih ketat dan bimbingan rutin."
-                  : "Siswa dalam kondisi baik. Pertahankan prestasi dan berikan apresiasi."
-              }
-            </p>
-          </div>
-        </div>
-      `,
-      icon: "info",
-      width: "700px",
-      showConfirmButton: true,
-      confirmButtonText: "Tutup",
-    });
+    navigate(`/bk/siswa/${siswa.id}`);
   };
 
   const getRankingColor = (index) => {
@@ -328,13 +222,13 @@ const MonitoringSiswa = () => {
             type="text"
             placeholder="Cari nama/NISN siswa..."
             value={searchTerm}
-            onChange={handleSearch}
+            onChange={handleSearchChange}
             className="w-full outline-none"
           />
         </div>
         <select
           value={selectedKelas}
-          onChange={handleKelasFilter}
+          onChange={handleKelasChange}
           className="border rounded px-3 py-2"
         >
           <option value="">Semua Kelas</option>
@@ -346,7 +240,7 @@ const MonitoringSiswa = () => {
         </select>
         <select
           value={filterRisk}
-          onChange={handleRiskFilter}
+          onChange={handleRiskFilterChange}
           className="border rounded px-3 py-2"
         >
           <option value="">Semua Level Resiko</option>
@@ -398,16 +292,14 @@ const MonitoringSiswa = () => {
                     <td className="border px-4 py-2">
                       <div>
                         <div className="font-semibold text-[#003366]">
-                          {siswa.name || siswa.user?.name}
+                          {siswa.nama}
                         </div>
                         <div className="text-sm text-gray-500">
                           {siswa.nisn}
                         </div>
                       </div>
                     </td>
-                    <td className="border px-4 py-2">
-                      {siswa.classroom?.namaKelas || "-"}
-                    </td>
+                    <td className="border px-4 py-2">{siswa.kelas || "-"}</td>
                     <td className="border px-4 py-2 text-center">
                       <span
                         className={`font-bold text-lg ${
@@ -424,7 +316,7 @@ const MonitoringSiswa = () => {
                         -{siswa.totalViolationPoints}
                       </div>
                       <div className="text-xs text-gray-500">
-                        {siswa.violationCount} kasus
+                        {siswa.totalViolations} kasus
                       </div>
                     </td>
                     <td className="border px-4 py-2 text-center">
@@ -432,12 +324,18 @@ const MonitoringSiswa = () => {
                         +{siswa.totalAchievementPoints}
                       </div>
                       <div className="text-xs text-gray-500">
-                        {siswa.achievementCount} prestasi
+                        {siswa.totalAchievements} prestasi
                       </div>
                     </td>
                     <td className="border px-4 py-2 text-center">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${siswa.riskBg} ${siswa.riskColor}`}
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          siswa.riskLevel === "HIGH"
+                            ? "bg-red-100 text-red-800"
+                            : siswa.riskLevel === "MEDIUM"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-green-100 text-green-800"
+                        }`}
                       >
                         {siswa.riskLevel}
                       </span>
@@ -462,6 +360,40 @@ const MonitoringSiswa = () => {
               )}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {pagination.totalPages > 1 && (
+        <div className="flex justify-between items-center mt-6">
+          <div className="text-sm text-gray-600">
+            Menampilkan {(pagination.page - 1) * pagination.limit + 1} -{" "}
+            {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
+            dari {pagination.total} siswa
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() =>
+                setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
+              }
+              disabled={pagination.page <= 1}
+              className="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+            >
+              Sebelumnya
+            </button>
+            <span className="px-3 py-1 bg-[#003366] text-white rounded">
+              {pagination.page} / {pagination.totalPages}
+            </span>
+            <button
+              onClick={() =>
+                setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
+              }
+              disabled={pagination.page >= pagination.totalPages}
+              className="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+            >
+              Selanjutnya
+            </button>
+          </div>
         </div>
       )}
     </div>

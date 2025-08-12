@@ -1,624 +1,813 @@
-import { useEffect, useState, useCallback } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import Swal from "sweetalert2";
-import API from "../../api/api";
 import {
   FiFileText,
-  FiEdit2,
+  FiSearch,
+  FiFilter,
+  FiEye,
+  FiEdit3,
   FiTrash2,
   FiPlus,
-  FiSearch,
-  FiRefreshCw,
   FiCalendar,
-  FiFilter,
-  FiDownload,
-  FiEye,
-  FiAlertCircle,
+  FiUser,
   FiAward,
+  FiAlertTriangle,
+  FiRefreshCw,
+  FiDownload,
 } from "react-icons/fi";
 
 const LaporanSiswa = () => {
-  const [dataLaporan, setDataLaporan] = useState([]);
-  const [filteredLaporan, setFilteredLaporan] = useState([]);
+  const [reports, setReports] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [filteredStudents, setFilteredStudents] = useState([]);
+  const [classrooms, setClassrooms] = useState([]);
+  const [violations, setViolations] = useState([]);
+  const [achievements, setAchievements] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState({});
   const [formVisible, setFormVisible] = useState(false);
-  const [activeTab, setActiveTab] = useState("all");
+  const [editMode, setEditMode] = useState(false);
+  const [selectedReport, setSelectedReport] = useState(null);
+
+  // Student search state
+  const [studentSearch, setStudentSearch] = useState("");
+  const [showStudentDropdown, setShowStudentDropdown] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+
+  // Form state
   const [form, setForm] = useState({
-    siswaId: "",
+    studentId: "",
+    tipe: "violation",
     violationId: "",
     achievementId: "",
-    tglKejadian: "",
+    tanggal: "",
+    waktu: "",
     deskripsi: "",
-    reportType: "pelanggaran",
+    bukti: "",
+    pointSaat: "",
   });
-  const [editingId, setEditingId] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterKelas, setFilterKelas] = useState("");
-  const [filterTanggal, setFilterTanggal] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  const [siswaList, setSiswaList] = useState([]);
-  const [violationList, setViolationList] = useState([]);
-  const [achievementList, setAchievementList] = useState([]);
-  const [kelasList, setKelasList] = useState([]);
+  // Filter state
+  const [filters, setFilters] = useState({
+    search: "",
+    studentId: "",
+    classroomId: "",
+    tipe: "",
+    kategori: "",
+    startDate: "",
+    endDate: "",
+  });
 
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  // Pagination state
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  });
 
-  // Helper functions
-  const formatDateForInput = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "";
-    return date.toISOString().split("T")[0];
+  const token = localStorage.getItem("token");
+  const axiosConfig = {
+    withCredentials: true,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   };
 
+  // Format date for display
   const formatDateForDisplay = (dateString) => {
     if (!dateString) return "-";
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "-";
-    return date.toLocaleDateString("id-ID");
+    return date.toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
   };
 
-  const fetchLaporan = useCallback(async () => {
+  // Format time for display
+  const formatTimeForDisplay = (timeString) => {
+    if (!timeString) return "-";
+    const time = new Date(timeString);
+    if (isNaN(time.getTime())) return "-";
+    return time.toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  // Fetch all reports with filters
+  const fetchReports = async (page = 1) => {
     try {
       setLoading(true);
-      const [violationsRes, achievementsRes] = await Promise.all([
-        API.get("/api/student-violations"),
-        API.get("/api/student-achievements"),
-      ]);
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: pagination.limit.toString(),
+      });
 
-      const violations = violationsRes.data.map((item) => ({
-        ...item,
-        type: "pelanggaran",
-        itemData: item.violation,
-        points: item.violation?.point || item.pointSaat || 0,
-      }));
+      // Add filters to params
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
 
-      const achievements = achievementsRes.data.map((item) => ({
-        ...item,
-        type: "prestasi",
-        itemData: item.achievement,
-        points: item.achievement?.point || item.pointSaat || 0,
-      }));
+      const res = await axios.get(`/api/master/reports?${params}`, axiosConfig);
 
-      const combinedData = [...violations, ...achievements].sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-      );
-
-      setDataLaporan(combinedData);
-      setFilteredLaporan(combinedData);
+      setReports(res.data.data);
+      setPagination({
+        ...pagination,
+        page: res.data.pagination.page,
+        total: res.data.pagination.total,
+        totalPages: res.data.pagination.totalPages,
+      });
     } catch (err) {
-      console.error("Gagal mengambil data laporan:", err);
+      console.error("Error fetching reports:", err);
       Swal.fire("Error!", "Gagal mengambil data laporan", "error");
     } finally {
       setLoading(false);
     }
+  };
+
+  // Fetch helper data
+  const fetchHelperData = async () => {
+    try {
+      const [studentsRes, classroomsRes, violationsRes, achievementsRes] =
+        await Promise.all([
+          axios.get("/api/master/reports/students", axiosConfig),
+          axios.get("/api/superadmin/masterdata/classrooms", axiosConfig),
+          axios.get("/api/violations", axiosConfig),
+          axios.get("/api/achievements", axiosConfig),
+        ]);
+
+      setStudents(studentsRes.data.data || []);
+      setFilteredStudents(studentsRes.data.data || []);
+      setClassrooms(classroomsRes.data.data || []);
+      setViolations(violationsRes.data || []);
+      setAchievements(achievementsRes.data || []);
+
+      console.log("Violations loaded:", violationsRes.data);
+      console.log("Achievements loaded:", achievementsRes.data);
+    } catch (err) {
+      console.error("Error fetching helper data:", err);
+    }
+  };
+
+  // Handle student search
+  const handleStudentSearch = (value) => {
+    setStudentSearch(value);
+    setShowStudentDropdown(true);
+
+    if (!value.trim()) {
+      setFilteredStudents(students);
+      return;
+    }
+
+    const filtered = students.filter(
+      (student) =>
+        student.nama.toLowerCase().includes(value.toLowerCase()) ||
+        student.nisn.includes(value) ||
+        (student.kelas &&
+          student.kelas.toLowerCase().includes(value.toLowerCase()))
+    );
+    setFilteredStudents(filtered);
+  };
+
+  // Select student from search
+  const handleSelectStudent = (student) => {
+    setSelectedStudent(student);
+    setStudentSearch(`${student.nama} - ${student.kelas}`);
+    setForm({ ...form, studentId: student.id.toString() });
+    setShowStudentDropdown(false);
+  };
+
+  // Clear student selection
+  const clearStudentSelection = () => {
+    setSelectedStudent(null);
+    setStudentSearch("");
+    setForm({ ...form, studentId: "" });
+    setFilteredStudents(students);
+    setShowStudentDropdown(false);
+  };
+
+  useEffect(() => {
+    fetchHelperData();
+    fetchReports(1);
   }, []);
 
-  const fetchSiswa = async () => {
-    try {
-      const res = await API.get("/api/users/students");
-      setSiswaList(res.data);
-    } catch (err) {
-      console.error("Gagal mengambil data siswa:", err);
-    }
-  };
-
-  const fetchViolations = async () => {
-    try {
-      const res = await API.get("/api/violations");
-      setViolationList(res.data);
-    } catch (err) {
-      console.error("Gagal mengambil data jenis pelanggaran:", err);
-    }
-  };
-
-  const fetchAchievements = async () => {
-    try {
-      const res = await API.get("/api/achievements");
-      setAchievementList(res.data);
-    } catch (err) {
-      console.error("Gagal mengambil data jenis prestasi:", err);
-    }
-  };
-
-  const fetchKelas = async () => {
-    try {
-      const res = await API.get("/api/classrooms");
-      setKelasList(res.data);
-    } catch (err) {
-      console.error("Gagal mengambil data kelas:", err);
-    }
-  };
-
   useEffect(() => {
-    fetchLaporan();
-    fetchSiswa();
-    fetchViolations();
-    fetchAchievements();
-    fetchKelas();
+    fetchReports(1);
+  }, [filters]);
 
-    // Check if should show add form
-    if (searchParams.get("action") === "add") {
-      setFormVisible(true);
-    }
-  }, [fetchLaporan, searchParams]);
-
+  // Close dropdown when clicking outside
   useEffect(() => {
-    applyFilters(searchTerm, filterKelas, filterTanggal);
-  }, [activeTab, dataLaporan]);
+    const handleClickOutside = (event) => {
+      if (!event.target.closest(".student-search-container")) {
+        setShowStudentDropdown(false);
+      }
+    };
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Handle form changes
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+
+    // Auto-fill point when violation/achievement is selected
+    if (name === "violationId" && value) {
+      const selectedViolation = violations.find(
+        (v) => v.id === parseInt(value)
+      );
+      if (selectedViolation) {
+        setForm({ ...form, [name]: value, pointSaat: selectedViolation.point });
+      }
+    }
+
+    if (name === "achievementId" && value) {
+      const selectedAchievement = achievements.find(
+        (a) => a.id === parseInt(value)
+      );
+      if (selectedAchievement) {
+        setForm({
+          ...form,
+          [name]: value,
+          pointSaat: selectedAchievement.point,
+        });
+      }
+    }
+
+    // Clear related fields when type changes
+    if (name === "tipe") {
+      setForm({
+        ...form,
+        [name]: value,
+        violationId: "",
+        achievementId: "",
+        pointSaat: "",
+      });
+    }
   };
 
+  // Handle filter changes
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters({ ...filters, [name]: value });
+  };
+
+  // Reset form
+  const resetForm = () => {
+    setForm({
+      studentId: "",
+      tipe: "violation",
+      violationId: "",
+      achievementId: "",
+      tanggal: "",
+      waktu: "",
+      deskripsi: "",
+      bukti: "",
+      pointSaat: "",
+    });
+    clearStudentSelection();
+    setEditMode(false);
+    setSelectedReport(null);
+    setFormVisible(false);
+  };
+
+  // Handle create/update report
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const isViolation = form.reportType === "pelanggaran";
-    const payload = {
-      studentId: parseInt(form.siswaId),
-      [isViolation ? "violationId" : "achievementId"]: parseInt(
-        isViolation ? form.violationId : form.achievementId
-      ),
-      tanggal: form.tglKejadian,
-      deskripsi: form.deskripsi,
-      reporterId: JSON.parse(localStorage.getItem("user"))?.id || 1,
-    };
+    if (submitLoading) return; // Prevent multiple submissions
 
-    const apiEndpoint = isViolation
-      ? "/api/student-violations"
-      : "/api/student-achievements";
-    const successMessage = isViolation ? "pelanggaran" : "prestasi";
+    if (!form.studentId || !form.tanggal) {
+      Swal.fire("Error!", "Siswa dan tanggal wajib diisi", "error");
+      return;
+    }
 
+    if (form.tipe === "violation" && !form.violationId) {
+      Swal.fire("Error!", "Jenis pelanggaran wajib dipilih", "error");
+      return;
+    }
+
+    if (form.tipe === "achievement" && !form.achievementId) {
+      Swal.fire("Error!", "Jenis prestasi wajib dipilih", "error");
+      return;
+    }
+
+    setSubmitLoading(true);
     try {
-      if (editingId) {
-        await API.put(`${apiEndpoint}/${editingId}`, payload);
-        Swal.fire(
-          "Berhasil!",
-          `Laporan ${successMessage} berhasil diperbarui.`,
-          "success"
+      const payload = {
+        studentId: parseInt(form.studentId),
+        tipe: form.tipe,
+        violationId: form.violationId ? parseInt(form.violationId) : null,
+        achievementId: form.achievementId ? parseInt(form.achievementId) : null,
+        tanggal: form.tanggal, // Keep as YYYY-MM-DD format
+        waktu: form.waktu && form.waktu.trim() !== "" ? form.waktu : null,
+        deskripsi: form.deskripsi || "",
+        bukti: form.bukti || "",
+        pointSaat: form.pointSaat ? parseInt(form.pointSaat) : null,
+      };
+
+      console.log("Payload being sent:", payload);
+
+      if (editMode) {
+        await axios.put(
+          `/api/master/reports/report/${selectedReport.id}`,
+          payload,
+          axiosConfig
         );
+        Swal.fire("Berhasil!", "Laporan berhasil diperbarui", "success");
       } else {
-        await API.post(apiEndpoint, payload);
-        Swal.fire(
-          "Berhasil!",
-          `Laporan ${successMessage} baru berhasil ditambahkan.`,
-          "success"
-        );
+        await axios.post("/api/master/reports/report", payload, axiosConfig);
+        Swal.fire("Berhasil!", "Laporan berhasil dibuat", "success");
       }
 
-      setForm({
-        siswaId: "",
-        violationId: "",
-        achievementId: "",
-        tglKejadian: "",
-        deskripsi: "",
-        reportType: "pelanggaran",
-      });
-      setEditingId(null);
-      setFormVisible(false);
-      fetchLaporan();
-
-      // Remove action param from URL
-      navigate("/bk/laporan-siswa", { replace: true });
+      resetForm();
+      fetchReports(pagination.page);
     } catch (err) {
-      console.error("Error:", err.response || err);
-      let errorMessage = `Terjadi kesalahan saat menyimpan laporan ${successMessage}.`;
-      if (err.response?.data?.error) {
-        errorMessage = err.response.data.error;
-      }
-      Swal.fire("Gagal", errorMessage, "error");
+      console.error("Error saving report:", err);
+      console.error("Error details:", err.response?.data);
+      const message = err.response?.data?.error || "Gagal menyimpan laporan";
+      Swal.fire("Error!", message, "error");
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
-  const handleEdit = (laporan) => {
+  // Handle edit report
+  const handleEdit = (report) => {
     setForm({
-      siswaId: laporan.studentId || laporan.student?.id || "",
-      violationId:
-        laporan.type === "pelanggaran"
-          ? laporan.violationId || laporan.violation?.id || ""
-          : "",
-      achievementId:
-        laporan.type === "prestasi"
-          ? laporan.achievementId || laporan.achievement?.id || ""
-          : "",
-      tglKejadian: formatDateForInput(laporan.tanggal),
-      deskripsi: laporan.deskripsi || "",
-      reportType: laporan.type,
+      studentId: report.student.id.toString(),
+      tipe: report.tipe,
+      violationId: report.violation?.id?.toString() || "",
+      achievementId: report.achievement?.id?.toString() || "",
+      tanggal: new Date(report.tanggal).toISOString().split("T")[0],
+      waktu: report.waktu
+        ? new Date(report.waktu).toTimeString().slice(0, 5)
+        : "",
+      deskripsi: report.deskripsi || "",
+      bukti: report.bukti || "",
+      pointSaat: report.pointSaat?.toString() || "",
     });
-    setEditingId(laporan.id);
+
+    // Set student search for edit mode
+    setSelectedStudent(report.student);
+    setStudentSearch(`${report.student.nama} - ${report.student.kelas}`);
+
+    setSelectedReport(report);
+    setEditMode(true);
     setFormVisible(true);
   };
 
-  const handleDelete = (laporan) => {
-    const isViolation = laporan.type === "pelanggaran";
-    const itemType = isViolation ? "pelanggaran" : "prestasi";
-    const apiEndpoint = isViolation
-      ? "/api/student-violations"
-      : "/api/student-achievements";
+  // Handle delete report
+  const handleDelete = async (report) => {
+    if (deleteLoading[report.id]) return; // Prevent multiple deletions
 
-    Swal.fire({
-      title: "Yakin ingin menghapus?",
-      text: `Laporan ${itemType} tidak bisa dikembalikan!`,
+    const result = await Swal.fire({
+      title: "Hapus Laporan?",
+      text: `Yakin ingin menghapus laporan ${
+        report.tipe === "violation" ? "pelanggaran" : "prestasi"
+      } untuk ${report.student.nama}?`,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "Ya, hapus!",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          await API.delete(`${apiEndpoint}/${laporan.id}`);
-          Swal.fire(
-            "Terhapus!",
-            `Laporan ${itemType} telah dihapus.`,
-            "success"
-          );
-          fetchLaporan();
-        } catch (err) {
-          console.error("Error:", err.response || err);
-          Swal.fire("Gagal", `Gagal menghapus laporan ${itemType}.`, "error");
-        }
-      }
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Ya, Hapus!",
+      cancelButtonText: "Batal",
     });
+
+    if (result.isConfirmed) {
+      setDeleteLoading((prev) => ({ ...prev, [report.id]: true }));
+      try {
+        await axios.delete(
+          `/api/master/reports/report/${report.id}`,
+          axiosConfig
+        );
+        Swal.fire("Terhapus!", "Laporan berhasil dihapus", "success");
+        fetchReports(pagination.page);
+      } catch (err) {
+        console.error("Error deleting report:", err);
+        const message = err.response?.data?.error || "Gagal menghapus laporan";
+        Swal.fire("Error!", message, "error");
+      } finally {
+        setDeleteLoading((prev) => ({ ...prev, [report.id]: false }));
+      }
+    }
   };
 
-  const handleDetail = (laporan) => {
-    const isViolation = laporan.type === "pelanggaran";
-    const itemName = isViolation
-      ? laporan.violation?.nama
-      : laporan.achievement?.nama;
-    const itemKategori = isViolation
-      ? laporan.violation?.kategori
-      : laporan.achievement?.kategori;
-    const points = laporan.points;
+  // View report detail
+  const viewDetail = (report) => {
+    const student = report.student;
+    const item = report.violation || report.achievement;
 
     Swal.fire({
       title: `<strong>Detail Laporan ${
-        isViolation ? "Pelanggaran" : "Prestasi"
+        report.tipe === "violation" ? "Pelanggaran" : "Prestasi"
       }</strong>`,
       html: `
-        <div class="text-left space-y-2">
-          <p><b>Siswa:</b> ${
-            laporan.student?.name || laporan.student?.user?.name || "Unknown"
-          }</p>
-          <p><b>NISN:</b> ${laporan.student?.nisn || "-"}</p>
-          <p><b>Kelas:</b> ${laporan.student?.classroom?.namaKelas || "-"}</p>
-          <p><b>Jenis ${isViolation ? "Pelanggaran" : "Prestasi"}:</b> ${
-        itemName || "Unknown"
-      }</p>
-          <p><b>Kategori:</b> ${itemKategori || "-"}</p>
-          <p><b>Poin:</b> <span class="${
-            isViolation ? "text-red-600" : "text-green-600"
-          }">${isViolation ? "-" : "+"}${points}</span></p>
-          <p><b>Tanggal Kejadian:</b> ${formatDateForDisplay(
-            laporan.tanggal
-          )}</p>
-          <p><b>Tanggal Dilaporkan:</b> ${formatDateForDisplay(
-            laporan.createdAt
-          )}</p>
-          <p><b>Poin Saat Kejadian:</b> ${laporan.pointSaat || 0}</p>
-          <div class="mt-3">
-            <p><b>Deskripsi:</b></p>
-            <p class="text-gray-600 italic bg-gray-50 p-2 rounded">${
-              laporan.deskripsi || "Tidak ada deskripsi"
+        <div class="text-left space-y-3">
+          <div class="bg-gray-50 p-3 rounded">
+            <h4 class="font-semibold text-gray-900 mb-2">Informasi Siswa</h4>
+            <p><b>Nama:</b> ${student.nama}</p>
+            <p><b>NISN:</b> ${student.nisn}</p>
+            <p><b>Kelas:</b> ${student.kelas || "-"}</p>
+            <p><b>Total Poin Saat Ini:</b> ${student.totalScore}</p>
+          </div>
+          
+          <div class="bg-blue-50 p-3 rounded">
+            <h4 class="font-semibold text-gray-900 mb-2">Informasi ${
+              report.tipe === "violation" ? "Pelanggaran" : "Prestasi"
+            }</h4>
+            <p><b>Nama:</b> ${item?.nama || "-"}</p>
+            <p><b>Kategori:</b> ${item?.kategori || "-"}</p>
+            ${
+              report.tipe === "violation"
+                ? `<p><b>Jenis:</b> ${item?.jenis || "-"}</p>`
+                : ""
+            }
+            <p><b>Poin:</b> ${item?.point || report.pointSaat}</p>
+          </div>
+          
+          <div class="bg-yellow-50 p-3 rounded">
+            <h4 class="font-semibold text-gray-900 mb-2">Detail Laporan</h4>
+            <p><b>Tanggal:</b> ${formatDateForDisplay(report.tanggal)}</p>
+            <p><b>Waktu:</b> ${formatTimeForDisplay(report.waktu)}</p>
+            <p><b>Pelapor:</b> ${report.reporter} (${report.reporterRole})</p>
+            <p><b>Deskripsi:</b> ${
+              report.deskripsi || "Tidak ada deskripsi"
             }</p>
+            <p><b>Bukti:</b> ${report.bukti || "Tidak ada bukti"}</p>
           </div>
         </div>
       `,
       icon: "info",
       width: "600px",
+      confirmButtonText: "Tutup",
     });
   };
 
-  const applyFilters = (search, kelas, tanggal) => {
-    let allData = dataLaporan;
-
-    let filtered = allData.filter((laporan) => {
-      const siswaName =
-        laporan.student?.name || laporan.student?.user?.name || "";
-      const nisn = laporan.student?.nisn || "";
-      const itemName =
-        laporan.type === "pelanggaran"
-          ? laporan.violation?.nama || ""
-          : laporan.achievement?.nama || "";
-
-      const matchSearch =
-        siswaName.toLowerCase().includes(search) ||
-        nisn.includes(search) ||
-        itemName.toLowerCase().includes(search) ||
-        (laporan.deskripsi || "").toLowerCase().includes(search);
-
-      const matchKelas =
-        !kelas || laporan.student?.classroom?.id === parseInt(kelas);
-
-      let matchTanggal = true;
-      if (tanggal) {
-        const filterDate = new Date(tanggal).toDateString();
-        const laporanDate = new Date(laporan.tanggal).toDateString();
-        matchTanggal = filterDate === laporanDate;
-      }
-
-      const matchTab = activeTab === "all" || laporan.type === activeTab;
-
-      return matchSearch && matchKelas && matchTanggal && matchTab;
-    });
-
-    setFilteredLaporan(filtered);
-  };
-
-  const handleSearch = (e) => {
-    const value = e.target.value.toLowerCase();
-    setSearchTerm(value);
-    applyFilters(value, filterKelas, filterTanggal);
-  };
-
-  const handleFilterKelas = (e) => {
-    const value = e.target.value;
-    setFilterKelas(value);
-    applyFilters(searchTerm, value, filterTanggal);
-  };
-
-  const handleFilterTanggal = (e) => {
-    const value = e.target.value;
-    setFilterTanggal(value);
-    applyFilters(searchTerm, filterKelas, value);
-  };
-
-  const resetFilters = () => {
-    setSearchTerm("");
-    setFilterKelas("");
-    setFilterTanggal("");
-    setFilteredLaporan(dataLaporan);
-  };
-
-  const exportLaporan = () => {
-    Swal.fire({
-      title: "Export Laporan",
-      text: "Fitur export laporan dalam format Excel/PDF akan segera tersedia",
-      icon: "info",
-    });
+  // Export data
+  const handleExport = () => {
+    Swal.fire("Info", "Fitur export akan segera tersedia", "info");
   };
 
   return (
-    <div className="p-8">
+    <div className="p-8 bg-gray-50 min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-[#003366] flex items-center gap-2">
-          <FiFileText /> Laporan Pelanggaran & Prestasi
+        <h2 className="text-3xl font-bold text-[#003366] flex items-center gap-3">
+          <FiFileText className="text-blue-600" />
+          Laporan Siswa
         </h2>
         <div className="flex gap-2">
           <button
-            onClick={exportLaporan}
-            className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2"
+            onClick={handleExport}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
           >
             <FiDownload /> Export
           </button>
           <button
             onClick={() => {
-              setForm({
-                siswaId: "",
-                violationId: "",
-                achievementId: "",
-                tglKejadian: "",
-                deskripsi: "",
-                reportType: "pelanggaran",
-              });
-              setEditingId(null);
+              resetForm();
               setFormVisible(true);
             }}
-            className="bg-[#003366] text-white px-4 py-2 rounded flex items-center gap-2"
+            className="bg-[#003366] hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
           >
             <FiPlus /> Tambah Laporan
           </button>
         </div>
       </div>
 
-      {/* Tab Section */}
-      <div className="flex space-x-4 mb-6 border-b">
-        <button
-          onClick={() => setActiveTab("all")}
-          className={`pb-2 px-4 font-medium ${
-            activeTab === "all"
-              ? "border-b-2 border-[#003366] text-[#003366]"
-              : "text-gray-500 hover:text-[#003366]"
-          }`}
-        >
-          Semua Laporan
-        </button>
-        <button
-          onClick={() => setActiveTab("pelanggaran")}
-          className={`pb-2 px-4 font-medium ${
-            activeTab === "pelanggaran"
-              ? "border-b-2 border-red-500 text-red-500"
-              : "text-gray-500 hover:text-red-500"
-          }`}
-        >
-          Pelanggaran
-        </button>
-        <button
-          onClick={() => setActiveTab("prestasi")}
-          className={`pb-2 px-4 font-medium ${
-            activeTab === "prestasi"
-              ? "border-b-2 border-green-500 text-green-500"
-              : "text-gray-500 hover:text-green-500"
-          }`}
-        >
-          Prestasi
-        </button>
-      </div>
+      {/* Filters */}
+      <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <div className="relative">
+            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              name="search"
+              placeholder="Cari nama siswa..."
+              value={filters.search}
+              onChange={handleFilterChange}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
 
-      {/* Filter Section */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="flex items-center border rounded px-3 py-2">
-          <FiSearch className="mr-2" />
-          <input
-            type="text"
-            placeholder="Cari siswa/pelanggaran/prestasi..."
-            value={searchTerm}
-            onChange={handleSearch}
-            className="w-full outline-none"
-          />
-        </div>
-        <select
-          value={filterKelas}
-          onChange={handleFilterKelas}
-          className="border rounded px-3 py-2"
-        >
-          <option value="">Semua Kelas</option>
-          {kelasList.map((kelas) => (
-            <option key={kelas.id} value={kelas.id}>
-              {kelas.namaKelas}
-            </option>
-          ))}
-        </select>
-        <input
-          type="date"
-          value={filterTanggal}
-          onChange={handleFilterTanggal}
-          className="border rounded px-3 py-2"
-          placeholder="Filter Tanggal"
-        />
-        <button
-          onClick={() => {
-            fetchLaporan();
-            resetFilters();
-          }}
-          className="bg-gray-200 px-3 py-2 rounded text-sm flex items-center gap-1"
-        >
-          <FiRefreshCw /> Reset
-        </button>
-      </div>
-
-      {formVisible && (
-        <div className="bg-white rounded-xl shadow p-6 mb-6">
-          <h3 className="text-lg font-semibold mb-4">
-            {editingId ? "Edit Laporan" : "Tambah Laporan"}
-          </h3>
-
-          <form
-            onSubmit={handleSubmit}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          <select
+            name="classroomId"
+            value={filters.classroomId}
+            onChange={handleFilterChange}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            {/* Type Selector */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-2">
-                Jenis Laporan
-              </label>
-              <div className="flex space-x-4">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="reportType"
-                    value="pelanggaran"
-                    checked={form.reportType === "pelanggaran"}
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
-                  <span className="text-red-600">Pelanggaran</span>
+            <option value="">Semua Kelas</option>
+            {classrooms.map((kelas) => (
+              <option key={kelas.id} value={kelas.id}>
+                {kelas.namaKelas}
+              </option>
+            ))}
+          </select>
+
+          <select
+            name="tipe"
+            value={filters.tipe}
+            onChange={handleFilterChange}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="">Semua Tipe</option>
+            <option value="violation">Pelanggaran</option>
+            <option value="achievement">Prestasi</option>
+          </select>
+
+          <button
+            onClick={() => fetchReports(1)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+            disabled={loading}
+          >
+            <FiRefreshCw className={loading ? "animate-spin" : ""} />
+            {loading ? "Loading..." : "Refresh"}
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Tanggal Mulai
+            </label>
+            <input
+              type="date"
+              name="startDate"
+              value={filters.startDate}
+              onChange={handleFilterChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Tanggal Akhir
+            </label>
+            <input
+              type="date"
+              name="endDate"
+              value={filters.endDate}
+              onChange={handleFilterChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Form */}
+      {formVisible && (
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            {editMode ? "Edit Laporan" : "Tambah Laporan Baru"}
+          </h3>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="relative student-search-container">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Siswa *
                 </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    name="reportType"
-                    value="prestasi"
-                    checked={form.reportType === "prestasi"}
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
-                  <span className="text-green-600">Prestasi</span>
+                {editMode ? (
+                  <div className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-600">
+                    {selectedStudent
+                      ? `${selectedStudent.nama} - ${selectedStudent.kelas}`
+                      : "Siswa tidak ditemukan"}
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={studentSearch}
+                      onChange={(e) => handleStudentSearch(e.target.value)}
+                      onFocus={() => setShowStudentDropdown(true)}
+                      placeholder="Cari nama siswa, NISN, atau kelas..."
+                      required
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-8"
+                    />
+                    {selectedStudent && (
+                      <button
+                        type="button"
+                        onClick={clearStudentSelection}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        ×
+                      </button>
+                    )}
+                    {showStudentDropdown && filteredStudents.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {filteredStudents.slice(0, 10).map((student) => (
+                          <div
+                            key={student.id}
+                            onClick={() => handleSelectStudent(student)}
+                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                          >
+                            <div className="font-medium text-gray-900">
+                              {student.nama}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              {student.nisn} • {student.kelas}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tipe *
                 </label>
+                {editMode ? (
+                  <div className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-600">
+                    {form.tipe === "violation" ? "Pelanggaran" : "Prestasi"}
+                  </div>
+                ) : (
+                  <select
+                    name="tipe"
+                    value={form.tipe}
+                    onChange={handleFormChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="violation">Pelanggaran</option>
+                    <option value="achievement">Prestasi</option>
+                  </select>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {form.tipe === "violation"
+                    ? "Jenis Pelanggaran *"
+                    : "Jenis Prestasi *"}
+                </label>
+                {editMode ? (
+                  <div className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-600">
+                    {form.tipe === "violation"
+                      ? violations.find(
+                          (v) => v.id === parseInt(form.violationId)
+                        )?.nama || "Tidak ditemukan"
+                      : achievements.find(
+                          (a) => a.id === parseInt(form.achievementId)
+                        )?.nama || "Tidak ditemukan"}
+                    {form.pointSaat && ` (${form.pointSaat} poin)`}
+                  </div>
+                ) : form.tipe === "violation" ? (
+                  <select
+                    name="violationId"
+                    value={form.violationId}
+                    onChange={handleFormChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Pilih Pelanggaran</option>
+                    {violations.map((violation) => (
+                      <option key={violation.id} value={violation.id}>
+                        {violation.nama} ({violation.point} poin)
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <select
+                    name="achievementId"
+                    value={form.achievementId}
+                    onChange={handleFormChange}
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Pilih Prestasi</option>
+                    {achievements.map((achievement) => (
+                      <option key={achievement.id} value={achievement.id}>
+                        {achievement.nama} ({achievement.point} poin)
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
             </div>
 
-            <select
-              name="siswaId"
-              value={form.siswaId}
-              onChange={handleChange}
-              required
-              className="border p-3 rounded"
-            >
-              <option value="">Pilih Siswa</option>
-              {siswaList.map((siswa) => (
-                <option key={siswa.id} value={siswa.id}>
-                  {siswa.nisn} - {siswa.name || siswa.user?.name} (
-                  {siswa.classroom?.namaKelas || "No Class"})
-                </option>
-              ))}
-            </select>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tanggal *{" "}
+                  {editMode && (
+                    <span className="text-green-600">(dapat diubah)</span>
+                  )}
+                </label>
+                <input
+                  type="date"
+                  name="tanggal"
+                  value={form.tanggal}
+                  onChange={handleFormChange}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
 
-            {form.reportType === "pelanggaran" ? (
-              <select
-                name="violationId"
-                value={form.violationId}
-                onChange={handleChange}
-                required
-                className="border p-3 rounded"
-              >
-                <option value="">Pilih Jenis Pelanggaran</option>
-                {violationList.map((violation) => (
-                  <option key={violation.id} value={violation.id}>
-                    {violation.nama} ({violation.point} poin)
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <select
-                name="achievementId"
-                value={form.achievementId}
-                onChange={handleChange}
-                required
-                className="border p-3 rounded"
-              >
-                <option value="">Pilih Jenis Prestasi</option>
-                {achievementList.map((achievement) => (
-                  <option key={achievement.id} value={achievement.id}>
-                    {achievement.nama} ({achievement.point} poin)
-                  </option>
-                ))}
-              </select>
-            )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Waktu{" "}
+                  {editMode && (
+                    <span className="text-green-600">(dapat diubah)</span>
+                  )}
+                </label>
+                <input
+                  type="time"
+                  name="waktu"
+                  value={form.waktu}
+                  onChange={handleFormChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
 
-            <input
-              type="date"
-              name="tglKejadian"
-              value={form.tglKejadian}
-              onChange={handleChange}
-              required
-              className="border p-3 rounded"
-              placeholder="Tanggal Kejadian"
-            />
-            <div></div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Poin
+                </label>
+                {editMode ? (
+                  <div className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-600">
+                    {form.pointSaat || "Tidak ada poin"}
+                  </div>
+                ) : (
+                  <input
+                    type="number"
+                    name="pointSaat"
+                    value={form.pointSaat}
+                    onChange={handleFormChange}
+                    placeholder="Otomatis terisi"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                )}
+              </div>
+            </div>
 
-            <textarea
-              name="deskripsi"
-              placeholder="Deskripsi kejadian"
-              value={form.deskripsi}
-              onChange={handleChange}
-              className="border p-3 rounded md:col-span-2"
-              rows="3"
-            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Deskripsi{" "}
+                  {editMode && (
+                    <span className="text-green-600">(dapat diubah)</span>
+                  )}
+                </label>
+                <textarea
+                  name="deskripsi"
+                  value={form.deskripsi}
+                  onChange={handleFormChange}
+                  rows="3"
+                  placeholder="Deskripsi detail kejadian..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
 
-            <div className="md:col-span-2 flex gap-2">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Bukti (URL/Path){" "}
+                  {editMode && (
+                    <span className="text-green-600">(dapat diubah)</span>
+                  )}
+                </label>
+                <textarea
+                  name="bukti"
+                  value={form.bukti}
+                  onChange={handleFormChange}
+                  rows="3"
+                  placeholder="Link foto/dokumen bukti..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2">
               <button
                 type="submit"
-                className="bg-[#003366] text-white px-4 py-3 rounded flex-1"
+                disabled={submitLoading}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg flex-1 flex items-center justify-center gap-2"
               >
-                {editingId ? "Update" : "Tambah"}
+                {submitLoading && (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                )}
+                {submitLoading
+                  ? editMode
+                    ? "Memperbarui..."
+                    : "Menyimpan..."
+                  : editMode
+                  ? "Perbarui"
+                  : "Simpan"}
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setFormVisible(false);
-                  setEditingId(null);
-                  setForm({
-                    siswaId: "",
-                    violationId: "",
-                    achievementId: "",
-                    tglKejadian: "",
-                    deskripsi: "",
-                    reportType: "pelanggaran",
-                  });
-                }}
-                className="bg-gray-500 text-white px-4 py-3 rounded"
+                onClick={resetForm}
+                disabled={submitLoading}
+                className="bg-gray-500 hover:bg-gray-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg flex-1"
               >
                 Batal
               </button>
@@ -627,171 +816,173 @@ const LaporanSiswa = () => {
         </div>
       )}
 
-      {loading ? (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#003366] mx-auto"></div>
-          <p className="mt-2 text-gray-500">Memuat data...</p>
-        </div>
-      ) : (
+      {/* Reports Table */}
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full table-auto border border-gray-300 shadow rounded">
-            <thead className="bg-[#f1f5f9] text-[#003366]">
+          <table className="w-full">
+            <thead className="bg-[#003366] text-white">
               <tr>
-                <th className="border px-4 py-2 text-left">Tanggal Kejadian</th>
-                <th className="border px-4 py-2 text-left">Siswa</th>
-                <th className="border px-4 py-2 text-left">Kelas</th>
-                <th className="border px-4 py-2 text-left">Jenis</th>
-                <th className="border px-4 py-2 text-left">Item</th>
-                <th className="border px-4 py-2 text-center">Poin</th>
-                <th className="border px-4 py-2 text-center">Tgl Dibuat</th>
-                <th className="border px-4 py-2 text-center">Aksi</th>
+                <th className="px-6 py-4 text-left font-semibold">Siswa</th>
+                <th className="px-6 py-4 text-left font-semibold">Tipe</th>
+                <th className="px-6 py-4 text-left font-semibold">
+                  Pelanggaran/Prestasi
+                </th>
+                <th className="px-6 py-4 text-left font-semibold">Tanggal</th>
+                <th className="px-6 py-4 text-left font-semibold">Poin</th>
+                <th className="px-6 py-4 text-left font-semibold">Pelapor</th>
+                <th className="px-6 py-4 text-left font-semibold">Aksi</th>
               </tr>
             </thead>
-            <tbody>
-              {filteredLaporan.length > 0 ? (
-                filteredLaporan.map((laporan) => (
-                  <tr key={laporan.id} className="hover:bg-gray-50">
-                    <td className="border px-4 py-2">
-                      {formatDateForDisplay(laporan.tanggal)}
-                    </td>
-                    <td
-                      className="border px-4 py-2 cursor-pointer hover:text-[#003366]"
-                      onClick={() => handleDetail(laporan)}
-                    >
+            <tbody className="divide-y divide-gray-100">
+              {reports.length > 0 ? (
+                reports.map((report) => (
+                  <tr
+                    key={report.id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-6 py-4">
                       <div>
-                        <div className="font-semibold">
-                          {laporan.student?.name || laporan.student?.user?.name}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {laporan.student?.nisn}
-                        </div>
+                        <p className="font-medium text-gray-900">
+                          {report.student.nama}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {report.student.kelas} • {report.student.nisn}
+                        </p>
                       </div>
                     </td>
-                    <td className="border px-4 py-2">
-                      {laporan.student?.classroom?.namaKelas || "-"}
-                    </td>
-                    <td className="border px-4 py-2">
+                    <td className="px-6 py-4">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          laporan.type === "pelanggaran"
+                        className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
+                          report.tipe === "violation"
                             ? "bg-red-100 text-red-800"
                             : "bg-green-100 text-green-800"
                         }`}
                       >
-                        {laporan.type === "pelanggaran"
+                        {report.tipe === "violation" ? (
+                          <FiAlertTriangle className="mr-1" />
+                        ) : (
+                          <FiAward className="mr-1" />
+                        )}
+                        {report.tipe === "violation"
                           ? "Pelanggaran"
                           : "Prestasi"}
                       </span>
                     </td>
-                    <td className="border px-4 py-2">
+                    <td className="px-6 py-4">
                       <div>
-                        <div className="font-medium">
-                          {laporan.type === "pelanggaran"
-                            ? laporan.violation?.nama
-                            : laporan.achievement?.nama}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {laporan.type === "pelanggaran"
-                            ? laporan.violation?.kategori
-                            : laporan.achievement?.kategori}
-                        </div>
+                        <p className="font-medium text-gray-900">
+                          {report.violation?.nama || report.achievement?.nama}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {report.violation?.kategori ||
+                            report.achievement?.kategori}
+                        </p>
                       </div>
                     </td>
-                    <td className="border px-4 py-2 text-center font-bold">
+                    <td className="px-6 py-4">
+                      <div>
+                        <p className="text-gray-900">
+                          {formatDateForDisplay(report.tanggal)}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {formatTimeForDisplay(report.waktu)}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
                       <span
-                        className={
-                          laporan.type === "pelanggaran"
-                            ? "text-red-600"
-                            : "text-green-600"
-                        }
+                        className={`inline-flex px-3 py-1 rounded-full text-sm font-bold ${
+                          report.tipe === "violation"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-green-100 text-green-800"
+                        }`}
                       >
-                        {laporan.type === "pelanggaran" ? "-" : "+"}
-                        {laporan.points || laporan.pointSaat || 0}
+                        {report.tipe === "violation" ? "-" : "+"}
+                        {report.pointSaat}
                       </span>
                     </td>
-                    <td className="border px-4 py-2 text-center">
-                      <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-                        {formatDateForDisplay(laporan.createdAt)}
-                      </span>
+                    <td className="px-6 py-4">
+                      <div>
+                        <p className="text-gray-900">{report.reporter}</p>
+                        <p className="text-sm text-gray-600 capitalize">
+                          {report.reporterRole}
+                        </p>
+                      </div>
                     </td>
-                    <td className="border px-4 py-2 text-center space-x-2">
-                      <button
-                        onClick={() => handleDetail(laporan)}
-                        title="Detail"
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded"
-                      >
-                        <FiEye />
-                      </button>
-                      <button
-                        onClick={() => handleEdit(laporan)}
-                        title="Edit"
-                        className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-2 rounded"
-                      >
-                        <FiEdit2 />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(laporan)}
-                        title="Delete"
-                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded"
-                      >
-                        <FiTrash2 />
-                      </button>
+                    <td className="px-6 py-4">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => viewDetail(report)}
+                          className="bg-blue-100 text-blue-700 p-2 rounded hover:bg-blue-200 transition-colors"
+                          title="Lihat Detail"
+                        >
+                          <FiEye size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleEdit(report)}
+                          className="bg-yellow-100 text-yellow-700 p-2 rounded hover:bg-yellow-200 transition-colors"
+                          title="Edit"
+                        >
+                          <FiEdit3 size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(report)}
+                          disabled={deleteLoading[report.id]}
+                          className="bg-red-100 text-red-700 p-2 rounded hover:bg-red-200 transition-colors disabled:bg-red-50 disabled:cursor-not-allowed flex items-center justify-center"
+                          title="Hapus"
+                        >
+                          {deleteLoading[report.id] ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-700"></div>
+                          ) : (
+                            <FiTrash2 size={16} />
+                          )}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" className="text-center py-4 text-gray-500">
-                    Tidak ada data laporan ditemukan.
+                  <td colSpan="7" className="text-center py-8 text-gray-500">
+                    <div className="flex flex-col items-center">
+                      <FiFileText className="text-4xl text-gray-300 mb-2" />
+                      <p>Tidak ada data laporan</p>
+                    </div>
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-      )}
 
-      {/* Statistics */}
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-blue-100 p-4 rounded-lg">
-          <h3 className="font-semibold text-blue-800 flex items-center gap-2">
-            <FiFileText /> Total Laporan
-          </h3>
-          <p className="text-2xl font-bold text-blue-600">
-            {dataLaporan.length}
-          </p>
-        </div>
-        <div className="bg-red-100 p-4 rounded-lg">
-          <h3 className="font-semibold text-red-800 flex items-center gap-2">
-            <FiAlertCircle /> Pelanggaran
-          </h3>
-          <p className="text-2xl font-bold text-red-600">
-            {dataLaporan.filter((l) => l.type === "pelanggaran").length}
-          </p>
-        </div>
-        <div className="bg-green-100 p-4 rounded-lg">
-          <h3 className="font-semibold text-green-800 flex items-center gap-2">
-            <FiAward /> Prestasi
-          </h3>
-          <p className="text-2xl font-bold text-green-600">
-            {dataLaporan.filter((l) => l.type === "prestasi").length}
-          </p>
-        </div>
-        <div className="bg-yellow-100 p-4 rounded-lg">
-          <h3 className="font-semibold text-yellow-800">Bulan Ini</h3>
-          <p className="text-2xl font-bold text-yellow-600">
-            {
-              dataLaporan.filter((l) => {
-                const laporanDate = new Date(l.tanggal);
-                const currentDate = new Date();
-                return (
-                  laporanDate.getMonth() === currentDate.getMonth() &&
-                  laporanDate.getFullYear() === currentDate.getFullYear()
-                );
-              }).length
-            }
-          </p>
-        </div>
+        {/* Pagination */}
+        {pagination.totalPages > 1 && (
+          <div className="px-6 py-4 bg-gray-50 border-t flex justify-between items-center">
+            <div className="text-sm text-gray-600">
+              Menampilkan {(pagination.page - 1) * pagination.limit + 1} -{" "}
+              {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
+              dari {pagination.total} data
+            </div>
+            <div className="flex gap-2">
+              {Array.from(
+                { length: pagination.totalPages },
+                (_, i) => i + 1
+              ).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => fetchReports(page)}
+                  className={`px-3 py-1 rounded ${
+                    page === pagination.page
+                      ? "bg-[#003366] text-white"
+                      : "bg-white text-gray-600 border hover:bg-gray-50"
+                  } transition-colors`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
