@@ -33,12 +33,8 @@ const SiswaDashboard = () => {
     try {
       setLoading(true);
 
-      // Get student profile data
-      const profileRes = await API.get("/api/users/students/profile");
-      const dashboardRes = await API.get(
-        `/api/notifications/dashboard/${profileRes.data.id}`
-      );
-
+      // Get dashboard data directly
+      const dashboardRes = await API.get("/api/student/dashboard");
       setDashboardData(dashboardRes.data);
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
@@ -52,12 +48,8 @@ const SiswaDashboard = () => {
     try {
       setNotificationLoading(true);
 
-      const profileRes = await API.get("/api/users/students/profile");
-      const notifRes = await API.get(
-        `/api/notifications/${profileRes.data.id}`
-      );
-
-      setNotifications(notifRes.data);
+      const notifRes = await API.get("/api/student/notifications");
+      setNotifications(notifRes.data.data || []);
     } catch (err) {
       console.error("Error fetching notifications:", err);
     } finally {
@@ -193,7 +185,7 @@ const SiswaDashboard = () => {
     );
   }
 
-  const { student, summary, scoreHistory, tindakanOtomatis } = dashboardData;
+  const { student, summary, tindakanOtomatis } = dashboardData;
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
@@ -391,91 +383,66 @@ const SiswaDashboard = () => {
           </div>
         </div>
 
-        {/* Score History & Recent Activities */}
+        {/* Recent Activities */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Score Trend */}
+          {/* Recent Reports */}
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <FiBarChart2 /> Riwayat Score
+              <FiActivity /> Laporan Terbaru
             </h2>
             <div className="space-y-3">
-              {scoreHistory && scoreHistory.length > 0 ? (
-                scoreHistory.slice(0, 5).map((history, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between items-center p-3 bg-gray-50 rounded"
-                  >
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        Score: {history.newScore}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {formatDate(history.createdAt)}
-                      </p>
+              {dashboardData?.recentActivity &&
+              dashboardData.recentActivity.length > 0 ? (
+                dashboardData.recentActivity
+                  .slice(0, 5)
+                  .map((activity, index) => (
+                    <div
+                      key={index}
+                      className={`flex justify-between items-center p-3 rounded ${
+                        activity.type === "violation"
+                          ? "bg-red-50 border-l-4 border-red-400"
+                          : "bg-green-50 border-l-4 border-green-400"
+                      }`}
+                    >
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {activity.itemName}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {formatDate(activity.tanggal)}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Dilaporkan oleh: {activity.reporter?.name}
+                        </p>
+                        <span
+                          className={`inline-block px-2 py-1 text-xs rounded-full mt-1 ${
+                            activity.type === "violation"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-green-100 text-green-800"
+                          }`}
+                        >
+                          {activity.type === "violation"
+                            ? "Pelanggaran"
+                            : "Prestasi"}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span
+                          className={`font-semibold ${
+                            activity.type === "violation"
+                              ? "text-red-600"
+                              : "text-green-600"
+                          }`}
+                        >
+                          {activity.points > 0 ? "+" : ""}
+                          {activity.points} poin
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <span
-                        className={`inline-flex items-center gap-1 text-sm ${
-                          history.newScore > (history.oldScore || 100)
-                            ? "text-green-600"
-                            : "text-red-600"
-                        }`}
-                      >
-                        {history.newScore > (history.oldScore || 100) ? (
-                          <FiTrendingUp />
-                        ) : (
-                          <FiTrendingDown />
-                        )}
-                        {history.newScore > (history.oldScore || 100)
-                          ? "+"
-                          : ""}
-                        {history.newScore - (history.oldScore || 100)}
-                      </span>
-                    </div>
-                  </div>
-                ))
+                  ))
               ) : (
                 <p className="text-gray-500 text-center py-4">
-                  Belum ada riwayat perubahan score
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Recent Violations */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <FiAlertCircle /> Pelanggaran Terbaru
-            </h2>
-            <div className="space-y-3">
-              {student?.violations && student.violations.length > 0 ? (
-                student.violations.slice(0, 5).map((violation, index) => (
-                  <div
-                    key={index}
-                    className="flex justify-between items-center p-3 bg-red-50 rounded"
-                  >
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        {violation.violation?.nama}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {formatDate(violation.tanggal)}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Dilaporkan oleh: {violation.reporter?.name}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-red-600 font-semibold">
-                        -{violation.violation?.point || violation.pointSaat}{" "}
-                        poin
-                      </span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-500 text-center py-4">
-                  Tidak ada pelanggaran terbaru
+                  Tidak ada laporan terbaru
                 </p>
               )}
             </div>

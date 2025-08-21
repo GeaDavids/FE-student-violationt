@@ -46,6 +46,18 @@ const PilihKelas = () => {
     });
   };
 
+  // Filter data based on search
+  const filteredKelasList = kelasList.filter((kelas) => {
+    const searchTerm = search.toLowerCase();
+    return (
+      (kelas.kodeKelas || "").toLowerCase().includes(searchTerm) ||
+      (kelas.namaKelas || kelas.name || "")
+        .toLowerCase()
+        .includes(searchTerm) ||
+      (kelas.waliKelas || "").toLowerCase().includes(searchTerm)
+    );
+  });
+
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       {/* Header Section */}
@@ -106,53 +118,40 @@ const PilihKelas = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {kelasList
-                .filter((kelas) => {
-                  const searchTerm = search.toLowerCase();
-                  return (
-                    (kelas.kodeKelas || "")
-                      .toLowerCase()
-                      .includes(searchTerm) ||
-                    (kelas.namaKelas || kelas.name || "")
-                      .toLowerCase()
-                      .includes(searchTerm) ||
-                    (kelas.waliKelas || "").toLowerCase().includes(searchTerm)
-                  );
-                })
-                .map((kelas) => (
-                  <tr
-                    key={kelas.id}
-                    className="hover:bg-gray-50 transition-colors"
+              {filteredKelasList.map((kelas) => (
+                <tr
+                  key={kelas.id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
+                  <td className="px-6 py-4 text-gray-900 font-medium">
+                    {kelas.kodeKelas || kelas.id}
+                  </td>
+                  <td
+                    className="px-6 py-4 text-gray-800 cursor-pointer hover:text-blue-600 hover:bg-blue-50 transition-colors duration-200"
+                    onClick={() => handlePilihKelas(kelas)}
                   >
-                    <td className="px-6 py-4 text-gray-900 font-medium">
-                      {kelas.kodeKelas || kelas.id}
-                    </td>
-                    <td
-                      className="px-6 py-4 text-gray-800 cursor-pointer hover:text-blue-600 hover:bg-blue-50 transition-colors duration-200"
+                    {kelas.namaKelas || kelas.name}
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">
+                    {kelas.waliKelas || "Belum Ditentukan"}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                      <FiUsers className="mr-1" />
+                      {kelas.jmlSiswa || kelas.jumlahSiswa || 0} siswa
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <button
                       onClick={() => handlePilihKelas(kelas)}
+                      className="bg-[#013366] hover:bg-[#002244] text-white py-2 px-4 rounded-lg flex items-center gap-2 transition-all duration-200 shadow-md text-sm"
                     >
-                      {kelas.namaKelas || kelas.name}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {kelas.waliKelas || "Belum Ditentukan"}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                        <FiUsers className="mr-1" />
-                        {kelas.jmlSiswa || kelas.jumlahSiswa || 0} siswa
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <button
-                        onClick={() => handlePilihKelas(kelas)}
-                        className="bg-[#013366] hover:bg-[#002244] text-white py-2 px-4 rounded-lg flex items-center gap-2 transition-all duration-200 shadow-md text-sm"
-                      >
-                        <FiBookOpen />
-                        Kelola Siswa
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      <FiBookOpen />
+                      Kelola Siswa
+                    </button>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
@@ -173,29 +172,19 @@ const PilihKelas = () => {
         )}
 
         {/* No Search Results */}
-        {kelasList.length > 0 &&
-          kelasList.filter((kelas) => {
-            const searchTerm = search.toLowerCase();
-            return (
-              (kelas.kodeKelas || "").toLowerCase().includes(searchTerm) ||
-              (kelas.namaKelas || kelas.name || "")
-                .toLowerCase()
-                .includes(searchTerm) ||
-              (kelas.waliKelas || "").toLowerCase().includes(searchTerm)
-            );
-          }).length === 0 && (
-            <div className="text-center py-12">
-              <div className="flex flex-col items-center">
-                <FiSearch className="text-4xl text-yellow-400 mb-2" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Tidak Ada Hasil
-                </h3>
-                <p className="text-gray-600">
-                  Tidak ada kelas yang sesuai dengan pencarian "{search}".
-                </p>
-              </div>
+        {kelasList.length > 0 && filteredKelasList.length === 0 && (
+          <div className="text-center py-12">
+            <div className="flex flex-col items-center">
+              <FiSearch className="text-4xl text-yellow-400 mb-2" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Tidak Ada Hasil
+              </h3>
+              <p className="text-gray-600">
+                Tidak ada kelas yang sesuai dengan pencarian "{search}".
+              </p>
             </div>
-          )}
+          </div>
+        )}
       </div>
     </div>
   );

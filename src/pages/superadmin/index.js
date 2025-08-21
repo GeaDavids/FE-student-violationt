@@ -13,5 +13,5 @@ export { KelolaAngkatan, DetailAngkatan } from "./academic/angkatan";
 export { KelolaKelas, DetailKelas } from "./academic/classes";
 export { KelolaPrestasi } from "./academic/achievements";
 export { KelolaViolation } from "./academic/violations";
-export { LaporanPelanggaran, MonitoringPelanggaran } from "./reports";
+export { LaporanPelanggaran, RekapHistori } from "./reports";
 export { ImportSiswa } from "./import";

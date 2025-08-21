@@ -21,27 +21,13 @@ const SiswaNotifikasi = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all"); // all, unread, read
   const [searchTerm, setSearchTerm] = useState("");
-  const [studentId, setStudentId] = useState(null);
 
-  const fetchStudentProfile = useCallback(async () => {
-    try {
-      const response = await API.get("/api/users/students/profile");
-      setStudentId(response.data.id);
-      return response.data.id;
-    } catch (err) {
-      console.error("Error fetching student profile:", err);
-      return null;
-    }
-  }, []);
-
-  const fetchNotifications = useCallback(async (studentId) => {
-    if (!studentId) return;
-
+  const fetchNotifications = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await API.get(`/api/notifications/${studentId}`);
-      setNotifications(response.data);
-      setFilteredNotifications(response.data);
+      const response = await API.get("/api/student/notifications");
+      setNotifications(response.data.data || []);
+      setFilteredNotifications(response.data.data || []);
     } catch (err) {
       console.error("Error fetching notifications:", err);
       Swal.fire("Error!", "Gagal mengambil data notifikasi", "error");
@@ -51,15 +37,8 @@ const SiswaNotifikasi = () => {
   }, []);
 
   useEffect(() => {
-    const initializeData = async () => {
-      const id = await fetchStudentProfile();
-      if (id) {
-        await fetchNotifications(id);
-      }
-    };
-
-    initializeData();
-  }, [fetchStudentProfile, fetchNotifications]);
+    fetchNotifications();
+  }, [fetchNotifications]);
 
   useEffect(() => {
     let filtered = notifications;
@@ -85,7 +64,7 @@ const SiswaNotifikasi = () => {
 
   const markAsRead = async (notificationId) => {
     try {
-      await API.put(`/api/notifications/read/${notificationId}`);
+      await API.put(`/api/student/notifications/${notificationId}/read`);
 
       setNotifications((prev) =>
         prev.map((notif) =>
@@ -100,13 +79,7 @@ const SiswaNotifikasi = () => {
 
   const markAllAsRead = async () => {
     try {
-      const unreadNotifications = notifications.filter((n) => !n.isRead);
-
-      await Promise.all(
-        unreadNotifications.map((notif) =>
-          API.put(`/api/notifications/read/${notif.id}`)
-        )
-      );
+      await API.put("/api/student/notifications/read-all");
 
       setNotifications((prev) =>
         prev.map((notif) => ({ ...notif, isRead: true }))
@@ -182,7 +155,7 @@ const SiswaNotifikasi = () => {
         </div>
         <div className="flex items-center gap-4">
           <button
-            onClick={() => fetchNotifications(studentId)}
+            onClick={() => fetchNotifications()}
             className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600"
           >
             <FiRefreshCw /> Refresh

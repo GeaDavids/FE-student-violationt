@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import Swal from "sweetalert2";
-import API from "../../api/api";
+import violationAPI from "../../api/violation";
 import {
   FiAlertTriangle,
   FiEdit2,
@@ -19,6 +19,7 @@ const KelolaViolations = () => {
   const [form, setForm] = useState({
     nama: "",
     kategori: "",
+    jenis: "",
     point: "",
     deskripsi: "",
   });
@@ -27,12 +28,13 @@ const KelolaViolations = () => {
   const [filterKategori, setFilterKategori] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const kategoris = ["RINGAN", "SEDANG", "BERAT", "SANGAT BERAT"];
+  const kategoris = ["ringan", "sedang", "berat"];
+  const jenisOptions = ["kedisiplinan", "akademik", "lainnya"];
 
   const fetchViolations = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await API.get("/api/violations");
+      const res = await violationAPI.getAllViolations();
       setViolations(res.data);
       setFilteredViolations(res.data);
     } catch (err) {
@@ -62,20 +64,21 @@ const KelolaViolations = () => {
     const payload = {
       nama: form.nama,
       kategori: form.kategori,
+      jenis: form.jenis,
       point: parseInt(form.point),
       deskripsi: form.deskripsi,
     };
 
     try {
       if (editingId) {
-        await API.put(`/api/violations/${editingId}`, payload);
+        await violationAPI.updateViolation(editingId, payload);
         Swal.fire(
           "Berhasil!",
           "Jenis pelanggaran berhasil diperbarui.",
           "success"
         );
       } else {
-        await API.post("/api/violations", payload);
+        await violationAPI.createViolation(payload);
         Swal.fire(
           "Berhasil!",
           "Jenis pelanggaran baru berhasil ditambahkan.",
@@ -86,6 +89,7 @@ const KelolaViolations = () => {
       setForm({
         nama: "",
         kategori: "",
+        jenis: "",
         point: "",
         deskripsi: "",
       });
@@ -106,6 +110,7 @@ const KelolaViolations = () => {
     setForm({
       nama: violation.nama,
       kategori: violation.kategori,
+      jenis: violation.jenis || "",
       point: violation.point.toString(),
       deskripsi: violation.deskripsi || "",
     });
@@ -123,7 +128,7 @@ const KelolaViolations = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await API.delete(`/api/violations/${violation.id}`);
+          await violationAPI.deleteViolation(violation.id);
           Swal.fire("Terhapus!", "Jenis pelanggaran telah dihapus.", "success");
           fetchViolations();
         } catch (err) {
@@ -287,6 +292,21 @@ const KelolaViolations = () => {
               ))}
             </select>
 
+            <select
+              name="jenis"
+              value={form.jenis}
+              onChange={handleChange}
+              required
+              className="border p-3 rounded"
+            >
+              <option value="">Pilih Jenis</option>
+              {jenisOptions.map((jenis) => (
+                <option key={jenis} value={jenis}>
+                  {jenis}
+                </option>
+              ))}
+            </select>
+
             <input
               type="number"
               name="point"
@@ -349,6 +369,7 @@ const KelolaViolations = () => {
               <tr>
                 <th className="border px-4 py-2 text-left">Nama Pelanggaran</th>
                 <th className="border px-4 py-2 text-center">Kategori</th>
+                <th className="border px-4 py-2 text-center">Jenis</th>
                 <th className="border px-4 py-2 text-center">Poin</th>
                 <th className="border px-4 py-2 text-left">Deskripsi</th>
                 <th className="border px-4 py-2 text-center">Aksi</th>
@@ -370,6 +391,11 @@ const KelolaViolations = () => {
                         )}`}
                       >
                         {violation.kategori}
+                      </span>
+                    </td>
+                    <td className="border px-4 py-2 text-center">
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                        {violation.jenis || "-"}
                       </span>
                     </td>
                     <td className="border px-4 py-2 text-center">
@@ -406,7 +432,7 @@ const KelolaViolations = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="text-center py-4 text-gray-500">
+                  <td colSpan="6" className="text-center py-4 text-gray-500">
                     Tidak ada data jenis pelanggaran ditemukan.
                   </td>
                 </tr>

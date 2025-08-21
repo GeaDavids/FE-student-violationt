@@ -116,13 +116,14 @@ const DashboardLaporan = () => {
       stats: "Dashboard analitik",
     },
     {
-      title: "Monitoring Pelanggaran",
-      description: "Monitor pelanggaran siswa secara real-time",
+      title: "Rekap Laporan Historis",
+      description:
+        "Lihat rekap laporan dari tahun ajaran yang sudah tidak aktif",
       icon: FiActivity,
       color: "bg-orange-500",
       bgColor: "bg-orange-50",
       path: "/superadmin/monitoring-pelanggaran",
-      stats: "Real-time monitoring",
+      stats: "Data historis",
     },
   ];
 

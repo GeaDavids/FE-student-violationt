@@ -16,6 +16,7 @@ import {
   FiRefreshCw,
   FiDownload,
 } from "react-icons/fi";
+import academicYearAPI from "../../api/academicYear";
 
 const LaporanSiswa = () => {
   const [reports, setReports] = useState([]);
@@ -24,6 +25,7 @@ const LaporanSiswa = () => {
   const [classrooms, setClassrooms] = useState([]);
   const [violations, setViolations] = useState([]);
   const [achievements, setAchievements] = useState([]);
+  const [currentAcademicYear, setCurrentAcademicYear] = useState(null);
   const [loading, setLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState({});
@@ -108,6 +110,11 @@ const LaporanSiswa = () => {
         limit: pagination.limit.toString(),
       });
 
+      // Add current academic year filter
+      if (currentAcademicYear?.id) {
+        params.append("tahunAjaranId", currentAcademicYear.id.toString());
+      }
+
       // Add filters to params
       Object.entries(filters).forEach(([key, value]) => {
         if (value) params.append(key, value);
@@ -127,6 +134,31 @@ const LaporanSiswa = () => {
       Swal.fire("Error!", "Gagal mengambil data laporan", "error");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch current active academic year
+  const fetchCurrentAcademicYear = async () => {
+    try {
+      const response = await academicYearAPI.getCurrent();
+      console.log("Current academic year:", response.data);
+
+      if (response.data.data) {
+        setCurrentAcademicYear(response.data.data);
+      } else if (response.data.id) {
+        setCurrentAcademicYear(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching current academic year:", error);
+      // If no active academic year, try to get fallback
+      try {
+        const fallbackResponse = await academicYearAPI.getFallback();
+        if (fallbackResponse.data.data) {
+          setCurrentAcademicYear(fallbackResponse.data.data);
+        }
+      } catch (fallbackError) {
+        console.error("Error fetching fallback academic year:", fallbackError);
+      }
     }
   };
 
@@ -192,12 +224,28 @@ const LaporanSiswa = () => {
   };
 
   useEffect(() => {
-    fetchHelperData();
-    fetchReports(1);
+    const initializeData = async () => {
+      // Load current academic year first
+      await fetchCurrentAcademicYear();
+
+      // Then load other helper data
+      await fetchHelperData();
+    };
+
+    initializeData();
   }, []);
 
+  // Fetch reports when academic year is loaded
   useEffect(() => {
-    fetchReports(1);
+    if (currentAcademicYear) {
+      fetchReports(1);
+    }
+  }, [currentAcademicYear]);
+
+  useEffect(() => {
+    if (currentAcademicYear) {
+      fetchReports(1);
+    }
   }, [filters]);
 
   // Close dropdown when clicking outside
@@ -290,6 +338,11 @@ const LaporanSiswa = () => {
       return;
     }
 
+    if (!currentAcademicYear) {
+      Swal.fire("Error!", "Tahun ajaran tidak tersedia", "error");
+      return;
+    }
+
     if (form.tipe === "violation" && !form.violationId) {
       Swal.fire("Error!", "Jenis pelanggaran wajib dipilih", "error");
       return;
@@ -312,6 +365,7 @@ const LaporanSiswa = () => {
         deskripsi: form.deskripsi || "",
         bukti: form.bukti || "",
         pointSaat: form.pointSaat ? parseInt(form.pointSaat) : null,
+        tahunAjaranId: currentAcademicYear ? currentAcademicYear.id : null,
       };
 
       console.log("Payload being sent:", payload);
@@ -460,10 +514,17 @@ const LaporanSiswa = () => {
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold text-[#003366] flex items-center gap-3">
-          <FiFileText className="text-blue-600" />
-          Laporan Siswa
-        </h2>
+        <div className="flex flex-col">
+          <h2 className="text-3xl font-bold text-[#003366] flex items-center gap-3">
+            <FiFileText className="text-blue-600" />
+            Laporan Siswa
+          </h2>
+          {currentAcademicYear && (
+            <p className="text-sm text-gray-600 mt-1 ml-9">
+              Tahun Ajaran: {currentAcademicYear.nama_tahun}
+            </p>
+          )}
+        </div>
         <div className="flex gap-2">
           <button
             onClick={handleExport}

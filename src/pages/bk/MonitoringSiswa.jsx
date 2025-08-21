@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import Swal from "sweetalert2";
 import {
   FiMonitor,
@@ -16,21 +15,17 @@ import {
   FiBarChart2,
   FiTarget,
 } from "react-icons/fi";
+import AcademicYearSelector from "../../components/AcademicYearSelector";
+import bkAPI from "../../api/bk";
 
 const MonitoringSiswa = () => {
   const navigate = useNavigate();
-
-  // Axios config
-  const axiosConfig = {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  };
 
   const [siswaData, setSiswaData] = useState([]);
   const [filteredSiswa, setFilteredSiswa] = useState([]);
   const [kelasList, setKelasList] = useState([]);
   const [selectedKelas, setSelectedKelas] = useState("");
+  const [selectedAcademicYear, setSelectedAcademicYear] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRisk, setFilterRisk] = useState("");
   const [loading, setLoading] = useState(false);
@@ -52,28 +47,49 @@ const MonitoringSiswa = () => {
     try {
       setLoading(true);
 
-      // Build query parameters
-      const params = new URLSearchParams({
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
-      });
+      if (selectedAcademicYear && selectedAcademicYear !== "all") {
+        // Use academic year API
+        const response = await bkAPI.getStudentsByAcademicYear({
+          tahunAjaranId: selectedAcademicYear,
+          page: pagination.page,
+          limit: pagination.limit,
+          classroomId: selectedKelas,
+          riskLevel: filterRisk,
+          search: searchTerm,
+        });
 
-      if (selectedKelas) params.append("classroomId", selectedKelas);
-      if (filterRisk) params.append("riskLevel", filterRisk);
-      if (searchTerm) params.append("search", searchTerm);
+        const studentsData = response.data.data || [];
+        const paginationData = response.data.pagination || {};
 
-      // Fetch students from new monitoring endpoint
-      const response = await axios.get(
-        `/api/bk/students?${params}`,
-        axiosConfig
-      );
+        setSiswaData(studentsData);
+        setPagination((prev) => ({
+          ...prev,
+          total: paginationData.total || 0,
+          totalPages: paginationData.totalPages || 0,
+        }));
 
-      const studentsData = response.data.data || [];
-      const paginationData = response.data.pagination || {};
+        // Calculate statistics
+        calculateStatistics(studentsData);
+      } else {
+        // Legacy behavior - fetch all data using bkAPI
+        const response = await bkAPI.getStudents({
+          page: pagination.page,
+          limit: pagination.limit,
+          classroomId: selectedKelas,
+          riskLevel: filterRisk,
+          search: searchTerm,
+        });
 
-      setSiswaData(studentsData);
-      setFilteredSiswa(studentsData);
-      setPagination(paginationData);
+        const studentsData = response.data.data || [];
+        const paginationData = response.data.pagination || {};
+
+        setSiswaData(studentsData);
+        setFilteredSiswa(studentsData);
+        setPagination(paginationData);
+
+        // Calculate statistics
+        calculateStatistics(studentsData);
+      }
     } catch (err) {
       console.error("Error fetching students for monitoring:", err);
       Swal.fire("Error!", "Gagal mengambil data siswa", "error");
@@ -82,15 +98,41 @@ const MonitoringSiswa = () => {
     }
   }, [
     selectedKelas,
+    selectedAcademicYear,
     filterRisk,
     searchTerm,
     pagination.page,
     pagination.limit,
   ]);
 
+  const calculateStatistics = (students) => {
+    const total = students.length;
+    let riskHigh = 0,
+      riskMedium = 0,
+      riskLow = 0;
+    let totalScore = 0;
+
+    students.forEach((student) => {
+      const score = student.totalScore || 0;
+      totalScore += score;
+
+      if (score <= 30) riskHigh++;
+      else if (score <= 70) riskMedium++;
+      else riskLow++;
+    });
+
+    setStatistics({
+      totalSiswa: total,
+      riskHigh,
+      riskMedium,
+      riskLow,
+      avgScore: total > 0 ? Math.round(totalScore / total) : 0,
+    });
+  };
+
   const fetchDashboardStats = async () => {
     try {
-      const response = await axios.get("/api/bk/dashboard", axiosConfig);
+      const response = await bkAPI.getDashboard();
       const dashboardData = response.data.data;
 
       setStatistics({
@@ -107,7 +149,7 @@ const MonitoringSiswa = () => {
 
   const fetchKelas = async () => {
     try {
-      const res = await axios.get("/api/bk/classrooms", axiosConfig);
+      const res = await bkAPI.getClassrooms();
       setKelasList(res.data.data || []);
     } catch (err) {
       console.error("Gagal mengambil data kelas:", err);
@@ -159,15 +201,22 @@ const MonitoringSiswa = () => {
         <h2 className="text-2xl font-bold text-[#003366] flex items-center gap-2">
           <FiMonitor /> Monitoring Siswa
         </h2>
-        <button
-          onClick={() => {
-            fetchSiswaWithScores();
-            resetFilters();
-          }}
-          className="bg-[#003366] text-white px-4 py-2 rounded flex items-center gap-2"
-        >
-          <FiRefreshCw /> Refresh Data
-        </button>
+        <div className="flex items-center space-x-4">
+          <AcademicYearSelector
+            value={selectedAcademicYear}
+            onChange={setSelectedAcademicYear}
+            className="w-48"
+          />
+          <button
+            onClick={() => {
+              fetchSiswaWithScores();
+              resetFilters();
+            }}
+            className="bg-[#003366] text-white px-4 py-2 rounded flex items-center gap-2"
+          >
+            <FiRefreshCw /> Refresh Data
+          </button>
+        </div>
       </div>
 
       {/* Statistics Cards */}

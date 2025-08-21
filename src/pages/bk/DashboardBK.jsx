@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../../api/api";
+import AcademicYearSelector from "../../components/AcademicYearSelector";
+import AcademicYearWarning from "../../components/AcademicYearWarning";
+import bkAPI from "../../api/bk";
 import {
   FiAlertCircle,
   FiUsers,
@@ -24,6 +27,8 @@ const DashboardBK = () => {
   const [userName, setUserName] = useState("");
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [selectedAcademicYear, setSelectedAcademicYear] = useState(null);
+  const [academicYearInfo, setAcademicYearInfo] = useState(null);
   const [dashboardData, setDashboardData] = useState({
     totalViolations: 0,
     totalAchievements: 0,
@@ -45,25 +50,35 @@ const DashboardBK = () => {
     if (!storedRole) navigate("/");
 
     fetchDashboardData();
-  }, [navigate]);
+  }, [navigate, selectedAcademicYear]);
 
   const fetchDashboardData = async () => {
     setLoading(true);
 
     try {
-      // Fetch combined data for violations and achievements
-      const [violationsRes, achievementsRes, studentsRes] = await Promise.all([
-        API.get("/api/student-violations"),
-        API.get("/api/student-achievements"),
-        API.get("/api/users/students"),
-      ]);
+      if (selectedAcademicYear && selectedAcademicYear !== "all") {
+        // Fetch filtered data by academic year using new API endpoints
+        const response = await bkAPI.getBKDashboardByAcademicYear(
+          selectedAcademicYear
+        );
+        setDashboardData(response.data);
+      } else {
+        // Fetch all data (legacy behavior)
+        const [violationsRes, achievementsRes, studentsRes] = await Promise.all(
+          [
+            API.get("/api/student-violations"),
+            API.get("/api/student-achievements"),
+            API.get("/api/users/students"),
+          ]
+        );
 
-      const violations = violationsRes.data;
-      const achievements = achievementsRes.data;
-      const students = studentsRes.data;
+        const violations = violationsRes.data;
+        const achievements = achievementsRes.data;
+        const students = studentsRes.data;
 
-      // Process dashboard data
-      processDashboardData(violations, achievements, students);
+        // Process dashboard data
+        processDashboardData(violations, achievements, students);
+      }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
       // Use mock data in case of error
@@ -225,17 +240,27 @@ const DashboardBK = () => {
             Selamat datang, {userName || "BK"}
           </p>
         </div>
-        <div className="text-right">
-          <p className="text-sm text-gray-500">
-            {new Date().toLocaleDateString("id-ID", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </p>
+        <div className="flex items-center space-x-4">
+          <AcademicYearSelector
+            value={selectedAcademicYear}
+            onChange={setSelectedAcademicYear}
+            className="w-48"
+          />
+          <div className="text-right">
+            <p className="text-sm text-gray-500">
+              {new Date().toLocaleDateString("id-ID", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </p>
+          </div>
         </div>
       </div>
+
+      {/* Academic Year Warning */}
+      <AcademicYearWarning academicYear={academicYearInfo} showInfo={true} />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -485,6 +510,60 @@ const DashboardBK = () => {
           </div>
         </div>
       </div>
+
+      {/* Violation Trends Chart */}
+      {selectedAcademicYear && selectedAcademicYear !== "all" && (
+        <div className="bg-white rounded-lg shadow p-6 mt-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            Trend Pelanggaran - Tahun Ajaran {selectedAcademicYear}
+          </h2>
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          ) : dashboardData.violationTrends &&
+            dashboardData.violationTrends.length > 0 ? (
+            <div className="h-64">
+              <div className="flex items-end justify-between h-48 space-x-2">
+                {dashboardData.violationTrends.map((trend, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-col items-center flex-1"
+                  >
+                    <div
+                      className="bg-red-500 rounded-t w-full relative group cursor-pointer"
+                      style={{
+                        height: `${Math.max(
+                          (trend.count /
+                            Math.max(
+                              ...dashboardData.violationTrends.map(
+                                (t) => t.count
+                              )
+                            )) *
+                            100,
+                          5
+                        )}%`,
+                        minHeight: "4px",
+                      }}
+                    >
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        {trend.count} pelanggaran
+                      </div>
+                    </div>
+                    <div className="mt-2 text-xs text-gray-600 text-center">
+                      {trend.month}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              Tidak ada data trend untuk tahun ajaran ini
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

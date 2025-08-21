@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import Swal from "sweetalert2";
-import API from "../../api/api";
+import achievementAPI from "../../api/achievement";
 import {
   FiAward,
   FiEdit2,
@@ -29,19 +29,17 @@ const KelolaAchievements = () => {
   const [loading, setLoading] = useState(false);
 
   const kategoris = [
-    "AKADEMIK",
-    "NON-AKADEMIK",
-    "OLAHRAGA",
-    "SENI",
-    "KEPEMIMPINAN",
-    "TEKNOLOGI",
-    "LAINNYA",
+    "akademik",
+    "non_akademik",
+    "olahraga",
+    "kesenian",
+    "lainnya",
   ];
 
   const fetchAchievements = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await API.get("/api/achievements");
+      const res = await achievementAPI.getAllAchievements();
       setAchievements(res.data);
       setFilteredAchievements(res.data);
     } catch (err) {
@@ -77,14 +75,14 @@ const KelolaAchievements = () => {
 
     try {
       if (editingId) {
-        await API.put(`/api/achievements/${editingId}`, payload);
+        await achievementAPI.updateAchievement(editingId, payload);
         Swal.fire(
           "Berhasil!",
           "Jenis prestasi berhasil diperbarui.",
           "success"
         );
       } else {
-        await API.post("/api/achievements", payload);
+        await achievementAPI.createAchievement(payload);
         Swal.fire(
           "Berhasil!",
           "Jenis prestasi baru berhasil ditambahkan.",
@@ -132,7 +130,7 @@ const KelolaAchievements = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await API.delete(`/api/achievements/${achievement.id}`);
+          await achievementAPI.deleteAchievement(achievement.id);
           Swal.fire("Terhapus!", "Jenis prestasi telah dihapus.", "success");
           fetchAchievements();
         } catch (err) {

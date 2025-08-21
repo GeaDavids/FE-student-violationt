@@ -7,6 +7,7 @@ import DashboardBK from "./pages/bk/DashboardBK";
 import StudentAchievements from "./pages/bk/StudentAchievements";
 import ExportViolations from "./pages/bk/ExportViolations";
 import LaporanSiswa from "./pages/bk/LaporanSiswa";
+import RekapLaporan from "./pages/bk/RekapLaporan";
 import KelolaViolations from "./pages/bk/KelolaViolations";
 import KelolaAchievements from "./pages/bk/KelolaAchievements";
 import MonitoringSiswa from "./pages/bk/MonitoringSiswa";
@@ -33,13 +34,17 @@ import {
   KelolaViolation,
   KelolaPrestasi,
   LaporanPelanggaran,
-  MonitoringPelanggaran,
+  RekapHistori,
 } from "./pages/superadmin";
 import PilihKelas from "./pages/superadmin/users/students/PilihKelas";
 import DaftarSiswa from "./pages/superadmin/users/students/DaftarSiswa";
 import SiswaNotifikasi from "./pages/siswa/SiswaNotifikasi";
 import SiswaProfile from "./pages/siswa/SiswaProfile";
-import InputPelanggaran from "./pages/guru/InputPelanggaran";
+import DashboardGuru from "./pages/guru/DashboardGuru";
+import ReportsGuru from "./pages/guru/ReportsGuru";
+import ProfileGuru from "./pages/guru/ProfileGuru";
+import SuperadminAcademicYear from "./pages/SuperadminAcademicYear";
+import KenaikanKelas from "./pages/superadmin/KenaikanKelas";
 
 const App = () => {
   return (
@@ -135,6 +140,24 @@ const App = () => {
         />
 
         <Route
+          path="/superadmin/tahun-ajaran"
+          element={
+            <MainLayout>
+              <SuperadminAcademicYear />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/superadmin/kenaikan-kelas"
+          element={
+            <MainLayout>
+              <KenaikanKelas />
+            </MainLayout>
+          }
+        />
+
+        <Route
           path="/superadmin/kelola-violation"
           element={
             <MainLayout>
@@ -171,10 +194,10 @@ const App = () => {
         />
 
         <Route
-          path="/superadmin/monitoring-pelanggaran"
+          path="/superadmin/rekap-historis"
           element={
             <MainLayout>
-              <MonitoringPelanggaran />
+              <RekapHistori />
             </MainLayout>
           }
         />
@@ -306,6 +329,15 @@ const App = () => {
         />
 
         <Route
+          path="/bk/rekap-laporan"
+          element={
+            <MainLayout>
+              <RekapLaporan />
+            </MainLayout>
+          }
+        />
+
+        <Route
           path="/bk/kelola-violations"
           element={
             <MainLayout>
@@ -360,10 +392,28 @@ const App = () => {
         />
 
         <Route
-          path="/guru/input-pelanggaran"
+          path="/guru/dashboard"
           element={
             <MainLayout>
-              <InputPelanggaran />
+              <DashboardGuru />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/guru/reports"
+          element={
+            <MainLayout>
+              <ReportsGuru />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/guru/profile"
+          element={
+            <MainLayout>
+              <ProfileGuru />
             </MainLayout>
           }
         />

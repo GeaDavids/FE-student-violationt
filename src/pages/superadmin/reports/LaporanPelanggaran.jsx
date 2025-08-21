@@ -16,6 +16,7 @@ import {
   FiRefreshCw,
   FiDownload,
 } from "react-icons/fi";
+import academicYearAPI from "../../../api/academicYear";
 
 const LaporanPelanggaran = () => {
   const [reports, setReports] = useState([]);
@@ -24,6 +25,7 @@ const LaporanPelanggaran = () => {
   const [classrooms, setClassrooms] = useState([]);
   const [violations, setViolations] = useState([]);
   const [achievements, setAchievements] = useState([]);
+  const [currentAcademicYear, setCurrentAcademicYear] = useState(null);
   const [loading, setLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState({});
@@ -99,7 +101,7 @@ const LaporanPelanggaran = () => {
     });
   };
 
-  // Fetch all reports with filters
+  // Fetch all reports with filters (only from active academic year)
   const fetchReports = async (page = 1) => {
     try {
       setLoading(true);
@@ -107,6 +109,11 @@ const LaporanPelanggaran = () => {
         page: page.toString(),
         limit: pagination.limit.toString(),
       });
+
+      // Add current academic year filter
+      if (currentAcademicYear?.id) {
+        params.append("tahunAjaranId", currentAcademicYear.id.toString());
+      }
 
       // Add filters to params
       Object.entries(filters).forEach(([key, value]) => {
@@ -127,6 +134,31 @@ const LaporanPelanggaran = () => {
       Swal.fire("Error!", "Gagal mengambil data laporan", "error");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch current active academic year
+  const fetchCurrentAcademicYear = async () => {
+    try {
+      const response = await academicYearAPI.getCurrent();
+      console.log("Current academic year:", response.data);
+
+      if (response.data.data) {
+        setCurrentAcademicYear(response.data.data);
+      } else if (response.data.id) {
+        setCurrentAcademicYear(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching current academic year:", error);
+      // If no active academic year, try to get fallback
+      try {
+        const fallbackResponse = await academicYearAPI.getFallback();
+        if (fallbackResponse.data.data) {
+          setCurrentAcademicYear(fallbackResponse.data.data);
+        }
+      } catch (fallbackError) {
+        console.error("Error fetching fallback academic year:", fallbackError);
+      }
     }
   };
 
@@ -192,13 +224,18 @@ const LaporanPelanggaran = () => {
   };
 
   useEffect(() => {
-    fetchHelperData();
-    fetchReports(1);
+    const initializeData = async () => {
+      await fetchCurrentAcademicYear();
+      await fetchHelperData();
+    };
+    initializeData();
   }, []);
 
   useEffect(() => {
-    fetchReports(1);
-  }, [filters]);
+    if (currentAcademicYear) {
+      fetchReports(1);
+    }
+  }, [currentAcademicYear, filters]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -290,6 +327,15 @@ const LaporanPelanggaran = () => {
       return;
     }
 
+    if (!currentAcademicYear?.id) {
+      Swal.fire(
+        "Error!",
+        "Tidak ada tahun ajaran aktif. Laporan hanya dapat dibuat untuk tahun ajaran aktif.",
+        "error"
+      );
+      return;
+    }
+
     if (form.tipe === "violation" && !form.violationId) {
       Swal.fire("Error!", "Jenis pelanggaran wajib dipilih", "error");
       return;
@@ -312,6 +358,7 @@ const LaporanPelanggaran = () => {
         deskripsi: form.deskripsi || "",
         bukti: form.bukti || "",
         pointSaat: form.pointSaat ? parseInt(form.pointSaat) : null,
+        tahunAjaranId: currentAcademicYear?.id, // Add current academic year
       };
 
       console.log("Payload being sent:", payload);
@@ -460,10 +507,31 @@ const LaporanPelanggaran = () => {
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold text-[#003366] flex items-center gap-3">
-          <FiFileText className="text-blue-600" />
-          Laporan Siswa
-        </h2>
+        <div>
+          <h2 className="text-3xl font-bold text-[#003366] flex items-center gap-3">
+            <FiFileText className="text-blue-600" />
+            Laporan Siswa
+          </h2>
+          {currentAcademicYear && (
+            <div className="flex items-center gap-2 mt-2">
+              <FiCalendar className="text-blue-500" />
+              <span className="text-lg font-medium text-blue-600">
+                Tahun Ajaran Aktif: {currentAcademicYear.tahunAjaran}
+              </span>
+              <span className="text-sm text-gray-500">
+                (
+                {new Date(currentAcademicYear.tanggalMulai).toLocaleDateString(
+                  "id-ID"
+                )}{" "}
+                -
+                {new Date(
+                  currentAcademicYear.tanggalSelesai
+                ).toLocaleDateString("id-ID")}
+                )
+              </span>
+            </div>
+          )}
+        </div>
         <div className="flex gap-2">
           <button
             onClick={handleExport}
@@ -565,9 +633,19 @@ const LaporanPelanggaran = () => {
       {/* Form */}
       {formVisible && (
         <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            {editMode ? "Edit Laporan" : "Tambah Laporan Baru"}
-          </h3>
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {editMode ? "Edit Laporan" : "Tambah Laporan Baru"}
+              </h3>
+              {currentAcademicYear && (
+                <p className="text-sm text-blue-600 mt-1 flex items-center gap-1">
+                  <FiCalendar className="w-4 h-4" />
+                  Laporan untuk tahun ajaran: {currentAcademicYear.tahunAjaran}
+                </p>
+              )}
+            </div>
+          </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="relative student-search-container">
