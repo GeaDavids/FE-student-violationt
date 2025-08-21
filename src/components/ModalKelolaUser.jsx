@@ -2,7 +2,7 @@ import { useState } from "react";
 import { PilihKelas } from "../pages/superadmin";
 
 const ModalKelolaUser = ({ type, onClose }) => {
-  const [subType, setSubType] = useState(null); // siswa | guru | bk
+  const [subType, setSubType] = useState(null);
 
   const renderSubMenu = () => (
     <>
