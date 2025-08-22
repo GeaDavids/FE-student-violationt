@@ -17,10 +17,10 @@ import {
   FiFileText,
   FiDownload,
 } from "react-icons/fi";
-import AcademicYearSelector from "../../../components/AcademicYearSelector";
-import AcademicYearWarning from "../../../components/AcademicYearWarning";
-import superadminAPI from "../../../api/superadmin";
-import academicYearAPI from "../../../api/academicYear";
+import AcademicYearSelector from "../../components/AcademicYearSelector";
+import AcademicYearWarning from "../../components/AcademicYearWarning";
+import superadminAPI from "../../api/superadmin";
+import academicYearAPI from "../../api/academicYear";
 
 const RekapLaporanHistoris = () => {
   const [selectedAcademicYear, setSelectedAcademicYear] = useState("");

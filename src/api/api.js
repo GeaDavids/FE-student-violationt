@@ -7,7 +7,7 @@ console.log("API Base URL:", BASE_URL);
 
 // Create an axios instance with the base URL for the API
 const API = axios.create({
-  baseURL: BASE_URL,
+  baseURL: BASE_URL + "/api", // Add /api prefix here
   timeout: 10000, // 10 seconds timeout
 });
 

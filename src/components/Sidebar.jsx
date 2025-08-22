@@ -25,6 +25,7 @@ const Sidebar = ({ onKelolaUserClick }) => {
   const [role, setRole] = useState("");
   const [showUserSubmenu, setShowUserSubmenu] = useState(false);
   const [showMasterDataSubmenu, setShowMasterDataSubmenu] = useState(false);
+  const [showKesiswaanSubmenu, setShowKesiswaanSubmenu] = useState(false);
   const [showReportSubmenu, setShowReportSubmenu] = useState(false);
   const [showBKLaporanSubmenu, setShowBKLaporanSubmenu] = useState(false);
   const [showBKMasterDataSubmenu, setShowBKMasterDataSubmenu] = useState(false);
@@ -47,6 +48,10 @@ const Sidebar = ({ onKelolaUserClick }) => {
 
   const toggleMasterDataSubmenu = () => {
     setShowMasterDataSubmenu(!showMasterDataSubmenu);
+  };
+
+  const toggleKesiswaanSubmenu = () => {
+    setShowKesiswaanSubmenu(!showKesiswaanSubmenu);
   };
 
   const toggleReportSubmenu = () => {
@@ -156,7 +161,7 @@ const Sidebar = ({ onKelolaUserClick }) => {
                 >
                   <div className="flex items-center gap-3">
                     <FiFileText className="text-lg text-green-300 group-hover:text-white transition-colors" />
-                    <span className="font-medium">Laporan & Monitoring</span>
+                    <span className="font-medium">Laporan </span>
                   </div>
                   {showBKLaporanSubmenu ? (
                     <FiChevronDown className="text-sm text-blue-200 group-hover:text-white transition-all duration-200" />
@@ -212,18 +217,25 @@ const Sidebar = ({ onKelolaUserClick }) => {
                 {showBKMasterDataSubmenu && (
                   <div className="ml-4 mt-2 space-y-1 border-l-2 border-purple-400/30 pl-4">
                     <Link
-                      to="/bk/kelola-violations"
+                      to="/bk/kelola-pelanggaran"
                       className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-all duration-200 group text-sm"
                     >
                       <FiFileText className="text-orange-300 group-hover:text-white transition-colors text-sm" />
                       <span>Kelola Pelanggaran</span>
                     </Link>
                     <Link
-                      to="/bk/kelola-achievements"
+                      to="/bk/kelola-prestasi"
                       className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-all duration-200 group text-sm"
                     >
                       <FiAward className="text-yellow-300 group-hover:text-white transition-colors text-sm" />
                       <span>Kelola Prestasi</span>
+                    </Link>
+                    <Link
+                      to="/bk/kelola-kategori"
+                      className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-all duration-200 group text-sm"
+                    >
+                      <FiAward className="text-yellow-300 group-hover:text-white transition-colors text-sm" />
+                      <span>Kelola Kategori</span>
                     </Link>
                   </div>
                 )}
@@ -361,24 +373,51 @@ const Sidebar = ({ onKelolaUserClick }) => {
                       <FiArrowUp className="text-purple-300 group-hover:text-white transition-colors text-sm" />
                       <span>Kenaikan Kelas</span>
                     </Link>
-                    <Link
-                      to="/superadmin/kelola-violation"
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-all duration-200 group text-sm"
-                    >
-                      <FiFileText className="text-orange-300 group-hover:text-white transition-colors text-sm" />
-                      <span>Data Pelanggaran</span>
-                    </Link>
-                    <Link
-                      to="/superadmin/kelola-prestasi"
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-all duration-200 group text-sm"
-                    >
-                      <FiAward className="text-yellow-300 group-hover:text-white transition-colors text-sm" />
-                      <span>Data Prestasi</span>
-                    </Link>
                   </div>
                 )}
               </div>
 
+              {/* Kesiswaan */}
+              <button
+                onClick={toggleKesiswaanSubmenu}
+                className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-200 group"
+              >
+                <div className="flex items-center gap-3">
+                  <FiDatabase className="text-lg text-purple-300 group-hover:text-white transition-colors" />
+                  <span className="font-medium">Kesiswaan</span>
+                </div>
+                {setShowKesiswaanSubmenu ? (
+                  <FiChevronDown className="text-sm text-blue-200 group-hover:text-white transition-all duration-200" />
+                ) : (
+                  <FiChevronRight className="text-sm text-blue-200 group-hover:text-white transition-all duration-200" />
+                )}
+              </button>
+
+              {showKesiswaanSubmenu && (
+                <div className="ml-4 mt-2 space-y-1 border-l-2 border-purple-400/30 pl-4">
+                  <Link
+                    to="/superadmin/kategori"
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-all duration-200 group text-sm"
+                  >
+                    <FiFileText className="text-orange-300 group-hover:text-white transition-colors text-sm" />
+                    <span>Kategori</span>
+                  </Link>
+                  <Link
+                    to="/superadmin/kelola-pelanggaran"
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-all duration-200 group text-sm"
+                  >
+                    <FiAward className="text-yellow-300 group-hover:text-white transition-colors text-sm" />
+                    <span>kelola Pelanggaran</span>
+                  </Link>
+                  <Link
+                    to="/superadmin/kelola-prestasi"
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-all duration-200 group text-sm"
+                  >
+                    <FiAward className="text-yellow-300 group-hover:text-white transition-colors text-sm" />
+                    <span>Data Prestasi</span>
+                  </Link>
+                </div>
+              )}
               {/* Report */}
               <div>
                 <button

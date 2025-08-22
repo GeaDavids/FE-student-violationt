@@ -13,6 +13,8 @@ import {
   FiUserCheck,
   FiPhone,
   FiHash,
+  FiKey,
+  FiAward,
 } from "react-icons/fi";
 
 const DetailGuru = () => {
@@ -127,6 +129,36 @@ const DetailGuru = () => {
     });
   };
 
+  const handleResetPassword = async () => {
+    const roleLabel = guru.role === "bk" ? "BK" : "Guru";
+    Swal.fire({
+      title: `Reset Password ${roleLabel}?`,
+      text: "Password akan direset ke password default. User perlu menggunakan password default untuk login.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, reset!",
+      cancelButtonText: "Batal",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await axios.put(
+            `/api/superadmin/teachers/${guru.id}/reset-password`,
+            {},
+            axiosConfig
+          );
+          Swal.fire(
+            "Berhasil!",
+            `Password ${roleLabel} berhasil direset ke default.`,
+            "success"
+          );
+        } catch (err) {
+          Swal.fire("Gagal!", `Gagal reset password ${roleLabel}!`, "error");
+          console.error("Gagal reset password:", err);
+        }
+      }
+    });
+  };
+
   const handleCancel = () => {
     setEditForm({
       nama: guru.nama,
@@ -193,18 +225,13 @@ const DetailGuru = () => {
               <p className={`${isGuru ? "text-blue-100" : "text-purple-100"}`}>
                 {roleLabel}
               </p>
-              {guru.nip && (
-                <p
-                  className={`${
-                    isGuru ? "text-blue-200" : "text-purple-200"
-                  } text-sm mt-1`}
-                >
-                  NIP: {guru.nip}
-                </p>
-              )}
             </div>
             <div className="p-6">
               <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <FiAward className="text-gray-500" />
+                  <span className="text-gray-700">{guru.nip}</span>
+                </div>
                 <div className="flex items-center gap-3">
                   <FiMail className="text-gray-500" />
                   <span className="text-gray-700">{guru.email}</span>
@@ -256,6 +283,13 @@ const DetailGuru = () => {
                     >
                       <FiEdit />
                       Edit
+                    </button>
+                    <button
+                      onClick={handleResetPassword}
+                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 shadow-md"
+                    >
+                      <FiKey />
+                      Reset Password
                     </button>
                     <button
                       onClick={handleDelete}

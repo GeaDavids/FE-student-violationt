@@ -14,6 +14,7 @@ import {
   FiMapPin,
   FiCalendar,
   FiBook,
+  FiKey,
 } from "react-icons/fi";
 
 const DetailSiswa = () => {
@@ -229,6 +230,35 @@ const DetailSiswa = () => {
     });
   };
 
+  const handleResetPassword = async () => {
+    Swal.fire({
+      title: "Reset Password Siswa?",
+      text: "Password akan direset ke password default. Siswa perlu menggunakan password default untuk login.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, reset!",
+      cancelButtonText: "Batal",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await axios.put(
+            `/api/superadmin/students/${id}/reset-password`,
+            {},
+            axiosConfig
+          );
+          Swal.fire(
+            "Berhasil!",
+            "Password siswa berhasil direset ke default.",
+            "success"
+          );
+        } catch (err) {
+          Swal.fire("Gagal!", "Gagal reset password siswa!", "error");
+          console.error("Gagal reset password siswa:", err);
+        }
+      }
+    });
+  };
+
   const handleBack = () => {
     if (kelasDipilih) {
       navigate(`/superadmin/kelola-siswa/${kelasDipilih}`, {
@@ -343,7 +373,7 @@ const DetailSiswa = () => {
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-center gap-2 text-gray-600">
                   <FiBook />
-                  <span>{siswa.kelas || namaKelasDipilih || "-"}</span>
+                  <span>{siswa.kelas || "-"}</span>
                 </div>
                 <div className="flex items-center justify-center gap-2 text-gray-600">
                   <FiCalendar />
@@ -377,6 +407,13 @@ const DetailSiswa = () => {
                     >
                       <FiEdit2 />
                       Edit
+                    </button>
+                    <button
+                      onClick={handleResetPassword}
+                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 shadow-md"
+                    >
+                      <FiKey />
+                      Reset Password
                     </button>
                     <button
                       onClick={handleDelete}
@@ -491,7 +528,7 @@ const DetailSiswa = () => {
                     </td>
                     <td className="py-4 px-2">
                       <span className="inline-flex px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                        {siswa.kelas || namaKelasDipilih || "-"}
+                        {siswa.kelas || "-"}
                       </span>
                     </td>
                   </tr>
@@ -503,30 +540,9 @@ const DetailSiswa = () => {
                       </div>
                     </td>
                     <td className="py-4 px-2">
-                      {isEditing ? (
-                        <select
-                          name="angkatanId"
-                          value={form.angkatanId}
-                          onChange={handleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          required
-                        >
-                          <option value="">Pilih Angkatan</option>
-                          {angkatanList.map((angkatan) => (
-                            <option key={angkatan.id} value={angkatan.id}>
-                              {angkatan.tahun || angkatan.year || angkatan.name}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <span className="inline-flex px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
-                          {siswa.angkatan?.tahun ||
-                            siswa.angkatan?.year ||
-                            siswa.angkatan?.name ||
-                            siswa.angkatanId ||
-                            "-"}
-                        </span>
-                      )}
+                      <span className="inline-flex px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        {siswa.angkatan.tahun || "-"}
+                      </span>
                     </td>
                   </tr>
                   <tr className="border-b border-gray-100">

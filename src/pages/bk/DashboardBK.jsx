@@ -40,6 +40,8 @@ const DashboardBK = () => {
     topAchievementTypes: [],
     reportsByClass: [],
     monthlyTrends: [],
+    violationTrends: [],
+    riskDistribution: { high: 0, medium: 0, low: 0 },
   });
 
   useEffect(() => {
@@ -58,16 +60,33 @@ const DashboardBK = () => {
     try {
       if (selectedAcademicYear && selectedAcademicYear !== "all") {
         // Fetch filtered data by academic year using new API endpoints
-        const response = await bkAPI.getBKDashboardByAcademicYear(
-          selectedAcademicYear
-        );
-        setDashboardData(response.data);
+        const response = await bkAPI.getDashboardByAcademicYear({
+          tahunAjaranId: selectedAcademicYear,
+        });
+
+        // Transform backend response to match frontend expectations
+        const backendData = response.data;
+        setDashboardData({
+          totalViolations: backendData.statistics?.totalViolations || 0,
+          totalAchievements: backendData.statistics?.totalAchievements || 0,
+          totalStudents: backendData.statistics?.totalStudents || 0,
+          violationsThisMonth: 0, // Not provided by backend for academic year view
+          achievementsThisMonth: 0, // Not provided by backend for academic year view
+          recentReports: [], // Not provided by backend for academic year view
+          topViolationTypes: backendData.topViolations || [],
+          topAchievementTypes: [],
+          reportsByClass: [],
+          monthlyTrends: [],
+          violationTrends: [],
+          riskDistribution: { high: 0, medium: 0, low: 0 },
+          academicYear: backendData.academicYear,
+        });
       } else {
         // Fetch all data (legacy behavior)
         const [violationsRes, achievementsRes, studentsRes] = await Promise.all(
           [
-            API.get("/api/student-violations"),
-            API.get("/api/student-achievements"),
+            API.get("/api/master/reports"),
+            API.get("/api/master/achievements"),
             API.get("/api/users/students"),
           ]
         );
@@ -93,6 +112,8 @@ const DashboardBK = () => {
         topAchievementTypes: [],
         reportsByClass: [],
         monthlyTrends: [],
+        violationTrends: [],
+        riskDistribution: { high: 0, medium: 0, low: 0 },
       });
     } finally {
       setLoading(false);
@@ -386,54 +407,56 @@ const DashboardBK = () => {
             </Link>
           </div>
           <div className="space-y-3">
-            {dashboardData.recentReports.slice(0, 5).map((report, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded"
-              >
-                <div className="flex items-center">
-                  <div
-                    className={`p-2 rounded-full ${
-                      report.type === "violation"
-                        ? "bg-red-100 text-red-600"
-                        : "bg-green-100 text-green-600"
-                    }`}
-                  >
-                    {report.type === "violation" ? (
-                      <FiAlertCircle className="h-4 w-4" />
-                    ) : (
-                      <FiAward className="h-4 w-4" />
-                    )}
+            {(dashboardData.recentReports || [])
+              .slice(0, 5)
+              .map((report, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded"
+                >
+                  <div className="flex items-center">
+                    <div
+                      className={`p-2 rounded-full ${
+                        report.type === "violation"
+                          ? "bg-red-100 text-red-600"
+                          : "bg-green-100 text-green-600"
+                      }`}
+                    >
+                      {report.type === "violation" ? (
+                        <FiAlertCircle className="h-4 w-4" />
+                      ) : (
+                        <FiAward className="h-4 w-4" />
+                      )}
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-gray-900">
+                        {report.student?.name ||
+                          report.student?.user?.name ||
+                          "Unknown"}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        {report.type === "violation"
+                          ? report.violation?.nama
+                          : report.achievement?.nama}
+                      </p>
+                    </div>
                   </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-900">
-                      {report.student?.name ||
-                        report.student?.user?.name ||
-                        "Unknown"}
+                  <div className="text-right">
+                    <p className="text-xs text-gray-500">
+                      {formatDate(report.tanggal)}
                     </p>
-                    <p className="text-xs text-gray-600">
-                      {report.type === "violation"
-                        ? report.violation?.nama
-                        : report.achievement?.nama}
-                    </p>
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs rounded-full ${
+                        report.type === "violation"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      {report.type === "violation" ? "Pelanggaran" : "Prestasi"}
+                    </span>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-xs text-gray-500">
-                    {formatDate(report.tanggal)}
-                  </p>
-                  <span
-                    className={`inline-flex px-2 py-1 text-xs rounded-full ${
-                      report.type === "violation"
-                        ? "bg-red-100 text-red-800"
-                        : "bg-green-100 text-green-800"
-                    }`}
-                  >
-                    {report.type === "violation" ? "Pelanggaran" : "Prestasi"}
-                  </span>
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
 
@@ -443,7 +466,7 @@ const DashboardBK = () => {
             Jenis Pelanggaran Teratas
           </h2>
           <div className="space-y-3">
-            {dashboardData.topViolationTypes.map((type, index) => (
+            {(dashboardData.topViolationTypes || []).map((type, index) => (
               <div key={index} className="flex justify-between items-center">
                 <span className="text-sm text-gray-900">{type.name}</span>
                 <div className="flex items-center">
@@ -455,9 +478,9 @@ const DashboardBK = () => {
                           dashboardData.topViolationTypes.length > 0
                             ? (type.count /
                                 Math.max(
-                                  ...dashboardData.topViolationTypes.map(
-                                    (t) => t.count
-                                  )
+                                  ...(
+                                    dashboardData.topViolationTypes || []
+                                  ).map((t) => t.count)
                                 )) *
                               100
                             : 0
@@ -478,7 +501,7 @@ const DashboardBK = () => {
               Jenis Prestasi Teratas
             </h3>
             <div className="space-y-3">
-              {dashboardData.topAchievementTypes.map((type, index) => (
+              {(dashboardData.topAchievementTypes || []).map((type, index) => (
                 <div key={index} className="flex justify-between items-center">
                   <span className="text-sm text-gray-900">{type.name}</span>
                   <div className="flex items-center">
@@ -490,9 +513,9 @@ const DashboardBK = () => {
                             dashboardData.topAchievementTypes.length > 0
                               ? (type.count /
                                   Math.max(
-                                    ...dashboardData.topAchievementTypes.map(
-                                      (t) => t.count
-                                    )
+                                    ...(
+                                      dashboardData.topAchievementTypes || []
+                                    ).map((t) => t.count)
                                   )) *
                                 100
                               : 0
@@ -525,7 +548,7 @@ const DashboardBK = () => {
             dashboardData.violationTrends.length > 0 ? (
             <div className="h-64">
               <div className="flex items-end justify-between h-48 space-x-2">
-                {dashboardData.violationTrends.map((trend, index) => (
+                {(dashboardData.violationTrends || []).map((trend, index) => (
                   <div
                     key={index}
                     className="flex flex-col items-center flex-1"
@@ -536,7 +559,7 @@ const DashboardBK = () => {
                         height: `${Math.max(
                           (trend.count /
                             Math.max(
-                              ...dashboardData.violationTrends.map(
+                              ...(dashboardData.violationTrends || []).map(
                                 (t) => t.count
                               )
                             )) *

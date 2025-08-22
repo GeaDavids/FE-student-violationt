@@ -1,12 +1,8 @@
-import TambahLaporan from "./pages/bk/TambahLaporan";
-import StudentViolation from "./pages/bk/StudentViolation";
 import DetailViolation from "./pages/bk/DetailViolation";
 import AddViolation from "./pages/bk/AddViolation";
 import AddAchievement from "./pages/bk/AddAchievement";
 import DashboardBK from "./pages/bk/DashboardBK";
-import StudentAchievements from "./pages/bk/StudentAchievements";
 import ExportViolations from "./pages/bk/ExportViolations";
-import LaporanSiswa from "./pages/bk/LaporanSiswa";
 import RekapLaporan from "./pages/bk/RekapLaporan";
 import KelolaViolations from "./pages/bk/KelolaViolations";
 import KelolaAchievements from "./pages/bk/KelolaAchievements";
@@ -27,15 +23,20 @@ import {
   DetailKelas,
   KelolaGuru,
   DetailGuru,
-  KelolaBK,
-  DetailBK,
   KelolaAngkatan,
   DetailAngkatan,
   KelolaViolation,
-  KelolaPrestasi,
+} from "./pages/superadmin";
+
+import {
   LaporanPelanggaran,
   RekapHistori,
-} from "./pages/superadmin";
+  DetailLaporan,
+  TambahLaporan,
+  EditLaporan,
+} from "./pages/reports";
+
+import { KelolaPelanggaran, KelolaPrestasi, Kategori } from "./pages/master";
 import PilihKelas from "./pages/superadmin/users/students/PilihKelas";
 import DaftarSiswa from "./pages/superadmin/users/students/DaftarSiswa";
 import SiswaNotifikasi from "./pages/siswa/SiswaNotifikasi";
@@ -64,6 +65,31 @@ const App = () => {
           element={
             <MainLayout>
               <DaftarSiswa />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/superadmin/kelola-pelanggaran"
+          element={
+            <MainLayout>
+              <KelolaPelanggaran />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/superadmin/kelola-prestasi"
+          element={
+            <MainLayout>
+              <KelolaPrestasi />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/superadmin/kategori"
+          element={
+            <MainLayout>
+              <Kategori />
             </MainLayout>
           }
         />
@@ -185,6 +211,42 @@ const App = () => {
         />
 
         <Route
+          path="/reports"
+          element={
+            <MainLayout>
+              <LaporanPelanggaran />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/reports/detail/:reportId"
+          element={
+            <MainLayout>
+              <DetailLaporan />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/reports/add"
+          element={
+            <MainLayout>
+              <TambahLaporan />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/reports/edit/:reportId"
+          element={
+            <MainLayout>
+              <EditLaporan />
+            </MainLayout>
+          }
+        />
+
+        <Route
           path="/superadmin/laporan-pelanggaran"
           element={
             <MainLayout>
@@ -248,14 +310,6 @@ const App = () => {
         />
 
         <Route
-          path="/bk/student-violations"
-          element={
-            <MainLayout>
-              <StudentViolation />
-            </MainLayout>
-          }
-        />
-        <Route
           path="/bk/student-violations/:id"
           element={
             <MainLayout>
@@ -309,21 +363,12 @@ const App = () => {
           }
         />
 
-        <Route
-          path="/bk/achievements"
-          element={
-            <MainLayout>
-              <StudentAchievements />
-            </MainLayout>
-          }
-        />
-
         {/* New BK Routes */}
         <Route
           path="/bk/laporan-siswa"
           element={
             <MainLayout>
-              <LaporanSiswa />
+              <LaporanPelanggaran />
             </MainLayout>
           }
         />
@@ -338,19 +383,28 @@ const App = () => {
         />
 
         <Route
-          path="/bk/kelola-violations"
+          path="/bk/kelola-pelanggaran"
           element={
             <MainLayout>
-              <KelolaViolations />
+              <KelolaPelanggaran />
             </MainLayout>
           }
         />
 
         <Route
-          path="/bk/kelola-achievements"
+          path="/bk/kelola-prestasi"
           element={
             <MainLayout>
-              <KelolaAchievements />
+              <KelolaPrestasi />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/bk/kelola-kategori"
+          element={
+            <MainLayout>
+              <Kategori />
             </MainLayout>
           }
         />

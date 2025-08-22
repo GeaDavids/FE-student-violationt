@@ -333,16 +333,6 @@ const KelolaKelas = () => {
                             </svg>
                             Detail
                           </button>
-                          <button
-                            onClick={() =>
-                              viewStudents(kelas.id, kelas.namaKelas)
-                            }
-                            className="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200 flex items-center gap-1"
-                            title="Lihat Siswa"
-                          >
-                            <FiUsers className="w-3 h-3" />
-                            Siswa
-                          </button>
                         </div>
                       </td>
                     </tr>
