@@ -1,27 +1,28 @@
 import axios from "./axios";
+import API from "./api";
 
 const superadminAPI = {
   // Dashboard
-  getDashboard: () => axios.get("/superadmin/dashboard"),
+  getDashboard: () => API.get("/superadmin/dashboard"),
   getStatsByAcademicYear: (params) =>
-    axios.get("/superadmin/stats-by-year", { params }),
+    API.get("/superadmin/stats-by-year", { params }),
   getAnalyticsByAcademicYear: (params) =>
-    axios.get("/superadmin/analytics-by-year", { params }),
+    API.get("/superadmin/analytics-by-year", { params }),
 
   // Historical reports methods (with tahunAjaranId parameter)
   getSuperadminStatsByAcademicYear: (tahunAjaranId) =>
-    axios.get("/superadmin/stats-by-year", { params: { tahunAjaranId } }),
+    API.get("/superadmin/stats-by-year", { params: { tahunAjaranId } }),
   getSystemAnalyticsByAcademicYear: (tahunAjaranId) =>
-    axios.get("/superadmin/analytics-by-year", { params: { tahunAjaranId } }),
+    API.get("/superadmin/analytics-by-year", { params: { tahunAjaranId } }),
 
   // User management
-  getAllUsers: (params) => axios.get("/superadmin/users", { params }),
+  getAllUsers: (params) => API.get("/superadmin/users", { params }),
 
   // Academic Year Management
-  createAcademicYear: (data) => axios.post("/academic-years", data),
-  updateAcademicYear: (id, data) => axios.put(`/academic-years/${id}`, data),
-  deleteAcademicYear: (id) => axios.delete(`/academic-years/${id}`),
-  setActiveAcademicYear: (id) => axios.put(`/academic-years/${id}/activate`),
+  createAcademicYear: (data) => API.post("/academic-years", data),
+  updateAcademicYear: (id, data) => API.put(`/academic-years/${id}`, data),
+  deleteAcademicYear: (id) => API.delete(`/academic-years/${id}`),
+  setActiveAcademicYear: (id) => API.put(`/academic-years/${id}/activate`),
 };
 
 export default superadminAPI;

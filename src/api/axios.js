@@ -4,7 +4,7 @@ import axios from "axios";
 const axiosInstance = axios.create({
   baseURL:
     process.env.NODE_ENV === "production"
-      ? "https://your-production-api.com/api"
+      ? "https://smk14-production.up.railway.app/api"
       : "http://localhost:3000/api",
   timeout: 10000,
   headers: {

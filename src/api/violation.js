@@ -1,20 +1,20 @@
-import axios from "./axios";
+import API from "./api";
 
 const violationAPI = {
   // Get all violations
-  getAllViolations: () => axios.get("/master/violations"),
+  getAllViolations: () => API.get("/master/violations"),
 
   // Get violation detail
-  getViolationDetail: (id) => axios.get(`/master/violations/${id}`),
+  getViolationDetail: (id) => API.get(`/master/violations/${id}`),
 
   // Create new violation
-  createViolation: (data) => axios.post("/master/violations", data),
+  createViolation: (data) => API.post("/master/violations", data),
 
   // Update violation
-  updateViolation: (id, data) => axios.put(`/master/violations/${id}`, data),
+  updateViolation: (id, data) => API.put(`/master/violations/${id}`, data),
 
   // Delete violation
-  deleteViolation: (id) => axios.delete(`/master/violations/${id}`),
+  deleteViolation: (id) => API.delete(`/master/violations/${id}`),
 };
 
 export default violationAPI;
