@@ -1,10 +1,10 @@
 import axios from "./axios";
-
+import API from "./api";
 const walikelasAPI = {
   // Cek apakah user adalah wali kelas
   checkIsWaliKelas: async () => {
     try {
-      const res = await axios.get("/walikelas/check");
+      const res = await API.get("/walikelas/check");
       return res.data?.isWaliKelas === true;
     } catch {
       return false;

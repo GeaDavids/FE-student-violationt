@@ -1,21 +1,21 @@
 import axios from "./axios";
+import API from "./api";
 
 const achievementAPI = {
   // Get all achievements
-  getAllAchievements: () => axios.get("/master/achievements"),
+  getAllAchievements: () => API.get("/master/achievements"),
 
   // Get achievement detail
-  getAchievementDetail: (id) => axios.get(`/master/achievements/${id}`),
+  getAchievementDetail: (id) => API.get(`/master/achievements/${id}`),
 
   // Create new achievement
-  createAchievement: (data) => axios.post("/master/achievements", data),
+  createAchievement: (data) => API.post("/master/achievements", data),
 
   // Update achievement
-  updateAchievement: (id, data) =>
-    axios.put(`/master/achievements/${id}`, data),
+  updateAchievement: (id, data) => API.put(`/master/achievements/${id}`, data),
 
   // Delete achievement
-  deleteAchievement: (id) => axios.delete(`/master/achievements/${id}`),
+  deleteAchievement: (id) => API.delete(`/master/achievements/${id}`),
 };
 
 export default achievementAPI;
