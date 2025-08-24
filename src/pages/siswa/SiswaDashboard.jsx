@@ -34,7 +34,7 @@ const SiswaDashboard = () => {
       setLoading(true);
 
       // Get dashboard data directly
-      const dashboardRes = await API.get("/api/student/dashboard");
+      const dashboardRes = await API.get("/student/dashboard");
       setDashboardData(dashboardRes.data);
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
@@ -48,7 +48,7 @@ const SiswaDashboard = () => {
     try {
       setNotificationLoading(true);
 
-      const notifRes = await API.get("/api/student/notifications");
+      const notifRes = await API.get("/student/notifications");
       setNotifications(notifRes.data.data || []);
     } catch (err) {
       console.error("Error fetching notifications:", err);
@@ -72,7 +72,7 @@ const SiswaDashboard = () => {
 
   const markNotificationAsRead = async (notificationId) => {
     try {
-      await API.put(`/api/notifications/read/${notificationId}`);
+      await API.put(`/notifications/read/${notificationId}`);
 
       // Update local state
       setNotifications((prev) =>
@@ -105,7 +105,7 @@ const SiswaDashboard = () => {
 
       await Promise.all(
         unreadNotifications.map((notif) =>
-          API.put(`/api/notifications/read/${notif.id}`)
+          API.put(`/notifications/read/${notif.id}`)
         )
       );
 

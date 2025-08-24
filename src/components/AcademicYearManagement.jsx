@@ -6,6 +6,7 @@ import {
   FiCheckCircle,
   FiCalendar,
   FiAlertTriangle,
+  FiX,
 } from "react-icons/fi";
 import academicYearAPI from "../api/academicYear";
 import superadminAPI from "../api/superadmin";
@@ -133,7 +134,7 @@ const AcademicYearManagement = () => {
           </div>
           <button
             onClick={() => setShowModal(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md flex items-center"
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-2 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200 flex items-center"
           >
             <FiPlus className="w-5 h-5 mr-2" />
             Tambah Tahun Ajaran
@@ -244,18 +245,57 @@ const AcademicYearManagement = () => {
 
       {/* Modal Form */}
       {showModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                {editingYear ? "Edit Tahun Ajaran" : "Tambah Tahun Ajaran"}
-              </h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-gray-100 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 rounded-t-xl">
+              <div className="flex justify-between items-center">
+                <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent flex items-center gap-2">
+                  <FiCalendar className="text-blue-600" />
+                  {editingYear ? "Edit Tahun Ajaran" : "Tambah Tahun Ajaran"}
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowModal(false);
+                    setEditingYear(null);
+                    setFormData({
+                      tahunAjaran: "",
+                      tahunMulai: "",
+                      tahunSelesai: "",
+                      tanggalMulai: "",
+                      tanggalSelesai: "",
+                      isActive: false,
+                    });
+                  }}
+                  className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+                >
+                  <FiX size={24} />
+                </button>
+              </div>
+            </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+            {/* Form Content */}
+            <form onSubmit={handleSubmit} className="p-6">
+              <div className="space-y-6">
+                {/* Tahun Ajaran Display */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Tahun Ajaran
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.tahunAjaran}
+                    readOnly
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+                    placeholder="Akan dibuat otomatis dari tahun mulai dan selesai"
+                  />
+                </div>
+
+                {/* Grid untuk Tahun Mulai dan Selesai */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Tahun Mulai
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tahun Mulai <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="number"
@@ -267,13 +307,15 @@ const AcademicYearManagement = () => {
                         }))
                       }
                       onBlur={generateTahunAjaran}
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
+                      min="2020"
+                      max="2050"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Tahun Selesai
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tahun Selesai <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="number"
@@ -285,68 +327,54 @@ const AcademicYearManagement = () => {
                         }))
                       }
                       onBlur={generateTahunAjaran}
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                      min="2020"
+                      max="2050"
+                    />
+                  </div>
+                </div>
+
+                {/* Grid untuk Tanggal Mulai dan Selesai */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tanggal Mulai <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.tanggalMulai}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          tanggalMulai: e.target.value,
+                        }))
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tanggal Selesai <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.tanggalSelesai}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          tanggalSelesai: e.target.value,
+                        }))
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Tahun Ajaran
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.tahunAjaran}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        tahunAjaran: e.target.value,
-                      }))
-                    }
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Contoh: 2023/2024"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Tanggal Mulai
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.tanggalMulai}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        tanggalMulai: e.target.value,
-                      }))
-                    }
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Tanggal Selesai
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.tanggalSelesai}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        tanggalSelesai: e.target.value,
-                      }))
-                    }
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                    required
-                  />
-                </div>
-
-                <div className="flex items-center">
+                {/* Status Aktif */}
+                <div className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <input
                     id="isActive"
                     type="checkbox"
@@ -357,44 +385,46 @@ const AcademicYearManagement = () => {
                         isActive: e.target.checked,
                       }))
                     }
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
                   <label
                     htmlFor="isActive"
-                    className="ml-2 block text-sm text-gray-900"
+                    className="text-sm font-medium text-blue-900"
                   >
                     Aktifkan tahun ajaran ini
                   </label>
                 </div>
+              </div>
 
-                <div className="flex justify-end space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowModal(false);
-                      setEditingYear(null);
-                      setFormData({
-                        tahunAjaran: "",
-                        tahunMulai: "",
-                        tahunSelesai: "",
-                        tanggalMulai: "",
-                        tanggalSelesai: "",
-                        isActive: false,
-                      });
-                    }}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md"
-                  >
-                    {editingYear ? "Update" : "Simpan"}
-                  </button>
-                </div>
-              </form>
-            </div>
+              {/* Form Actions */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200 mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowModal(false);
+                    setEditingYear(null);
+                    setFormData({
+                      tahunAjaran: "",
+                      tahunMulai: "",
+                      tahunSelesai: "",
+                      tanggalMulai: "",
+                      tanggalSelesai: "",
+                      isActive: false,
+                    });
+                  }}
+                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-colors font-medium flex items-center justify-center gap-2"
+                >
+                  <FiCheckCircle size={16} />
+                  {editingYear ? "Update" : "Simpan"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

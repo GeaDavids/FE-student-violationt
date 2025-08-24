@@ -1,15 +1,4 @@
-import DetailViolation from "./pages/bk/DetailViolation";
-import AddViolation from "./pages/bk/AddViolation";
-import AddAchievement from "./pages/bk/AddAchievement";
-import DashboardBK from "./pages/bk/DashboardBK";
-import ExportViolations from "./pages/bk/ExportViolations";
-import RekapLaporan from "./pages/bk/RekapLaporan";
-import KelolaViolations from "./pages/bk/KelolaViolations";
-import KelolaAchievements from "./pages/bk/KelolaAchievements";
-import MonitoringSiswa from "./pages/bk/MonitoringSiswa";
-import DetailMonitoringSiswa from "./pages/bk/DetailSiswa";
 import ManajemenResiko from "./pages/bk/ManajemenResiko";
-import AdjustmentPoin from "./pages/bk/AdjustmentPoin";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -25,8 +14,17 @@ import {
   DetailGuru,
   KelolaAngkatan,
   DetailAngkatan,
-  KelolaViolation,
 } from "./pages/superadmin";
+
+import {
+  DashboardBK,
+  MonitoringSiswa,
+  StudentList,
+  StudentDetail,
+  AutomasiSuratPeringatanPage,
+} from "./pages/bk";
+
+import { DashboardWaliKelas, DetailSiswaWK } from "./pages/guru/walikelas";
 
 import {
   LaporanPelanggaran,
@@ -57,6 +55,41 @@ const App = () => {
           element={
             <MainLayout>
               <PilihKelas />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/walikelas/dashboard"
+          element={
+            <MainLayout>
+              <DashboardWaliKelas />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/walikelas/siswa/:nisn"
+          element={
+            <MainLayout>
+              <DetailSiswaWK />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/bk/classrooms/:classroomId/students"
+          element={
+            <MainLayout>
+              <StudentList />
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/bk/students/:nisn/detail"
+          element={
+            <MainLayout>
+              <StudentDetail />
             </MainLayout>
           }
         />
@@ -184,33 +217,6 @@ const App = () => {
         />
 
         <Route
-          path="/superadmin/kelola-violation"
-          element={
-            <MainLayout>
-              <KelolaViolation />
-            </MainLayout>
-          }
-        />
-
-        <Route
-          path="/superadmin/add-achievement"
-          element={
-            <MainLayout>
-              <AddAchievement />
-            </MainLayout>
-          }
-        />
-
-        <Route
-          path="/superadmin/add-violation"
-          element={
-            <MainLayout>
-              <AddViolation />
-            </MainLayout>
-          }
-        />
-
-        <Route
           path="/reports"
           element={
             <MainLayout>
@@ -310,24 +316,6 @@ const App = () => {
         />
 
         <Route
-          path="/bk/student-violations/:id"
-          element={
-            <MainLayout>
-              <DetailViolation />
-            </MainLayout>
-          }
-        />
-
-        <Route
-          path="/bk/add-violation"
-          element={
-            <MainLayout>
-              <AddViolation />
-            </MainLayout>
-          }
-        />
-
-        <Route
           path="/bk/dashboard"
           element={
             <MainLayout>
@@ -345,39 +333,12 @@ const App = () => {
           }
         />
 
-        <Route
-          path="/bk/export-violations"
-          element={
-            <MainLayout>
-              <ExportViolations />
-            </MainLayout>
-          }
-        />
-
-        <Route
-          path="/bk/add-achievement"
-          element={
-            <MainLayout>
-              <AddAchievement />
-            </MainLayout>
-          }
-        />
-
         {/* New BK Routes */}
         <Route
           path="/bk/laporan-siswa"
           element={
             <MainLayout>
               <LaporanPelanggaran />
-            </MainLayout>
-          }
-        />
-
-        <Route
-          path="/bk/rekap-laporan"
-          element={
-            <MainLayout>
-              <RekapLaporan />
             </MainLayout>
           }
         />
@@ -422,7 +383,7 @@ const App = () => {
           path="/bk/siswa/:studentId"
           element={
             <MainLayout>
-              <DetailMonitoringSiswa />
+              <StudentDetail />
             </MainLayout>
           }
         />
@@ -437,10 +398,10 @@ const App = () => {
         />
 
         <Route
-          path="/bk/adjustment-poin"
+          path="/bk/automasi-surat-peringatan"
           element={
             <MainLayout>
-              <AdjustmentPoin />
+              <AutomasiSuratPeringatanPage />
             </MainLayout>
           }
         />

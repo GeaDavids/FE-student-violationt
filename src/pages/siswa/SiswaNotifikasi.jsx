@@ -25,7 +25,7 @@ const SiswaNotifikasi = () => {
   const fetchNotifications = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await API.get("/api/student/notifications");
+      const response = await API.get("/student/notifications");
       setNotifications(response.data.data || []);
       setFilteredNotifications(response.data.data || []);
     } catch (err) {
@@ -64,7 +64,7 @@ const SiswaNotifikasi = () => {
 
   const markAsRead = async (notificationId) => {
     try {
-      await API.put(`/api/student/notifications/${notificationId}/read`);
+      await API.put(`/student/notifications/${notificationId}/read`);
 
       setNotifications((prev) =>
         prev.map((notif) =>
@@ -79,7 +79,7 @@ const SiswaNotifikasi = () => {
 
   const markAllAsRead = async () => {
     try {
-      await API.put("/api/student/notifications/read-all");
+      await API.put("/student/notifications/read-all");
 
       setNotifications((prev) =>
         prev.map((notif) => ({ ...notif, isRead: true }))

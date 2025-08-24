@@ -21,6 +21,7 @@ const DashboardGuru = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState(null);
+  const [myReportSummary, setMyReportSummary] = useState(null);
   const [classStudents, setClassStudents] = useState([]);
   const [studentsLoading, setStudentsLoading] = useState(false);
   const [selectedTab, setSelectedTab] = useState("overview");
@@ -35,7 +36,20 @@ const DashboardGuru = () => {
 
   useEffect(() => {
     fetchDashboardData();
+    fetchMyReportSummary();
   }, []);
+
+  const fetchMyReportSummary = async () => {
+    try {
+      const response = await axios.get(
+        "/api/guru/my-reports?limit=1",
+        axiosConfig
+      );
+      setMyReportSummary(response.data.summary);
+    } catch (error) {
+      setMyReportSummary(null);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -166,9 +180,9 @@ const DashboardGuru = () => {
             </p>
           </div>
           <div className="p-3 bg-blue-50 rounded-lg">
-            <p className="text-sm text-gray-500">Mata Pelajaran</p>
+            <p className="text-sm text-gray-500">No HP</p>
             <p className="font-medium text-[#003366]">
-              {dashboardData.teacherInfo.mapel || "-"}
+              {dashboardData.teacherInfo.noHp || "-"}
             </p>
           </div>
         </div>
@@ -227,30 +241,45 @@ const DashboardGuru = () => {
 
       {/* Content based on selected tab */}
       {selectedTab === "overview" && !dashboardData.isWaliKelas && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-blue-100 p-6 rounded-lg">
-            <h3 className="font-semibold text-blue-800 flex items-center gap-2">
-              <FiUsers /> Total Siswa
-            </h3>
-            <p className="text-3xl font-bold text-blue-600">
-              {dashboardData.generalStats.totalStudents}
-            </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="bg-white rounded-xl shadow p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Total Laporan Saya</p>
+                <p className="text-2xl font-bold text-[#003366]">
+                  {myReportSummary?.totalReports ?? 0}
+                </p>
+              </div>
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <FiFileText className="text-blue-600" size={24} />
+              </div>
+            </div>
           </div>
-          <div className="bg-red-100 p-6 rounded-lg">
-            <h3 className="font-semibold text-red-800 flex items-center gap-2">
-              <FiTrendingDown /> Pelanggaran Bulan Ini
-            </h3>
-            <p className="text-3xl font-bold text-red-600">
-              {dashboardData.generalStats.violationsThisMonth}
-            </p>
+          <div className="bg-white rounded-xl shadow p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Pelanggaran Saya</p>
+                <p className="text-2xl font-bold text-red-600">
+                  {myReportSummary?.violationReports ?? 0}
+                </p>
+              </div>
+              <div className="p-3 bg-red-100 rounded-lg">
+                <FiAlertTriangle className="text-red-600" size={24} />
+              </div>
+            </div>
           </div>
-          <div className="bg-green-100 p-6 rounded-lg">
-            <h3 className="font-semibold text-green-800 flex items-center gap-2">
-              <FiTrendingUp /> Prestasi Bulan Ini
-            </h3>
-            <p className="text-3xl font-bold text-green-600">
-              {dashboardData.generalStats.achievementsThisMonth}
-            </p>
+          <div className="bg-white rounded-xl shadow p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Prestasi Saya</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {myReportSummary?.achievementReports ?? 0}
+                </p>
+              </div>
+              <div className="p-3 bg-green-100 rounded-lg">
+                <FiAward className="text-green-600" size={24} />
+              </div>
+            </div>
           </div>
         </div>
       )}

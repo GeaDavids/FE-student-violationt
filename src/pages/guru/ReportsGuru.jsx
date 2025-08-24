@@ -37,9 +37,7 @@ const ReportsGuru = () => {
   // Create Report State
   const [formData, setFormData] = useState({
     studentId: "",
-    tipe: "violation",
-    violationId: "",
-    achievementId: "",
+    itemId: "",
     tanggal: new Date().toISOString().split("T")[0],
     waktu: "",
     deskripsi: "",
@@ -49,6 +47,7 @@ const ReportsGuru = () => {
   const [students, setStudents] = useState([]);
   const [violations, setViolations] = useState([]);
   const [achievements, setAchievements] = useState([]);
+  const [reportType, setReportType] = useState("pelanggaran");
   const [submitting, setSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -62,9 +61,12 @@ const ReportsGuru = () => {
 
   useEffect(() => {
     fetchReports();
+  }, [filters]);
+
+  useEffect(() => {
     fetchViolations();
     fetchAchievements();
-  }, [filters]);
+  }, []);
 
   // Update filters when academic year changes
   useEffect(() => {
@@ -141,9 +143,7 @@ const ReportsGuru = () => {
       // Reset form and close modal
       setFormData({
         studentId: "",
-        tipe: "violation",
-        violationId: "",
-        achievementId: "",
+        itemId: "",
         tanggal: new Date().toISOString().split("T")[0],
         waktu: "",
         deskripsi: "",
@@ -183,13 +183,15 @@ const ReportsGuru = () => {
   };
 
   const getTipeColor = (tipe) => {
-    return tipe === "violation"
-      ? "text-red-600 bg-red-100"
-      : "text-green-600 bg-green-100";
+    if (tipe === "pelanggaran") return "text-red-600 bg-red-100";
+    if (tipe === "prestasi") return "text-green-600 bg-green-100";
+    return "text-gray-600 bg-gray-100";
   };
 
   const getTipeIcon = (tipe) => {
-    return tipe === "violation" ? <FiAlertTriangle /> : <FiAward />;
+    if (tipe === "pelanggaran") return <FiAlertTriangle />;
+    if (tipe === "prestasi") return <FiAward />;
+    return <FiFileText />;
   };
 
   const formatDate = (dateString) => {
@@ -376,13 +378,15 @@ const ReportsGuru = () => {
                         <td className="px-4 py-4 whitespace-nowrap">
                           <span
                             className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getTipeColor(
-                              report.tipe
+                              report.item?.tipe
                             )}`}
                           >
-                            {getTipeIcon(report.tipe)}
-                            {report.tipe === "violation"
+                            {getTipeIcon(report.item?.tipe)}
+                            {report.item?.tipe === "pelanggaran"
                               ? "Pelanggaran"
-                              : "Prestasi"}
+                              : report.item?.tipe === "prestasi"
+                              ? "Prestasi"
+                              : "-"}
                           </span>
                         </td>
                         <td className="px-4 py-4">
@@ -398,26 +402,24 @@ const ReportsGuru = () => {
                         <td className="px-4 py-4">
                           <div>
                             <p className="font-medium text-gray-900">
-                              {report.item.nama}
+                              {report.item?.nama}
                             </p>
                             <p className="text-sm text-gray-500">
-                              {report.item.kategori}
+                              {report.item?.kategori?.nama || "-"}
                             </p>
                           </div>
                         </td>
                         <td className="px-4 py-4 text-center">
                           <span
                             className={`font-bold ${
-                              report.pointSaat >= 0
+                              report.item?.tipe === "pelanggaran"
+                                ? "text-red-600"
+                                : report.item?.tipe === "prestasi"
                                 ? "text-green-600"
-                                : "text-red-600"
+                                : "text-gray-600"
                             }`}
                           >
-                            {report.pointSaat === 0
-                              ? "0"
-                              : report.pointSaat > 0
-                              ? `+${report.pointSaat}`
-                              : `${report.pointSaat}`}
+                            {report.pointSaat}
                           </span>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -539,48 +541,47 @@ const ReportsGuru = () => {
                   )}
                 </div>
 
-                {/* Report Type */}
+                {/* Report Type & Item Selection */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tipe Laporan
+                    Jenis Laporan
                   </label>
+                  <div className="flex gap-4 mb-2">
+                    <button
+                      type="button"
+                      className={`px-4 py-2 rounded-lg border text-sm font-medium ${
+                        reportType === "pelanggaran"
+                          ? "bg-red-600 text-white border-red-600"
+                          : "bg-white text-gray-700 border-gray-300"
+                      }`}
+                      onClick={() => {
+                        setReportType("pelanggaran");
+                        setFormData((prev) => ({ ...prev, itemId: "" }));
+                      }}
+                    >
+                      Pelanggaran
+                    </button>
+                    <button
+                      type="button"
+                      className={`px-4 py-2 rounded-lg border text-sm font-medium ${
+                        reportType === "prestasi"
+                          ? "bg-green-600 text-white border-green-600"
+                          : "bg-white text-gray-700 border-gray-300"
+                      }`}
+                      onClick={() => {
+                        setReportType("prestasi");
+                        setFormData((prev) => ({ ...prev, itemId: "" }));
+                      }}
+                    >
+                      Prestasi
+                    </button>
+                  </div>
                   <select
-                    value={formData.tipe}
+                    value={formData.itemId}
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
-                        tipe: e.target.value,
-                        violationId: "",
-                        achievementId: "",
-                      }))
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
-                    required
-                  >
-                    <option value="violation">Pelanggaran</option>
-                    <option value="achievement">Prestasi</option>
-                  </select>
-                </div>
-
-                {/* Violation/Achievement Selection */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {formData.tipe === "violation"
-                      ? "Jenis Pelanggaran"
-                      : "Jenis Prestasi"}
-                  </label>
-                  <select
-                    value={
-                      formData.tipe === "violation"
-                        ? formData.violationId
-                        : formData.achievementId
-                    }
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        [formData.tipe === "violation"
-                          ? "violationId"
-                          : "achievementId"]: e.target.value,
+                        itemId: e.target.value,
                       }))
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
@@ -588,42 +589,39 @@ const ReportsGuru = () => {
                   >
                     <option value="">
                       Pilih{" "}
-                      {formData.tipe === "violation"
+                      {reportType === "pelanggaran"
                         ? "pelanggaran"
                         : "prestasi"}
                     </option>
-                    {(formData.tipe === "violation"
+                    {(reportType === "pelanggaran"
                       ? violations
                       : achievements
                     ).map((item) => (
                       <option key={item.id} value={item.id}>
-                        {item.nama} ({formData.tipe === "violation" ? "-" : "+"}
+                        {item.nama} ({reportType === "pelanggaran" ? "-" : "+"}
                         {item.point} poin)
                       </option>
                     ))}
                   </select>
 
                   {/* Score Impact Indicator */}
-                  {(formData.violationId || formData.achievementId) && (
+                  {formData.itemId && (
                     <div
                       className={`mt-2 p-2 rounded-lg text-sm ${
-                        formData.tipe === "violation"
+                        reportType === "pelanggaran"
                           ? "bg-red-50 text-red-700 border border-red-200"
                           : "bg-green-50 text-green-700 border border-green-200"
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        {formData.tipe === "violation" ? (
+                        {reportType === "pelanggaran" ? (
                           <>
                             <span className="font-semibold">⚠️ Dampak:</span>
                             <span>
                               Skor siswa akan <strong>dikurangi</strong>{" "}
-                              {formData.violationId
-                                ? violations.find(
-                                    (v) =>
-                                      v.id === parseInt(formData.violationId)
-                                  )?.point
-                                : 0}{" "}
+                              {violations.find(
+                                (v) => v.id === parseInt(formData.itemId)
+                              )?.point || 0}{" "}
                               poin
                             </span>
                           </>
@@ -632,12 +630,9 @@ const ReportsGuru = () => {
                             <span className="font-semibold">✅ Dampak:</span>
                             <span>
                               Skor siswa akan <strong>ditambah</strong>{" "}
-                              {formData.achievementId
-                                ? achievements.find(
-                                    (a) =>
-                                      a.id === parseInt(formData.achievementId)
-                                  )?.point
-                                : 0}{" "}
+                              {achievements.find(
+                                (a) => a.id === parseInt(formData.itemId)
+                              )?.point || 0}{" "}
                               poin
                             </span>
                           </>

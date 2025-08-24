@@ -16,7 +16,7 @@ const Layout = ({ children }) => {
     const fetchStudentId = async () => {
       if (role === "siswa") {
         try {
-          const response = await API.get("/api/student/profile");
+          const response = await API.get("/student/profile");
           setStudentId(response.data.id);
         } catch (err) {
           console.error("Error fetching student profile:", err);

@@ -49,352 +49,82 @@ const SuperadminAcademicYear = () => {
     value,
     subtitle,
     color = "indigo",
-  }) => (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center">
-        <div className={`flex-shrink-0 p-3 rounded-md bg-${color}-500`}>
-          <Icon className="h-6 w-6 text-white" />
-        </div>
-        <div className="ml-4">
-          <p className="text-sm font-medium text-gray-500">{title}</p>
-          <p className="text-2xl font-semibold text-gray-900">{value}</p>
-          {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
+  }) => {
+    const colorClasses = {
+      blue: "from-blue-50 to-blue-100 border-blue-200 from-blue-500 to-blue-600",
+      green:
+        "from-green-50 to-green-100 border-green-200 from-green-500 to-green-600",
+      purple:
+        "from-purple-50 to-purple-100 border-purple-200 from-purple-500 to-purple-600",
+      indigo:
+        "from-indigo-50 to-indigo-100 border-indigo-200 from-indigo-500 to-indigo-600",
+      red: "from-red-50 to-red-100 border-red-200 from-red-500 to-red-600",
+      yellow:
+        "from-yellow-50 to-yellow-100 border-yellow-200 from-yellow-500 to-yellow-600",
+      gray: "from-gray-50 to-gray-100 border-gray-200 from-gray-500 to-gray-600",
+    };
+
+    const [bgGradient, borderColor, iconGradient] =
+      colorClasses[color].split(" ");
+
+    return (
+      <div
+        className={`bg-gradient-to-br ${bgGradient} shadow-md rounded-lg border ${borderColor} p-4`}
+      >
+        <div className="flex items-center">
+          <div
+            className={`flex-shrink-0 p-2.5 rounded-lg bg-gradient-to-r ${iconGradient} shadow-sm`}
+          >
+            <Icon className="h-5 w-5 text-white" />
+          </div>
+          <div className="ml-3">
+            <p className="text-xs font-medium text-gray-600">{title}</p>
+            <p className="text-xl font-bold text-gray-900">{value}</p>
+            {subtitle && (
+              <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Manajemen Tahun Ajaran
-            </h1>
-            <p className="text-gray-600">
-              Kelola tahun ajaran dan lihat statistik sistem
-            </p>
+    <div className="max-w-6xl mx-auto p-4">
+      <div className="space-y-5">
+        {/* Header Section */}
+        <div className="mb-5">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-2 rounded-lg shadow-md">
+              <FiCalendar className="text-white text-lg" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                Manajemen Tahun Ajaran
+              </h1>
+              <p className="text-gray-600 text-xs">
+                Kelola tahun ajaran dan lihat statistik sistem
+              </p>
+            </div>
           </div>
 
-          <div className="flex space-x-4">
+          <div className="flex gap-2">
             <button
               onClick={() => setActiveTab("management")}
-              className={`px-4 py-2 rounded-md ${
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm ${
                 activeTab === "management"
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 shadow-sm"
               }`}
             >
               Manajemen
             </button>
-            <button
-              onClick={() => setActiveTab("analytics")}
-              className={`px-4 py-2 rounded-md ${
-                activeTab === "analytics"
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              Analitik
-            </button>
           </div>
         </div>
+
+        {/* Management Tab */}
+        {activeTab === "management" && <AcademicYearManagement />}
       </div>
-
-      {/* Management Tab */}
-      {activeTab === "management" && <AcademicYearManagement />}
-
-      {/* Analytics Tab */}
-      {activeTab === "analytics" && (
-        <div className="space-y-6">
-          {/* Academic Year Selector */}
-          <div className="bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Pilih Tahun Ajaran untuk Analisis
-            </h3>
-            <div className="max-w-md">
-              <AcademicYearSelector
-                value={selectedYear}
-                onChange={setSelectedYear}
-                placeholder="Pilih tahun ajaran untuk melihat statistik"
-              />
-            </div>
-          </div>
-
-          {/* Statistics */}
-          {selectedYear && stats && (
-            <>
-              {/* Academic Year Info */}
-              <div className="bg-white shadow rounded-lg p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900">
-                      Statistik Tahun Ajaran: {stats.academicYear.tahunAjaran}
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      Periode:{" "}
-                      {new Date(
-                        stats.academicYear.tanggalMulai
-                      ).toLocaleDateString("id-ID")}{" "}
-                      -{" "}
-                      {new Date(
-                        stats.academicYear.tanggalSelesai
-                      ).toLocaleDateString("id-ID")}
-                    </p>
-                  </div>
-                  {stats.academicYear.isActive && (
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                      Tahun Ajaran Aktif
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Overview Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard
-                  icon={FiUsers}
-                  title="Total Pengguna"
-                  value={stats.statistics.users.total}
-                  subtitle={`${stats.statistics.users.active} aktif`}
-                  color="blue"
-                />
-                <StatCard
-                  icon={FiUser}
-                  title="Siswa"
-                  value={stats.statistics.users.students}
-                  color="green"
-                />
-                <StatCard
-                  icon={FiUsers}
-                  title="Guru"
-                  value={stats.statistics.users.teachers}
-                  color="purple"
-                />
-                <StatCard
-                  icon={FiFileText}
-                  title="Laporan"
-                  value={stats.statistics.academicYearData.totalReports}
-                  subtitle={`${stats.statistics.academicYearData.averageReportsPerMonth.toFixed(
-                    1
-                  )}/bulan`}
-                  color="indigo"
-                />
-              </div>
-
-              {/* Academic Year Specific Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <StatCard
-                  icon={FiFileText}
-                  title="Pelanggaran"
-                  value={stats.statistics.academicYearData.violationReports}
-                  color="red"
-                />
-                <StatCard
-                  icon={FiAward}
-                  title="Prestasi"
-                  value={stats.statistics.academicYearData.achievementReports}
-                  color="yellow"
-                />
-                <StatCard
-                  icon={FiCalendar}
-                  title="Kelas"
-                  value={stats.statistics.academic.classrooms}
-                  color="gray"
-                />
-              </div>
-
-              {/* Monthly Breakdown Chart */}
-              {stats.monthlyBreakdown && stats.monthlyBreakdown.length > 0 && (
-                <div className="bg-white shadow rounded-lg p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
-                    Trend Bulanan
-                  </h3>
-                  <div className="space-y-4">
-                    {stats.monthlyBreakdown.map((month) => (
-                      <div
-                        key={month.month}
-                        className="flex items-center justify-between py-2"
-                      >
-                        <span className="text-sm font-medium text-gray-900">
-                          {new Date(month.month + "-01").toLocaleDateString(
-                            "id-ID",
-                            {
-                              year: "numeric",
-                              month: "long",
-                            }
-                          )}
-                        </span>
-                        <div className="flex space-x-4 text-sm">
-                          <span className="text-red-600">
-                            {month.violations} pelanggaran
-                          </span>
-                          <span className="text-green-600">
-                            {month.achievements} prestasi
-                          </span>
-                          <span className="text-gray-600">
-                            Total: {month.violations + month.achievements}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Analytics Data */}
-          {selectedYear && analytics && (
-            <>
-              {/* Classroom Performance */}
-              <div className="bg-white shadow rounded-lg p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Performa Kelas
-                </h3>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Kelas
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Wali Kelas
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Siswa
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Pelanggaran
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Prestasi
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Rata-rata Skor
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {analytics.classroomAnalytics.map((classroom) => (
-                        <tr key={classroom.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {classroom.namaKelas}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {classroom.waliKelas}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {classroom.totalStudents}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">
-                            {classroom.totalViolations}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">
-                            {classroom.totalAchievements}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <span
-                              className={`${
-                                classroom.averageScore >= 0
-                                  ? "text-green-600"
-                                  : "text-red-600"
-                              }`}
-                            >
-                              {classroom.averageScore}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Teacher Performance */}
-              <div className="bg-white shadow rounded-lg p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Performa Guru
-                </h3>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Nama Guru
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          NIP
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Kelas
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Total Laporan
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Pelanggaran
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                          Prestasi
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {analytics.teacherAnalytics.map((teacher) => (
-                        <tr key={teacher.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {teacher.name}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {teacher.nip}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {teacher.classrooms}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {teacher.totalReports}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600">
-                            {teacher.violations}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">
-                            {teacher.achievements}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* No Data State */}
-          {!selectedYear && (
-            <div className="bg-white shadow rounded-lg p-12 text-center">
-              <FiBarChart3 className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">
-                Pilih Tahun Ajaran
-              </h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Pilih tahun ajaran di atas untuk melihat analisis dan statistik.
-              </p>
-            </div>
-          )}
-
-          {/* Loading State */}
-          {loading && (
-            <div className="bg-white shadow rounded-lg p-12 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-              <p className="mt-2 text-sm text-gray-500">Memuat data...</p>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };

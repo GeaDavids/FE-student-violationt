@@ -200,40 +200,47 @@ const KenaikanKelas = () => {
   };
 
   const renderPreviewTab = () => (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Controls */}
-      <div className="bg-white rounded-xl shadow p-6">
+      <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow-md border border-blue-200 p-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-[#003366]">
-            Pengaturan Kenaikan Kelas
-          </h3>
+          <div className="flex items-center gap-3">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-2 rounded-lg">
+              <FiPlay className="text-white text-sm" />
+            </div>
+            <h3 className="text-sm font-semibold text-blue-600">
+              Pengaturan Kenaikan Kelas
+            </h3>
+          </div>
           <button
             onClick={fetchPreview}
             disabled={loading}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600 disabled:opacity-50"
+            className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-md transition-all duration-200 flex items-center gap-1.5 disabled:opacity-50 text-sm"
           >
             <FiRotateCw className={loading ? "animate-spin" : ""} />
             Refresh Data
           </button>
         </div>
 
-        <div className="flex items-center gap-4 mb-4">
-          <label className="flex items-center gap-2">
+        <div className="bg-white rounded-lg p-3 mb-4 border border-blue-200">
+          <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="checkbox"
               checked={promoteAll}
               onChange={(e) => setPromoteAll(e.target.checked)}
-              className="rounded"
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-600"
             />
-            <span>Naikkan semua siswa (abaikan syarat nilai)</span>
+            <span className="text-gray-700 font-medium text-sm">
+              Naikkan semua siswa (abaikan syarat nilai)
+            </span>
           </label>
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex gap-3">
           <button
             onClick={handlePromoteAll}
             disabled={loading}
-            className="bg-green-500 text-white px-6 py-3 rounded-lg flex items-center gap-2 hover:bg-green-600 disabled:opacity-50"
+            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2.5 rounded-lg font-medium shadow-md transition-all duration-200 flex items-center gap-1.5 disabled:opacity-50 text-sm"
           >
             <FiPlay />
             Proses Kenaikan Kelas
@@ -243,12 +250,14 @@ const KenaikanKelas = () => {
 
       {/* Preview Data */}
       {preview && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Grade X */}
-          <div className="bg-white rounded-xl shadow">
-            <div className="p-4 bg-blue-50 rounded-t-xl border-b">
-              <h4 className="font-semibold text-[#003366] flex items-center gap-2">
-                <FiUsers />
+          <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+            <div className="p-3 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200">
+              <h4 className="font-semibold text-blue-600 flex items-center gap-2 text-sm">
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-1 rounded-lg">
+                  <FiUsers className="text-white text-xs" />
+                </div>
                 Kelas X → XI (
                 {preview.gradeX?.filter(
                   (s) =>
@@ -259,7 +268,7 @@ const KenaikanKelas = () => {
                 siswa)
               </h4>
             </div>
-            <div className="p-4 max-h-96 overflow-y-auto">
+            <div className="p-3 max-h-64 overflow-y-auto">
               {preview.gradeX
                 ?.filter(
                   (student) =>
@@ -269,31 +278,35 @@ const KenaikanKelas = () => {
                 .map((student) => (
                   <div
                     key={student.id}
-                    className={`p-3 mb-2 rounded-lg border ${
+                    className={`p-2 mb-1.5 rounded-md border transition-all duration-200 hover:shadow-sm ${
                       student.eligible
-                        ? "bg-green-50 border-green-200"
-                        : "bg-red-50 border-red-200"
+                        ? "bg-green-50 border-green-200 hover:bg-green-100"
+                        : "bg-red-50 border-red-200 hover:bg-red-100"
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">{student.name}</p>
-                        <p className="text-sm text-gray-600">
+                        <p className="font-medium text-gray-900 text-xs">
+                          {student.name}
+                        </p>
+                        <p className="text-xs text-gray-600">
                           {student.currentClass}
                         </p>
-                        <p className="text-xs">Skor: {student.totalScore}</p>
+                        <p className="text-xs text-gray-500">
+                          Skor: {student.totalScore}
+                        </p>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         {student.eligible ? (
-                          <FiCheckCircle className="text-green-500" />
+                          <FiCheckCircle className="text-green-500 text-sm" />
                         ) : (
-                          <FiXCircle className="text-red-500" />
+                          <FiXCircle className="text-red-500 text-sm" />
                         )}
                         <input
                           type="checkbox"
                           checked={selectedStudents.includes(student.id)}
                           onChange={() => toggleStudentSelection(student.id)}
-                          className="rounded"
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-600 w-3 h-3"
                         />
                       </div>
                     </div>
@@ -303,10 +316,12 @@ const KenaikanKelas = () => {
           </div>
 
           {/* Grade XI */}
-          <div className="bg-white rounded-xl shadow">
-            <div className="p-4 bg-blue-50 rounded-t-xl border-b">
-              <h4 className="font-semibold text-[#003366] flex items-center gap-2">
-                <FiUsers />
+          <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+            <div className="p-3 bg-gradient-to-r from-purple-50 to-purple-100 border-b border-purple-200">
+              <h4 className="font-semibold text-blue-600 flex items-center gap-2 text-sm">
+                <div className="bg-gradient-to-r from-purple-500 to-purple-600 p-1 rounded-lg">
+                  <FiUsers className="text-white text-xs" />
+                </div>
                 Kelas XI → XII (
                 {preview.gradeXI?.filter(
                   (s) =>
@@ -317,7 +332,7 @@ const KenaikanKelas = () => {
                 siswa)
               </h4>
             </div>
-            <div className="p-4 max-h-96 overflow-y-auto">
+            <div className="p-3 max-h-64 overflow-y-auto">
               {preview.gradeX
                 ?.filter(
                   (student) =>
@@ -327,31 +342,35 @@ const KenaikanKelas = () => {
                 .map((student) => (
                   <div
                     key={student.id}
-                    className={`p-3 mb-2 rounded-lg border ${
+                    className={`p-2 mb-1.5 rounded-md border transition-all duration-200 hover:shadow-sm ${
                       student.eligible
-                        ? "bg-green-50 border-green-200"
-                        : "bg-red-50 border-red-200"
+                        ? "bg-green-50 border-green-200 hover:bg-green-100"
+                        : "bg-red-50 border-red-200 hover:bg-red-100"
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">{student.name}</p>
-                        <p className="text-sm text-gray-600">
+                        <p className="font-medium text-gray-900 text-xs">
+                          {student.name}
+                        </p>
+                        <p className="text-xs text-gray-600">
                           {student.currentClass}
                         </p>
-                        <p className="text-xs">Skor: {student.totalScore}</p>
+                        <p className="text-xs text-gray-500">
+                          Skor: {student.totalScore}
+                        </p>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         {student.eligible ? (
-                          <FiCheckCircle className="text-green-500" />
+                          <FiCheckCircle className="text-green-500 text-sm" />
                         ) : (
-                          <FiXCircle className="text-red-500" />
+                          <FiXCircle className="text-red-500 text-sm" />
                         )}
                         <input
                           type="checkbox"
                           checked={selectedStudents.includes(student.id)}
                           onChange={() => toggleStudentSelection(student.id)}
-                          className="rounded"
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-600 w-3 h-3"
                         />
                       </div>
                     </div>
@@ -361,10 +380,12 @@ const KenaikanKelas = () => {
           </div>
 
           {/* Grade XII */}
-          <div className="bg-white rounded-xl shadow">
-            <div className="p-4 bg-green-50 rounded-t-xl border-b">
-              <h4 className="font-semibold text-[#003366] flex items-center gap-2">
-                <FiAward />
+          <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+            <div className="p-3 bg-gradient-to-r from-green-50 to-green-100 border-b border-green-200">
+              <h4 className="font-semibold text-blue-600 flex items-center gap-2 text-sm">
+                <div className="bg-gradient-to-r from-green-500 to-green-600 p-1 rounded-lg">
+                  <FiAward className="text-white text-xs" />
+                </div>
                 Kelas XII → Lulus (
                 {preview.gradeXII?.filter(
                   (s) =>
@@ -373,7 +394,7 @@ const KenaikanKelas = () => {
                 siswa)
               </h4>
             </div>
-            <div className="p-4 max-h-96 overflow-y-auto">
+            <div className="p-3 max-h-64 overflow-y-auto">
               {preview.gradeXII
                 ?.filter(
                   (student) =>
@@ -383,31 +404,35 @@ const KenaikanKelas = () => {
                 .map((student) => (
                   <div
                     key={student.id}
-                    className={`p-3 mb-2 rounded-lg border ${
+                    className={`p-2 mb-1.5 rounded-md border transition-all duration-200 hover:shadow-sm ${
                       student.eligible
-                        ? "bg-green-50 border-green-200"
-                        : "bg-red-50 border-red-200"
+                        ? "bg-green-50 border-green-200 hover:bg-green-100"
+                        : "bg-red-50 border-red-200 hover:bg-red-100"
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">{student.name}</p>
-                        <p className="text-sm text-gray-600">
+                        <p className="font-medium text-gray-900 text-xs">
+                          {student.name}
+                        </p>
+                        <p className="text-xs text-gray-600">
                           {student.currentClass}
                         </p>
-                        <p className="text-xs">Skor: {student.totalScore}</p>
+                        <p className="text-xs text-gray-500">
+                          Skor: {student.totalScore}
+                        </p>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         {student.eligible ? (
-                          <FiCheckCircle className="text-green-500" />
+                          <FiCheckCircle className="text-green-500 text-sm" />
                         ) : (
-                          <FiXCircle className="text-red-500" />
+                          <FiXCircle className="text-red-500 text-sm" />
                         )}
                         <input
                           type="checkbox"
                           checked={selectedStudents.includes(student.id)}
                           onChange={() => toggleStudentSelection(student.id)}
-                          className="rounded"
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-600 w-3 h-3"
                         />
                       </div>
                     </div>
@@ -421,16 +446,21 @@ const KenaikanKelas = () => {
   );
 
   const renderAlumniTab = () => (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Controls */}
-      <div className="bg-white rounded-xl shadow p-6">
+      <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg shadow-md border border-indigo-200 p-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-[#003366]">Data Alumni</h3>
+          <div className="flex items-center gap-3">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-2 rounded-lg">
+              <FiArchive className="text-white text-sm" />
+            </div>
+            <h3 className="text-sm font-semibold text-blue-600">Data Alumni</h3>
+          </div>
           <div className="flex gap-2">
             <button
               onClick={fetchArchivedStudents}
               disabled={loading}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600 disabled:opacity-50"
+              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-md transition-all duration-200 flex items-center gap-1.5 disabled:opacity-50 text-sm"
             >
               <FiRotateCw className={loading ? "animate-spin" : ""} />
               Refresh
@@ -438,7 +468,7 @@ const KenaikanKelas = () => {
             <button
               onClick={handleAutoDeleteGraduates}
               disabled={loading}
-              className="bg-red-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-red-600 disabled:opacity-50"
+              className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-lg font-medium shadow-md transition-all duration-200 flex items-center gap-1.5 disabled:opacity-50 text-sm"
             >
               <FiTrash2 />
               Hapus Data Lama
@@ -448,55 +478,63 @@ const KenaikanKelas = () => {
       </div>
 
       {/* Alumni List */}
-      <div className="bg-white rounded-xl shadow">
+      <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full table-auto">
-            <thead className="bg-gray-50">
+          <table className="w-full table-fixed">
+            <thead
+              className="text-gray-700"
+              style={{ backgroundColor: "oklch(96.7% 0.003 264.542)" }}
+            >
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider w-1/4">
                   Nama
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider w-1/6">
                   NISN
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider w-1/6">
                   Kelas Terakhir
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider w-1/6">
                   Angkatan
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider w-1/6">
                   Tanggal Lulus
                 </th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">
+                <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider w-1/6">
                   Tahun Lulus
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 bg-white">
               {archivedStudents.map((student) => (
-                <tr key={student.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-4">
-                    <p className="font-medium text-gray-900">{student.name}</p>
+                <tr
+                  key={student.id}
+                  className="hover:bg-gray-50 transition-colors duration-200"
+                >
+                  <td className="px-4 py-3">
+                    <p className="font-semibold text-gray-900 text-sm">
+                      {student.name}
+                    </p>
                   </td>
-                  <td className="px-4 py-4 text-sm text-gray-900">
+                  <td className="px-4 py-3 text-sm text-gray-600">
                     {student.nisn}
                   </td>
-                  <td className="px-4 py-4 text-sm text-gray-900">
+                  <td className="px-4 py-3 text-sm text-gray-600">
                     {student.lastClass}
                   </td>
-                  <td className="px-4 py-4 text-sm text-gray-900">
+                  <td className="px-4 py-3 text-sm text-gray-600">
                     {student.angkatan}
                   </td>
-                  <td className="px-4 py-4 text-sm text-gray-900">
+                  <td className="px-4 py-3 text-sm text-gray-600">
                     {new Date(student.archivedAt).toLocaleDateString("id-ID")}
                   </td>
-                  <td className="px-4 py-4 text-center">
+                  <td className="px-4 py-3 text-center">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
                         student.yearsGraduated >= 1
-                          ? "bg-red-100 text-red-800"
-                          : "bg-green-100 text-green-800"
+                          ? "bg-red-100 text-red-800 border border-red-200"
+                          : "bg-green-100 text-green-800 border border-green-200"
                       }`}
                     >
                       {student.yearsGraduated} tahun
@@ -512,42 +550,72 @@ const KenaikanKelas = () => {
   );
 
   const renderHistoryTab = () => (
-    <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow p-6">
-        <h3 className="text-lg font-semibold text-[#003366] mb-4">
-          Riwayat Kenaikan Kelas
-        </h3>
+    <div className="space-y-4">
+      <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg shadow-md border border-purple-200 p-4">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-2 rounded-lg">
+            <FiClock className="text-white text-sm" />
+          </div>
+          <h3 className="text-sm font-semibold text-blue-600">
+            Riwayat Kenaikan Kelas
+          </h3>
+        </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {kenaikanHistory.map((record) => (
-            <div key={record.id} className="border rounded-lg p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium text-gray-900">
-                  {record.tahunAjaran}
-                </h4>
-                <span className="text-xs text-gray-500">
+            <div
+              key={record.id}
+              className="bg-white border border-gray-200 rounded-lg p-4 shadow-md hover:shadow-lg transition-all duration-200"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-1.5 rounded-lg">
+                    <FiCalendar className="text-white text-xs" />
+                  </div>
+                  <h4 className="font-semibold text-gray-900 text-sm">
+                    {record.tahunAjaran}
+                  </h4>
+                </div>
+                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
                   {new Date(record.tanggalProses).toLocaleDateString("id-ID")}
                 </span>
               </div>
-              <p className="text-sm text-gray-600 mb-3">{record.deskripsi}</p>
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="bg-blue-50 rounded-lg p-3">
-                  <p className="text-2xl font-bold text-blue-600">
+              <p className="text-xs text-gray-600 mb-3 bg-gray-50 p-2 rounded-md border">
+                {record.deskripsi}
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3 text-center">
+                  <div className="bg-gradient-to-r from-blue-500 to-blue-600 w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-1.5">
+                    <FiUsers className="text-white text-sm" />
+                  </div>
+                  <p className="text-lg font-bold text-blue-600 mb-0.5">
                     {record.totalSiswa}
                   </p>
-                  <p className="text-xs text-gray-600">Total Siswa</p>
+                  <p className="text-xs text-gray-600 font-medium">
+                    Total Siswa
+                  </p>
                 </div>
-                <div className="bg-green-50 rounded-lg p-3">
-                  <p className="text-2xl font-bold text-green-600">
+                <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-3 text-center">
+                  <div className="bg-gradient-to-r from-green-500 to-green-600 w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-1.5">
+                    <FiCheckCircle className="text-white text-sm" />
+                  </div>
+                  <p className="text-lg font-bold text-green-600 mb-0.5">
                     {record.sukses}
                   </p>
-                  <p className="text-xs text-gray-600">Naik/Lulus</p>
+                  <p className="text-xs text-gray-600 font-medium">
+                    Naik/Lulus
+                  </p>
                 </div>
-                <div className="bg-red-50 rounded-lg p-3">
-                  <p className="text-2xl font-bold text-red-600">
+                <div className="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg p-3 text-center">
+                  <div className="bg-gradient-to-r from-red-500 to-red-600 w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-1.5">
+                    <FiXCircle className="text-white text-sm" />
+                  </div>
+                  <p className="text-lg font-bold text-red-600 mb-0.5">
                     {record.gagal}
                   </p>
-                  <p className="text-xs text-gray-600">Tinggal Kelas</p>
+                  <p className="text-xs text-gray-600 font-medium">
+                    Tinggal Kelas
+                  </p>
                 </div>
               </div>
             </div>
@@ -558,71 +626,79 @@ const KenaikanKelas = () => {
   );
 
   return (
-    <div className="p-8">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#003366]">Kenaikan Kelas</h1>
-        <p className="text-gray-600">
-          Kelola kenaikan kelas siswa X → XI → XII → Lulus
-        </p>
-      </div>
+    <div className="max-w-6xl mx-auto p-4">
+      <div className="space-y-5">
+        {/* Header Section */}
+        <div className="mb-5">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-2 rounded-lg shadow-md">
+              <FiArrowUp className="text-white text-lg" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                Kenaikan Kelas
+              </h1>
+              <p className="text-gray-600 text-xs">
+                Kelola kenaikan kelas siswa X → XI → XII → Lulus
+              </p>
+            </div>
+          </div>
+        </div>
 
-      {/* Tabs */}
-      <div className="mb-6">
-        <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8">
-            <button
-              onClick={() => setActiveTab("preview")}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === "preview"
-                  ? "border-[#003366] text-[#003366]"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <FiEye />
+        {/* Tabs */}
+        <div className="bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden">
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 border-b border-gray-200">
+            <nav className="flex space-x-1">
+              <button
+                onClick={() => setActiveTab("preview")}
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1.5 text-sm ${
+                  activeTab === "preview"
+                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md"
+                    : "bg-white text-gray-700 hover:bg-gray-50 shadow-sm border border-gray-200"
+                }`}
+              >
+                <FiEye className="text-sm" />
                 Preview & Proses
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab("alumni")}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === "alumni"
-                  ? "border-[#003366] text-[#003366]"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <FiArchive />
+              </button>
+              <button
+                onClick={() => setActiveTab("alumni")}
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1.5 text-sm ${
+                  activeTab === "alumni"
+                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md"
+                    : "bg-white text-gray-700 hover:bg-gray-50 shadow-sm border border-gray-200"
+                }`}
+              >
+                <FiArchive className="text-sm" />
                 Data Alumni
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab("history")}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === "history"
-                  ? "border-[#003366] text-[#003366]"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <FiClock />
+              </button>
+              <button
+                onClick={() => setActiveTab("history")}
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-1.5 text-sm ${
+                  activeTab === "history"
+                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md"
+                    : "bg-white text-gray-700 hover:bg-gray-50 shadow-sm border border-gray-200"
+                }`}
+              >
+                <FiClock className="text-sm" />
                 Riwayat
+              </button>
+            </nav>
+          </div>
+
+          {/* Tab Content */}
+          <div className="p-4">
+            {loading && (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-[#003366]"></div>
               </div>
-            </button>
-          </nav>
+            )}
+
+            {!loading && activeTab === "preview" && renderPreviewTab()}
+            {!loading && activeTab === "alumni" && renderAlumniTab()}
+            {!loading && activeTab === "history" && renderHistoryTab()}
+          </div>
         </div>
       </div>
-
-      {/* Tab Content */}
-      {loading && (
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#003366]"></div>
-        </div>
-      )}
-
-      {!loading && activeTab === "preview" && renderPreviewTab()}
-      {!loading && activeTab === "alumni" && renderAlumniTab()}
-      {!loading && activeTab === "history" && renderHistoryTab()}
     </div>
   );
 };

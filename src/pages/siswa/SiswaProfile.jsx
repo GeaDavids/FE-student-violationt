@@ -51,7 +51,7 @@ const SiswaProfile = () => {
   const fetchProfileData = async () => {
     try {
       setLoading(true);
-      const response = await API.get("/api/student/profile");
+      const response = await API.get("/student/profile");
       setProfileData(response.data);
 
       // Set initial form data
@@ -123,7 +123,7 @@ const SiswaProfile = () => {
         alamat: editForm.alamat || null,
       };
 
-      await API.put("/api/student/profile", updateData);
+      await API.put("/student/profile", updateData);
 
       setEditMode(false);
       await fetchProfileData();
@@ -143,7 +143,7 @@ const SiswaProfile = () => {
     if (!validatePasswordForm()) return;
 
     try {
-      await API.put("/api/student/password", {
+      await API.put("/student/password", {
         currentPassword: passwordForm.currentPassword,
         newPassword: passwordForm.newPassword,
       });

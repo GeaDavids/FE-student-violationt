@@ -11,6 +11,7 @@ import {
   FiMail,
   FiPhone,
   FiCalendar,
+  FiX,
 } from "react-icons/fi";
 
 const DaftarSiswa = () => {
@@ -144,6 +145,18 @@ const DaftarSiswa = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleCloseModal = () => {
+    setFormVisible(false);
+    setErrorMsg("");
+    setEditingId(null);
+  };
+
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      handleCloseModal();
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
@@ -199,7 +212,7 @@ const DaftarSiswa = () => {
         orangTuaId: "",
       });
       setEditingId(null);
-      setFormVisible(false);
+      handleCloseModal();
       fetchSiswaByKelas(kelasInfo.id);
     } catch (err) {
       if (err.response?.data?.error) {
@@ -229,28 +242,28 @@ const DaftarSiswa = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-3 sm:p-4">
+      <div className="max-w-6xl mx-auto space-y-3">
         {/* Header */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-          <div className="flex justify-between items-start mb-6">
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <div className="p-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl text-white">
-                  <FiUsers className="text-xl" />
+        <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-3 sm:p-4">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-3 mb-3">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg text-white shadow">
+                  <FiUsers className="text-lg" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-800">
+                  <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                     Data Siswa Kelas {kelasInfo.nama}
                   </h1>
-                  <p className="text-gray-600 mt-1">
+                  <p className="text-gray-600 text-xs mt-0.5">
                     Kelola dan pantau data siswa dalam kelas
                   </p>
                 </div>
               </div>
               {kelasInfo.waliKelas && (
-                <div className="flex items-center space-x-2 text-sm text-gray-600 bg-gray-50 px-4 py-2 rounded-lg">
-                  <FiUser className="text-blue-500" />
+                <div className="flex items-center gap-2 text-xs text-gray-600 bg-gray-50 px-2 py-1 rounded-lg">
+                  <FiUser className="text-blue-600 text-xs" />
                   <span>
                     Wali Kelas:{" "}
                     <span className="font-semibold">{kelasInfo.waliKelas}</span>
@@ -259,7 +272,7 @@ const DaftarSiswa = () => {
               )}
             </div>
 
-            <div className="flex space-x-3">
+            <div className="flex flex-col sm:flex-row gap-2">
               <button
                 onClick={() => {
                   setForm({
@@ -276,16 +289,16 @@ const DaftarSiswa = () => {
                   setEditingId(null);
                   setFormVisible(true);
                 }}
-                className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2 rounded-lg font-semibold shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 text-sm"
               >
-                <FiPlus className="text-lg" />
+                <FiPlus className="text-sm" />
                 <span>Tambah Siswa</span>
               </button>
               <button
                 onClick={handleKembali}
-                className="flex items-center space-x-2 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                className="flex items-center justify-center gap-2 bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700 text-white px-4 py-2 rounded-lg font-semibold shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 text-sm"
               >
-                <FiArrowLeft className="text-lg" />
+                <FiArrowLeft className="text-sm" />
                 <span>Kembali</span>
               </button>
             </div>
@@ -293,296 +306,379 @@ const DaftarSiswa = () => {
 
           {/* Search Bar */}
           <div className="relative max-w-md">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <FiSearch className="h-5 w-5 text-gray-400" />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FiSearch className="h-4 w-4 text-blue-500" />
             </div>
             <input
               type="text"
               placeholder="Cari NISN, nama, atau email siswa..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm transition-all duration-200"
+              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent shadow-sm transition-all duration-200 text-sm"
             />
           </div>
         </div>
 
-        {/* Form Tambah/Edit */}
+        {/* Modern Modal */}
         {formVisible && (
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-            <div className="mb-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-2">
-                {editingId ? "Edit Data Siswa" : "Tambah Siswa Baru"}
-              </h3>
-              <p className="text-gray-600">
-                {editingId
-                  ? "Perbarui informasi siswa"
-                  : "Masukkan data siswa baru"}
-              </p>
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+            onClick={handleBackdropClick}
+          >
+            <div className="bg-white rounded-xl w-full max-w-4xl mx-auto shadow-xl border border-gray-200 overflow-hidden max-h-[90vh] overflow-y-auto">
+              {/* Header dengan tema biru */}
+              <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-200 sticky top-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600">
+                      <FiUser className="text-white text-lg" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-blue-800">
+                        {editingId ? "Edit Data Siswa" : "Tambah Siswa Baru"}
+                      </h3>
+                      <p className="text-sm text-blue-600">
+                        {editingId
+                          ? "Perbarui informasi siswa"
+                          : "Lengkapi data siswa untuk ditambahkan ke kelas"}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleCloseModal}
+                    className="p-1.5 hover:bg-white/50 rounded-lg transition-colors duration-200 group"
+                  >
+                    <FiX className="text-lg text-gray-500 group-hover:text-gray-700" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Form Content */}
+              <div className="p-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        NISN <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="nisn"
+                        placeholder="Masukkan NISN"
+                        value={form.nisn}
+                        onChange={handleChange}
+                        required
+                        className="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Nama Siswa <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        placeholder="Masukkan nama siswa"
+                        value={form.name}
+                        onChange={handleChange}
+                        required
+                        className="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Jenis Kelamin <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        name="gender"
+                        value={form.gender}
+                        onChange={handleChange}
+                        required
+                        className="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-sm"
+                      >
+                        <option value="L">Laki-laki</option>
+                        <option value="P">Perempuan</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Tempat Lahir <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="tempatLahir"
+                        placeholder="Masukkan tempat lahir"
+                        value={form.tempatLahir}
+                        onChange={handleChange}
+                        required
+                        className="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Tanggal Lahir <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="date"
+                        name="tglLahir"
+                        value={form.tglLahir}
+                        onChange={handleChange}
+                        required
+                        className="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Alamat <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="alamat"
+                        placeholder="Masukkan alamat"
+                        value={form.alamat}
+                        onChange={handleChange}
+                        required
+                        className="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        No. HP <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="noHp"
+                        placeholder="Masukkan nomor HP"
+                        value={form.noHp}
+                        onChange={handleChange}
+                        required
+                        className="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-sm"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Angkatan <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        name="angkatanId"
+                        value={form.angkatanId}
+                        onChange={handleChange}
+                        required
+                        disabled={angkatanLoading}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed text-sm"
+                      >
+                        <option value="">
+                          {angkatanLoading
+                            ? "Memuat data angkatan..."
+                            : "Pilih Angkatan"}
+                        </option>
+                        {!angkatanLoading && angkatanList.length > 0 ? (
+                          angkatanList.map((angkatan) => (
+                            <option key={angkatan.id} value={angkatan.id}>
+                              {angkatan.tahun ||
+                                angkatan.year ||
+                                angkatan.nama ||
+                                angkatan.name}
+                            </option>
+                          ))
+                        ) : !angkatanLoading && angkatanList.length === 0 ? (
+                          <option value="" disabled>
+                            Tidak ada data angkatan
+                          </option>
+                        ) : null}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        ID Orang Tua (Opsional)
+                      </label>
+                      <input
+                        type="number"
+                        name="orangTuaId"
+                        placeholder="Masukkan ID orang tua"
+                        value={form.orangTuaId}
+                        onChange={handleChange}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  {errorMsg && (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                      {errorMsg}
+                    </div>
+                  )}
+
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      type="submit"
+                      className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-6 py-3 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium"
+                    >
+                      {editingId ? "Update Data" : "Tambah Siswa"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCloseModal}
+                      className="flex-1 bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700 text-white px-6 py-3 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium"
+                    >
+                      Batal
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
-
-            <form
-              onSubmit={handleSubmit}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-            >
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  NISN
-                </label>
-                <input
-                  type="text"
-                  name="nisn"
-                  placeholder="Masukkan NISN"
-                  value={form.nisn}
-                  onChange={handleChange}
-                  required
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Nama Siswa
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Masukkan nama siswa"
-                  value={form.name}
-                  onChange={handleChange}
-                  required
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Jenis Kelamin
-                </label>
-                <select
-                  name="gender"
-                  value={form.gender}
-                  onChange={handleChange}
-                  required
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                >
-                  <option value="L">Laki-laki</option>
-                  <option value="P">Perempuan</option>
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Tempat Lahir
-                </label>
-                <input
-                  type="text"
-                  name="tempatLahir"
-                  placeholder="Masukkan tempat lahir"
-                  value={form.tempatLahir}
-                  onChange={handleChange}
-                  required
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Tanggal Lahir
-                </label>
-                <input
-                  type="date"
-                  name="tglLahir"
-                  value={form.tglLahir}
-                  onChange={handleChange}
-                  required
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Alamat
-                </label>
-                <input
-                  type="text"
-                  name="alamat"
-                  placeholder="Masukkan alamat"
-                  value={form.alamat}
-                  onChange={handleChange}
-                  required
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  No. HP
-                </label>
-                <input
-                  type="text"
-                  name="noHp"
-                  placeholder="Masukkan nomor HP"
-                  value={form.noHp}
-                  onChange={handleChange}
-                  required
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Angkatan
-                </label>
-                <select
-                  name="angkatanId"
-                  value={form.angkatanId}
-                  onChange={handleChange}
-                  required
-                  disabled={angkatanLoading}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                >
-                  <option value="">
-                    {angkatanLoading
-                      ? "Memuat data angkatan..."
-                      : "Pilih Angkatan"}
-                  </option>
-                  {!angkatanLoading && angkatanList.length > 0 ? (
-                    angkatanList.map((angkatan) => (
-                      <option key={angkatan.id} value={angkatan.id}>
-                        {angkatan.tahun ||
-                          angkatan.year ||
-                          angkatan.nama ||
-                          angkatan.name}
-                      </option>
-                    ))
-                  ) : !angkatanLoading && angkatanList.length === 0 ? (
-                    <option value="" disabled>
-                      Tidak ada data angkatan
-                    </option>
-                  ) : null}
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  ID Orang Tua (Opsional)
-                </label>
-                <input
-                  type="number"
-                  name="orangTuaId"
-                  placeholder="Masukkan ID orang tua"
-                  value={form.orangTuaId}
-                  onChange={handleChange}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                />
-              </div>
-
-              <div className="col-span-1 md:col-span-2 lg:col-span-3 flex space-x-4 pt-4">
-                <button
-                  type="submit"
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-                >
-                  {editingId ? "Update Data" : "Tambah Siswa"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormVisible(false)}
-                  className="px-6 py-3 border border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200"
-                >
-                  Batal
-                </button>
-              </div>
-            </form>
-
-            {errorMsg && (
-              <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl">
-                <p className="text-red-600 font-semibold text-sm">{errorMsg}</p>
-              </div>
-            )}
           </div>
         )}
 
-        {/* Data Siswa */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-          <div className="p-6 border-b border-gray-100">
-            <div className="flex items-center justify-between">
+        {/* Statistik Data */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-xl shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <FiUsers className="text-xl" />
+              </div>
               <div>
-                <h3 className="text-xl font-bold text-gray-800">
-                  Daftar Siswa
-                </h3>
-                <p className="text-gray-600 mt-1">
-                  Total:{" "}
-                  <span className="font-semibold text-blue-600">
-                    {filteredSiswa.length}
-                  </span>{" "}
-                  siswa
+                <p className="text-blue-100 text-sm">Total Siswa</p>
+                <p className="text-2xl font-bold">{filteredSiswa.length}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-xl shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <FiUser className="text-xl" />
+              </div>
+              <div>
+                <p className="text-blue-100 text-sm">Kelas</p>
+                <p className="text-xl font-bold">{kelasInfo.nama || "N/A"}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-xl shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <FiMail className="text-xl" />
+              </div>
+              <div>
+                <p className="text-purple-100 text-sm">Laki-laki</p>
+                <p className="text-xl font-bold">
+                  {filteredSiswa.filter((s) => s.gender === "L").length}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="bg-gradient-to-r from-pink-500 to-pink-600 text-white p-4 rounded-xl shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <FiPhone className="text-xl" />
+              </div>
+              <div>
+                <p className="text-pink-100 text-sm">Perempuan</p>
+                <p className="text-xl font-bold">
+                  {filteredSiswa.filter((s) => s.gender === "P").length}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Data Siswa */}
+        <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+          <div className="p-0">
             {filteredSiswa.length > 0 ? (
-              <table className="w-full">
-                <thead className="bg-gradient-to-r from-[#003366] to-blue-600 text-white">
-                  <tr>
-                    <th className="px-6 py-4 text-left font-semibold">NISN</th>
-                    <th className="px-6 py-4 text-left font-semibold">Nama</th>
-                    <th className="px-6 py-4 text-left font-semibold">Email</th>
-                    <th className="px-6 py-4 text-left font-semibold">
-                      No. HP
-                    </th>
-                    <th className="px-6 py-4 text-left font-semibold">
-                      Angkatan
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {filteredSiswa.map((siswa) => (
+              <div className="overflow-hidden">
+                <table className="w-full table-fixed">
+                  <thead>
                     <tr
-                      key={siswa.id}
-                      className="hover:bg-gray-50 transition-colors"
+                      className="text-gray-700"
+                      style={{ backgroundColor: "oklch(96.7% 0.003 264.542)" }}
                     >
-                      <td className="px-6 py-4 text-gray-900 font-medium">
-                        {siswa.nisn || "-"}
-                      </td>
-                      <td
-                        className="px-6 py-4 text-gray-800 cursor-pointer hover:text-blue-600 hover:bg-blue-50 transition-colors duration-200"
-                        onClick={() => {
-                          navigate(`/superadmin/detail-siswa/${siswa.id}`, {
-                            state: {
-                              siswa,
-                              kelasDipilih: kelasInfo.id,
-                              namaKelasDipilih: kelasInfo.nama,
-                            },
-                          });
-                        }}
-                      >
-                        {siswa.nama || siswa.name || "-"}
-                      </td>
-                      <td className="px-6 py-4 text-gray-600">
-                        {siswa.email || "-"}
-                      </td>
-                      <td className="px-6 py-4 text-gray-600 font-mono">
-                        {siswa.noHp || "-"}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
-                          {siswa.angkatan?.tahun || "-"}
-                        </span>
-                      </td>
+                      <th className="w-20 px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wide">
+                        NISN
+                      </th>
+                      <th className="w-28 px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wide">
+                        NAMA
+                      </th>
+                      <th className="w-48 px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wide hidden md:table-cell">
+                        EMAIL
+                      </th>
+                      <th className="w-32 px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wide">
+                        NO. HP
+                      </th>
+                      <th className="w-20 px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wide">
+                        ANGKATAN
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-100">
+                    {filteredSiswa.map((siswa) => (
+                      <tr
+                        key={siswa.id}
+                        className="hover:bg-gray-50 transition-colors duration-150"
+                      >
+                        <td className="px-3 py-2.5 whitespace-nowrap">
+                          <div className="text-sm font-semibold text-gray-900">
+                            {siswa.nisn || "-"}
+                          </div>
+                        </td>
+                        <td
+                          className="px-3 py-2.5 cursor-pointer hover:text-blue-600 transition-colors duration-200"
+                          onClick={() => {
+                            navigate(`/superadmin/detail-siswa/${siswa.id}`, {
+                              state: {
+                                siswa,
+                                kelasDipilih: kelasInfo.id,
+                                namaKelasDipilih: kelasInfo.nama,
+                              },
+                            });
+                          }}
+                        >
+                          <div className="text-sm font-medium text-gray-900 hover:text-blue-600 truncate">
+                            {siswa.nama || siswa.name || "-"}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2.5 whitespace-nowrap hidden md:table-cell">
+                          <div
+                            className="text-sm text-gray-600 truncate"
+                            title={siswa.email}
+                          >
+                            {siswa.email || "-"}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2.5 whitespace-nowrap">
+                          <div className="text-sm text-gray-900 font-mono">
+                            {siswa.noHp || "-"}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2.5 whitespace-nowrap text-center">
+                          <span className="inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                            {siswa.angkatan?.tahun || "-"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             ) : (
-              <div className="text-center py-12">
+              <div className="text-center py-8">
                 <div className="flex flex-col items-center">
-                  <FiUsers className="text-4xl text-gray-300 mb-2" />
-                  <h3 className="text-lg font-semibold text-gray-600">
+                  <FiUsers className="text-3xl text-gray-300 mb-3" />
+                  <h3 className="text-base font-semibold text-gray-600 mb-1">
                     Belum Ada Data Siswa
                   </h3>
-                  <p className="text-gray-500 mt-1">
+                  <p className="text-gray-500 text-sm">
                     Belum ada siswa terdaftar di kelas ini
                   </p>
                 </div>
