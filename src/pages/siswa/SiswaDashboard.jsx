@@ -1,4 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
+import React from "react";
+import useSuratPeringatan from "./useSuratPeringatan";
 import Swal from "sweetalert2";
 import API from "../../api/api";
 import {
@@ -21,6 +23,10 @@ import {
 } from "react-icons/fi";
 
 const SiswaDashboard = () => {
+  // HOOKS: custom hooks must be called before any early return or conditional
+  const { surat, loading: loadingSurat } = useSuratPeringatan();
+  const [selectedSurat, setSelectedSurat] = useState(null);
+
   const [dashboardData, setDashboardData] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -295,6 +301,84 @@ const SiswaDashboard = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Surat Peringatan Card */}
+      <div className="mb-6">
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <FiAlertCircle className="text-yellow-500" /> Surat Peringatan
+          </h2>
+          {loadingSurat ? (
+            <div className="text-center py-4">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-500 mx-auto"></div>
+            </div>
+          ) : surat && surat.length > 0 ? (
+            <div className="space-y-3">
+              {surat.map((sp) => (
+                <div
+                  key={sp.id}
+                  className="p-4 rounded border border-yellow-300 bg-yellow-50 text-yellow-900 font-bold text-lg cursor-pointer hover:bg-yellow-100"
+                  onClick={() => setSelectedSurat(sp)}
+                >
+                  {sp.jenisSurat}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center text-gray-500 py-4">
+              Belum ada surat peringatan
+            </div>
+          )}
+        </div>
+        {/* Modal Detail Surat */}
+        {selectedSurat && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full relative">
+              <button
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl"
+                onClick={() => setSelectedSurat(null)}
+              >
+                &times;
+              </button>
+              <h3 className="text-xl font-bold mb-2 text-yellow-800">
+                {selectedSurat.jenisSurat}
+              </h3>
+              <div className="mb-2 text-gray-700">
+                <span className="font-semibold">Judul:</span>{" "}
+                {selectedSurat.judul || "-"}
+              </div>
+              <div className="mb-4 text-gray-800 border rounded bg-yellow-50 p-4 shadow-inner">
+                <div className="text-center mb-2">
+                  <span className="font-bold text-lg underline">
+                    {selectedSurat.judul || selectedSurat.jenisSurat}
+                  </span>
+                </div>
+                <div className="whitespace-pre-line leading-relaxed text-justify max-h-60 overflow-auto">
+                  {selectedSurat.isiSurat || "-"}
+                </div>
+              </div>
+              <div className="mb-2 text-gray-700">
+                <span className="font-semibold">Tingkat:</span>{" "}
+                {selectedSurat.tingkatSurat}
+              </div>
+              <div className="mb-2 text-gray-700">
+                <span className="font-semibold">Score Saat Surat:</span>{" "}
+                {selectedSurat.totalScoreSaat}
+              </div>
+              <div className="mb-2 text-gray-700">
+                <span className="font-semibold">Status:</span>{" "}
+                {selectedSurat.statusKirim}
+              </div>
+              <div className="mb-2 text-gray-700">
+                <span className="font-semibold">Tanggal Kirim:</span>{" "}
+                {selectedSurat.tanggalKirim
+                  ? new Date(selectedSurat.tanggalKirim).toLocaleString("id-ID")
+                  : "-"}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Main Content Grid */}

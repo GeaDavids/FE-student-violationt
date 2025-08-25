@@ -16,13 +16,99 @@ const StudentDetail = () => {
   const [suratPeringatan, setSuratPeringatan] = useState([]);
   const [loadingSurat, setLoadingSurat] = useState(false);
 
+  // Icon Components
+  const ArrowLeftIcon = () => (
+    <svg
+      className="w-5 h-5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M10 19l-7-7m0 0l7-7m-7 7h18"
+      />
+    </svg>
+  );
+
+  const UserIcon = () => (
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+      />
+    </svg>
+  );
+
+  const DocumentIcon = () => (
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+      />
+    </svg>
+  );
+
+  const MailIcon = () => (
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+      />
+    </svg>
+  );
+
+  const EyeIcon = () => (
+    <svg
+      className="w-4 h-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+      />
+    </svg>
+  );
+
   // Fetch academic years
   useEffect(() => {
     const fetchYears = async () => {
       try {
         const res = await academicYearAPI.getAll();
         setAcademicYears(res.data.data);
-        // Default tetap 'all', tidak perlu setSelectedYear di sini
       } catch (err) {
         setAcademicYears([]);
       }
@@ -37,12 +123,9 @@ const StudentDetail = () => {
       setLoading(true);
       setError(null);
       try {
-        // Jika 'all', kirim null/undefined agar backend handle semua tahun ajaran
         const tahunParam = selectedYear === "all" ? undefined : selectedYear;
         const res = await bkAPI.getStudentDetail(nisn, tahunParam);
         setData(res.data);
-
-        // Fetch surat peringatan untuk siswa ini
         await fetchSuratPeringatan(nisn);
       } catch (err) {
         setError("Gagal memuat detail siswa");
@@ -129,12 +212,6 @@ const StudentDetail = () => {
     return labels[status] || status;
   };
 
-  if (loading) return <div className="p-6">Loading...</div>;
-  if (error) return <div className="p-6 text-red-500">{error}</div>;
-  if (!data) return null;
-
-  const { siswa, laporan } = data;
-
   // Fungsi untuk get badge status surat
   const getStatusBadge = (status) => {
     const colors = {
@@ -151,7 +228,7 @@ const StudentDetail = () => {
 
     return (
       <span
-        className={`px-2 py-1 rounded-full text-xs font-semibold ${colors[status]}`}
+        className={`px-1.5 py-0.5 rounded-full text-xs font-semibold ${colors[status]}`}
       >
         {labels[status]}
       </span>
@@ -167,204 +244,347 @@ const StudentDetail = () => {
     };
 
     const labels = {
-      SP1: "Surat Peringatan 1",
-      PANGGIL_ORTU: "Panggil Orang Tua",
+      SP1: "SP 1",
+      PANGGIL_ORTU: "Panggil Ortu",
       TERANCAM_KELUAR: "Terancam Keluar",
     };
 
     return (
       <span
-        className={`px-2 py-1 rounded-full text-xs font-semibold ${colors[jenis]}`}
+        className={`px-1.5 py-0.5 rounded-full text-xs font-semibold ${colors[jenis]}`}
       >
         {labels[jenis] || jenis}
       </span>
     );
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="flex flex-col items-center justify-center py-8">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-slate-200"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent absolute top-0 left-0"></div>
+          </div>
+          <div className="mt-3 text-center">
+            <h3 className="text-sm font-semibold text-slate-900 mb-1">
+              Memuat data siswa...
+            </h3>
+            <p className="text-slate-500 text-xs">Mohon tunggu sebentar</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto w-12 h-12 bg-gradient-to-br from-red-100 to-red-200 rounded-lg flex items-center justify-center mb-3">
+            <span className="text-lg">❌</span>
+          </div>
+          <h3 className="text-sm font-semibold text-slate-900 mb-1">
+            Terjadi Kesalahan
+          </h3>
+          <p className="text-red-600 text-xs">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) return null;
+
+  const { siswa, laporan } = data;
+
   return (
-    <div className="p-6 space-y-6">
-      {/* Row 1: Biodata dan Laporan */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Card Kiri - Biodata */}
-        <div className="bg-white rounded-lg shadow p-6 md:col-span-1">
-          <h2 className="text-xl font-bold mb-4">Biodata Siswa</h2>
-          <div className="mb-2">
-            <span className="font-semibold">NISN:</span> {siswa.nisn}
-          </div>
-          <div className="mb-2">
-            <span className="font-semibold">Nama:</span> {siswa.nama}
-          </div>
-          <div className="mb-2">
-            <span className="font-semibold">Kelas:</span> {siswa.kelas}
-          </div>
-          <div className="mb-2">
-            <span className="font-semibold">Angkatan:</span> {siswa.angkatan}
-          </div>
-          <div className="mt-4 p-3 bg-gray-50 rounded">
-            <div>
-              <span className="font-semibold text-red-600">
-                Total Pelanggaran:
-              </span>{" "}
-              {siswa.totalPelanggaran}
-            </div>
-            <div>
-              <span className="font-semibold text-green-600">
-                Total Prestasi:
-              </span>{" "}
-              {siswa.totalPrestasi}
-            </div>
-            <div>
-              <span className="font-semibold">Total Score:</span>{" "}
-              <span
-                className={
-                  siswa.totalScore < 0
-                    ? "text-red-600 font-bold"
-                    : "text-green-600"
-                }
-              >
-                {siswa.totalScore}
-              </span>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <div className="container mx-auto px-3 py-4 max-w-6xl">
+        {/* Header */}
+        <div className="mb-4">
           <button
             onClick={() => navigate(-1)}
-            className="mt-6 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+            className="mb-3 inline-flex items-center px-2 py-1.5 text-xs font-medium text-slate-600 bg-white/70 backdrop-blur-sm rounded-md border border-slate-200 hover:bg-white hover:text-slate-900 transition-all duration-200"
           >
-            Kembali
+            ← Kembali
           </button>
-        </div>
-
-        {/* Card Kanan - Laporan */}
-        <div className="bg-white rounded-lg shadow p-6 md:col-span-2">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2">
-            <h2 className="text-xl font-bold">Laporan Siswa</h2>
-            <div>
-              <label htmlFor="tahunAjaran" className="mr-2 font-semibold">
-                Tahun Ajaran:
-              </label>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+              Detail Siswa
+            </h1>
+            {/* Academic Year Selector */}
+            <div className="mt-3 sm:mt-0">
               <select
-                id="tahunAjaran"
-                value={selectedYear || ""}
+                value={selectedYear}
                 onChange={(e) => setSelectedYear(e.target.value)}
-                className="border rounded px-2 py-1"
+                className="px-3 py-1.5 bg-white/70 backdrop-blur-sm border border-slate-200 rounded-md text-xs font-medium text-slate-700 hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               >
                 <option value="all">Semua Tahun Ajaran</option>
-                {academicYears.map((y) => (
-                  <option key={y.id} value={y.id}>
-                    {y.tahunAjaran || y.nama || y.tahun || y.id}
-                    {y.isActive ? " (Aktif)" : ""}
+                {academicYears.map((year) => (
+                  <option key={year.id} value={year.id}>
+                    {year.tahunAjaran} - {year.semester}
                   </option>
                 ))}
               </select>
             </div>
           </div>
-          {laporan.length === 0 ? (
-            <div className="text-gray-500">
-              Tidak ada laporan pada tahun ajaran ini.
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full border border-gray-200 rounded-lg">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="px-4 py-2 border">Tanggal</th>
-                    <th className="px-4 py-2 border">Tipe</th>
-                    <th className="px-4 py-2 border">Nama Item</th>
-                    <th className="px-4 py-2 border">Point</th>
-                    <th className="px-4 py-2 border">Kelas</th>
-                    <th className="px-4 py-2 border">Deskripsi</th>
-                    <th className="px-4 py-2 border">Reporter</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {laporan.map((lap, idx) => (
-                    <tr key={lap.id || idx} className="hover:bg-gray-50">
-                      <td className="px-4 py-2 border text-center">
-                        {new Date(lap.tanggal).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-2 border text-center">
-                        {lap.tipe}
-                      </td>
-                      <td className="px-4 py-2 border">{lap.namaItem}</td>
-                      <td className="px-4 py-2 border text-center">
-                        {lap.point}
-                      </td>
-                      <td className="px-4 py-2 border text-center">
-                        {lap.kelasSaatLaporan || "-"}
-                      </td>
-                      <td className="px-4 py-2 border">{lap.deskripsi}</td>
-                      <td className="px-4 py-2 border">{lap.reporter?.name}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
         </div>
-      </div>
 
-      {/* Row 2: Surat Peringatan */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold mb-4">Surat Peringatan</h2>
-        {loadingSurat ? (
-          <div className="text-center py-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-2 text-gray-500">Loading surat peringatan...</p>
+        {/* Student Info Card */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md border border-slate-200 mb-4">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-t-lg">
+            <h2 className="text-lg font-bold">Informasi Siswa</h2>
           </div>
-        ) : suratPeringatan.length === 0 ? (
-          <div className="text-gray-500 text-center py-8">
-            <div className="mb-2">📧</div>
-            <p>Belum ada surat peringatan untuk siswa ini.</p>
+          <div className="p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <label className="text-xs font-medium text-slate-600">
+                  NISN
+                </label>
+                <p className="text-sm font-semibold text-slate-900">
+                  {siswa.nisn}
+                </p>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600">
+                  Nama Lengkap
+                </label>
+                <p className="text-sm font-semibold text-slate-900">
+                  {siswa.nama}
+                </p>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600">
+                  Kelas
+                </label>
+                <p className="text-sm font-semibold text-slate-900">
+                  {siswa.kelas || "-"}
+                </p>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600">
+                  Jenis Kelamin
+                </label>
+                <p className="text-sm font-semibold text-slate-900">
+                  {siswa.jenisKelamin === "L" ? "Laki-laki" : "Perempuan"}
+                </p>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600">
+                  Total Score
+                </label>
+                <p className="text-sm font-semibold text-slate-900">
+                  {siswa.totalScore}
+                </p>
+              </div>
+            </div>
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full border border-gray-200 rounded-lg">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="px-4 py-2 border">Tanggal</th>
-                  <th className="px-4 py-2 border">Jenis Surat</th>
-                  <th className="px-4 py-2 border">Tingkat</th>
-                  <th className="px-4 py-2 border">Score Saat Dibuat</th>
-                  <th className="px-4 py-2 border">Status</th>
-                  <th className="px-4 py-2 border">Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {suratPeringatan.map((surat, idx) => (
-                  <tr key={surat.id || idx} className="hover:bg-gray-50">
-                    <td className="px-4 py-2 border text-center">
-                      {new Date(surat.createdAt).toLocaleDateString("id-ID")}
-                    </td>
-                    <td className="px-4 py-2 border text-center">
-                      {getJenisSuratBadge(surat.jenisSurat)}
-                    </td>
-                    <td className="px-4 py-2 border text-center">
-                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
-                        Level {surat.tingkatSurat}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2 border text-center font-semibold">
-                      <span className="text-red-600">
-                        {surat.totalScoreSaat}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2 border text-center">
-                      {getStatusBadge(surat.statusKirim)}
-                    </td>
-                    <td className="px-4 py-2 border text-center">
-                      <button
-                        onClick={() => viewSuratDetail(surat)}
-                        className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+        </div>
+
+        {/* Reports History Section */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md border border-slate-200 mb-4">
+          <div className="bg-gradient-to-r from-orange-500 to-blue-500 text-white p-4 rounded-t-lg">
+            <h2 className="text-lg font-bold">Riwayat Laporan</h2>
+            <p className="text-orange-100 text-xs mt-1">
+              Total {laporan?.length || 0} laporan (pelanggaran & prestasi)
+            </p>
+          </div>
+          <div className="p-4">
+            {laporan && laporan.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-200">
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Tanggal
+                      </th>
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Tipe
+                      </th>
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Item
+                      </th>
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Poin
+                      </th>
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Pelapor
+                      </th>
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Deskripsi
+                      </th>
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Bukti
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {laporan.map((item, index) => (
+                      <tr
+                        key={index}
+                        className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
                       >
-                        Lihat Detail
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                        <td className="py-2 px-3 text-slate-600">
+                          {new Date(item.tanggal).toLocaleDateString("id-ID")}
+                        </td>
+                        <td className="py-2 px-3">
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${
+                              item.tipe === "pelanggaran"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-green-100 text-green-800"
+                            }`}
+                          >
+                            {item.tipe.charAt(0).toUpperCase() +
+                              item.tipe.slice(1)}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3 font-medium text-slate-900">
+                          {item.namaItem || "-"}
+                        </td>
+                        <td className="py-2 px-3">
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                              item.tipe === "pelanggaran"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-green-100 text-green-800"
+                            }`}
+                          >
+                            {item.tipe === "pelanggaran" ? "-" : "+"}
+                            {item.point || 0}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3 text-slate-600">
+                          {item.reporter?.name || "-"}
+                        </td>
+                        <td
+                          className="py-2 px-3 text-slate-600 max-w-xs truncate"
+                          title={item.deskripsi}
+                        >
+                          {item.deskripsi || "-"}
+                        </td>
+                        <td className="py-2 px-3">
+                          {item.bukti && item.bukti.length > 0 ? (
+                            <span
+                              className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 cursor-pointer"
+                              title="Lihat Bukti"
+                            >
+                              Ada
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                <div className="mx-auto w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center mb-3">
+                  <span className="text-lg">✅</span>
+                </div>
+                <h3 className="text-sm font-semibold text-slate-900 mb-1">
+                  Tidak Ada Laporan
+                </h3>
+                <p className="text-slate-500 text-xs">
+                  Siswa ini belum memiliki catatan laporan
+                </p>
+              </div>
+            )}
           </div>
-        )}
+        </div>
+
+        {/* Warning Letters Section */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md border border-slate-200">
+          <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-4 rounded-t-lg">
+            <h2 className="text-lg font-bold">Riwayat Surat Peringatan</h2>
+            <p className="text-purple-100 text-xs mt-1">
+              Total {suratPeringatan.length} surat peringatan
+            </p>
+          </div>
+          <div className="p-4">
+            {loadingSurat ? (
+              <div className="flex justify-center py-6">
+                <div className="relative">
+                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-200"></div>
+                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-purple-500 border-t-transparent absolute top-0 left-0"></div>
+                </div>
+              </div>
+            ) : suratPeringatan.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-200">
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Tanggal
+                      </th>
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Jenis Surat
+                      </th>
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Total Poin
+                      </th>
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Status
+                      </th>
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Aksi
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {suratPeringatan.map((surat, index) => (
+                      <tr
+                        key={index}
+                        className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
+                      >
+                        <td className="py-2 px-3 text-slate-600">
+                          {new Date(surat.createdAt).toLocaleDateString(
+                            "id-ID"
+                          )}
+                        </td>
+                        <td className="py-2 px-3">
+                          {getJenisSuratBadge(surat.jenisSurat)}
+                        </td>
+                        <td className="py-2 px-3">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            {surat.totalScoreSaat}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3">
+                          {getStatusBadge(surat.statusKirim)}
+                        </td>
+                        <td className="py-2 px-3">
+                          <button
+                            onClick={() => viewSuratDetail(surat)}
+                            className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
+                          >
+                            <EyeIcon />
+                            <span className="ml-1">Lihat</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                <div className="mx-auto w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center mb-3">
+                  <span className="text-lg">📄</span>
+                </div>
+                <h3 className="text-sm font-semibold text-slate-900 mb-1">
+                  Belum Ada Surat Peringatan
+                </h3>
+                <p className="text-slate-500 text-xs">
+                  Siswa ini belum pernah mendapat surat peringatan
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
