@@ -1,3 +1,4 @@
+// profile
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import API from "../../api/api";
@@ -15,7 +16,7 @@ import {
   FiCalendar,
   FiBook,
   FiUserCheck,
-  FiAward,
+  FiTarget,
 } from "react-icons/fi";
 
 const SiswaProfile = () => {
@@ -54,6 +55,8 @@ const SiswaProfile = () => {
       setLoading(true);
       const response = await API.get("/student/profile");
       setProfileData(response.data);
+
+      // Set initial form data
       setEditForm({
         name: response.data.user?.name || "",
         email: response.data.user?.email || "",
@@ -207,86 +210,64 @@ const SiswaProfile = () => {
     );
   }
 
-  const {
-    user,
-    nisn,
-    jenisKelamin,
-    tempatLahir,
-    tglLahir,
-    alamat,
-    phone,
-    kelas,
-    angkatan,
-    waliKelas,
-    totalScore,
-  } = profileData;
+  const { user, nisn, kelas, angkatan, waliKelas } = profileData;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4 min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <FiUser /> Profile Siswa
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Kelola informasi profile dan keamanan akun Anda
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {!editMode && !changePasswordMode && (
-            <>
-              <button
-                onClick={() => setEditMode(true)}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600"
-              >
-                <FiEdit3 /> Edit Profile
-              </button>
-              <button
-                onClick={() => setChangePasswordMode(true)}
-                className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-600"
-              >
-                <FiLock /> Ganti Password
-              </button>
-            </>
-          )}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                <FiUser className="text-white text-sm" />
+              </div>
+              Profile Siswa
+            </h1>
+            <p className="text-gray-600 text-sm mt-1">
+              Kelola informasi profile dan keamanan akun Anda
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {!editMode && !changePasswordMode && (
+              <>
+                <button
+                  onClick={() => setEditMode(true)}
+                  className="bg-blue-500 text-white px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600 transition-all text-sm"
+                >
+                  <FiEdit3 className="text-sm" /> Edit
+                </button>
+                <button
+                  onClick={() => setChangePasswordMode(true)}
+                  className="bg-gray-500 text-white px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-600 transition-all text-sm"
+                >
+                  <FiLock className="text-sm" /> Password
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Profile Picture & Basic Info */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow p-6 text-center">
-            <div className="w-32 h-32 bg-gray-300 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <FiUser className="h-16 w-16 text-gray-600" />
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center h-full flex flex-col">
+            <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-500 rounded-full mx-auto mb-3 flex items-center justify-center shadow-lg">
+              <FiUser className="h-10 w-10 text-white" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">
+            <h2 className="text-lg font-bold text-gray-900 mb-1 truncate">
               {user?.name || "Nama tidak tersedia"}
             </h2>
-            <p className="text-gray-600 mb-2">NISN: {nisn || "-"}</p>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-center gap-2 text-gray-600">
-                <FiBook />
-                <span>{kelas || "Kelas tidak tersedia"}</span>
-              </div>
-              <div className="flex items-center justify-center gap-2 text-gray-600">
-                <FiCalendar />
-                <span>Angkatan {angkatan || "-"}</span>
-              </div>
-              {waliKelas && (
-                <div className="flex items-center justify-center gap-2 text-gray-600">
-                  <FiUserCheck />
-                  <span>Wali Kelas: {waliKelas}</span>
-                </div>
-              )}
-              <div className="flex items-center justify-center gap-2 text-gray-600">
-                <FiAward />
-                <span>
-                  Total Poin:{" "}
-                  <span className="font-bold text-blue-700">
-                    {totalScore ?? 0}
-                  </span>
+            <p className="text-sm text-gray-600 mb-3">NISN: {nisn || "-"}</p>
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3 border border-blue-200 flex-grow flex items-center justify-center">
+              <div className="text-center">
+                <span className="text-2xl font-bold text-blue-600">
+                  {profileData.totalScore || 100}
                 </span>
+                <p className="text-sm text-blue-700 font-medium">
+                  Credit Score
+                </p>
               </div>
             </div>
           </div>
@@ -294,10 +275,20 @@ const SiswaProfile = () => {
 
         {/* Profile Details */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6">
-              Informasi Personal
-            </h3>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 h-full">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                <FiUser className="text-white text-sm" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">
+                  Informasi Lengkap
+                </h3>
+                <p className="text-xs text-gray-600">
+                  Data pribadi dan informasi kontak siswa
+                </p>
+              </div>
+            </div>
 
             {/* Edit Mode */}
             {editMode ? (
@@ -541,95 +532,126 @@ const SiswaProfile = () => {
               </div>
             ) : (
               /* View Mode */
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
-                      Nama Lengkap
-                    </label>
-                    <div className="flex items-center gap-2 text-gray-900">
-                      <FiUser className="text-gray-400" />
-                      <span>{user?.name || "-"}</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
-                      NISN
-                    </label>
-                    <div className="flex items-center gap-2 text-gray-900">
-                      <FiBook className="text-gray-400" />
-                      <span>{nisn || "-"}</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
-                      Email
-                    </label>
-                    <div className="flex items-center gap-2 text-gray-900">
-                      <FiMail className="text-gray-400" />
-                      <span>{user?.email || "-"}</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
-                      Nomor Telepon
-                    </label>
-                    <div className="flex items-center gap-2 text-gray-900">
-                      <FiPhone className="text-gray-400" />
-                      <span>{profileData.phone || "-"}</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
-                      Kelas
-                    </label>
-                    <div className="flex items-center gap-2 text-gray-900">
-                      <FiBook className="text-gray-400" />
-                      <span>{kelas || "-"}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
-                      Angkatan
-                    </label>
-                    <div className="flex items-center gap-2 text-gray-900">
-                      <FiCalendar className="text-gray-400" />
-                      <span>{angkatan || "-"}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                    <label className="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">
                       Jenis Kelamin
                     </label>
                     <div className="flex items-center gap-2 text-gray-900">
-                      <FiUser className="text-gray-400" />
-                      <span>{jenisKelamin || "-"}</span>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
-                      Tempat, Tanggal Lahir
-                    </label>
-                    <div className="flex items-center gap-2 text-gray-900">
-                      <FiCalendar className="text-gray-400" />
-                      <span>
-                        {tempatLahir || "-"}, {formatDate(tglLahir)}
+                      <div className="w-6 h-6 bg-pink-500 rounded-lg flex items-center justify-center">
+                        <FiUser className="text-white text-xs" />
+                      </div>
+                      <span className="font-semibold text-sm">
+                        {profileData.jenisKelamin === "L"
+                          ? "Laki-laki"
+                          : profileData.jenisKelamin === "P"
+                          ? "Perempuan"
+                          : "-"}
                       </span>
                     </div>
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-600 mb-1">
-                    Alamat
-                  </label>
-                  <div className="flex items-start gap-2 text-gray-900">
-                    <FiMapPin className="text-gray-400 mt-1" />
-                    <span>{alamat || "-"}</span>
+                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                    <label className="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">
+                      Kelas
+                    </label>
+                    <div className="flex items-center gap-2 text-gray-900">
+                      <div className="w-6 h-6 bg-green-500 rounded-lg flex items-center justify-center">
+                        <FiBook className="text-white text-xs" />
+                      </div>
+                      <span className="font-semibold text-sm">
+                        {kelas || "-"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                    <label className="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">
+                      Angkatan
+                    </label>
+                    <div className="flex items-center gap-2 text-gray-900">
+                      <div className="w-6 h-6 bg-purple-500 rounded-lg flex items-center justify-center">
+                        <FiCalendar className="text-white text-xs" />
+                      </div>
+                      <span className="font-semibold text-sm">
+                        {angkatan || "-"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                    <label className="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">
+                      Wali Kelas
+                    </label>
+                    <div className="flex items-center gap-2 text-gray-900">
+                      <div className="w-6 h-6 bg-orange-500 rounded-lg flex items-center justify-center">
+                        <FiUserCheck className="text-white text-xs" />
+                      </div>
+                      <span className="font-semibold text-sm">
+                        {waliKelas || "-"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                    <label className="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">
+                      Email
+                    </label>
+                    <div className="flex items-center gap-2 text-gray-900">
+                      <div className="w-6 h-6 bg-red-500 rounded-lg flex items-center justify-center">
+                        <FiMail className="text-white text-xs" />
+                      </div>
+                      <span className="font-semibold text-sm truncate">
+                        {user?.email || "-"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                    <label className="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">
+                      Nomor Telepon
+                    </label>
+                    <div className="flex items-center gap-2 text-gray-900">
+                      <div className="w-6 h-6 bg-yellow-500 rounded-lg flex items-center justify-center">
+                        <FiPhone className="text-white text-xs" />
+                      </div>
+                      <span className="font-semibold text-sm">
+                        {profileData.phone || "-"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                    <label className="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">
+                      Tempat, Tanggal Lahir
+                    </label>
+                    <div className="flex items-center gap-2 text-gray-900">
+                      <div className="w-6 h-6 bg-cyan-500 rounded-lg flex items-center justify-center">
+                        <FiCalendar className="text-white text-xs" />
+                      </div>
+                      <span className="font-semibold text-sm">
+                        {profileData.tempatLahir
+                          ? `${profileData.tempatLahir}, ${formatDate(
+                              profileData.tglLahir
+                            )}`
+                          : "-"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                    <label className="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wider">
+                      Alamat
+                    </label>
+                    <div className="flex items-center gap-2 text-gray-900">
+                      <div className="w-6 h-6 bg-teal-500 rounded-lg flex items-center justify-center">
+                        <FiMapPin className="text-white text-xs" />
+                      </div>
+                      <span className="font-semibold text-sm">
+                        {profileData.alamat || "-"}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

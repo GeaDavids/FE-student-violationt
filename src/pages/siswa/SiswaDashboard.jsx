@@ -1,3 +1,4 @@
+// dashboard
 import { useEffect, useState, useCallback } from "react";
 import React from "react";
 import useSuratPeringatan from "./useSuratPeringatan";
@@ -26,23 +27,6 @@ const SiswaDashboard = () => {
   // HOOKS: custom hooks must be called before any early return or conditional
   const { surat, loading: loadingSurat } = useSuratPeringatan();
   const [selectedSurat, setSelectedSurat] = useState(null);
-  // State untuk detail laporan
-  const [selectedReport, setSelectedReport] = useState(null);
-  const [reportDetail, setReportDetail] = useState(null);
-  const [loadingDetail, setLoadingDetail] = useState(false);
-  // Ambil detail laporan
-  const fetchReportDetail = async (reportId) => {
-    setLoadingDetail(true);
-    setReportDetail(null);
-    try {
-      const res = await API.get(`/student/report/${reportId}`);
-      setReportDetail(res.data.data);
-    } catch (err) {
-      Swal.fire("Error!", "Gagal mengambil detail laporan", "error");
-    } finally {
-      setLoadingDetail(false);
-    }
-  };
 
   const [dashboardData, setDashboardData] = useState(null);
   const [notifications, setNotifications] = useState([]);
@@ -103,20 +87,6 @@ const SiswaDashboard = () => {
           notif.id === notificationId ? { ...notif, isRead: true } : notif
         )
       );
-
-      // Update dashboard data
-      if (dashboardData) {
-        setDashboardData((prev) => ({
-          ...prev,
-          summary: {
-            ...prev.summary,
-            unreadNotifications: Math.max(
-              0,
-              prev.summary.unreadNotifications - 1
-            ),
-          },
-        }));
-      }
     } catch (err) {
       console.error("Error marking notification as read:", err);
     }
@@ -135,16 +105,6 @@ const SiswaDashboard = () => {
       setNotifications((prev) =>
         prev.map((notif) => ({ ...notif, isRead: true }))
       );
-
-      if (dashboardData) {
-        setDashboardData((prev) => ({
-          ...prev,
-          summary: {
-            ...prev.summary,
-            unreadNotifications: 0,
-          },
-        }));
-      }
 
       Swal.fire("Berhasil!", "Semua notifikasi telah dibaca", "success");
     } catch (err) {
@@ -208,111 +168,135 @@ const SiswaDashboard = () => {
     );
   }
 
-  const { student, summary, tindakanOtomatis } = dashboardData;
+  const { student, summary } = dashboardData;
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="min-h-screen bg-gray-50 p-3 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard Siswa</h1>
-          <p className="text-gray-600 mt-1">
-            Selamat datang, {student?.user?.name || userName}
-          </p>
-        </div>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => {
-              fetchDashboardData();
-              fetchNotifications();
-            }}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600"
-          >
-            <FiRefreshCw /> Refresh
-          </button>
-          <div className="text-right">
-            <p className="text-sm text-gray-500">
-              {new Date().toLocaleDateString("id-ID", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-3 text-white mb-4 shadow-md">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-lg font-bold">Dashboard Siswa</h1>
+            <p className="text-blue-100 text-xs mt-1">
+              Selamat datang, {student?.nama || userName}
             </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                fetchDashboardData();
+                fetchNotifications();
+              }}
+              className="bg-white text-blue-600 px-2 py-1.5 rounded-md flex items-center gap-1 hover:bg-blue-50 transition-all text-xs font-medium shadow-sm"
+            >
+              <FiRefreshCw className="w-3 h-3" /> Refresh
+            </button>
+            <div className="text-right">
+              <p className="text-xs text-blue-100">
+                {new Date().toLocaleDateString("id-ID", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Student Info Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
           <div className="flex items-center">
-            <div className="p-3 rounded-full bg-blue-100 text-blue-600">
-              <FiUser className="h-6 w-6" />
+            <div className="p-1.5 rounded-md bg-blue-100">
+              <FiUser className="h-4 w-4 text-blue-600" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">NISN</p>
-              <p className="text-lg font-semibold text-gray-900">
+            <div className="ml-2">
+              <p className="text-xs font-medium text-gray-600 uppercase tracking-wider">
+                NISN
+              </p>
+              <p className="text-sm font-semibold text-gray-900">
                 {student?.nisn || "-"}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
           <div className="flex items-center">
-            <div className="p-3 rounded-full bg-purple-100 text-purple-600">
-              <FiBook className="h-6 w-6" />
+            <div className="p-1.5 rounded-md bg-purple-100">
+              <FiBook className="h-4 w-4 text-purple-600" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Kelas</p>
-              <p className="text-lg font-semibold text-gray-900">
+            <div className="ml-2">
+              <p className="text-xs font-medium text-gray-600 uppercase tracking-wider">
+                Kelas
+              </p>
+              <p className="text-sm font-semibold text-gray-900">
                 {student?.kelas || "-"}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
           <div className="flex items-center">
-            <div
-              className={`p-3 rounded-full ${getScoreBackground(
-                summary?.totalScore || "-"
-              )}`}
-            >
-              <FiTarget
-                className={`h-6 w-6 ${getScoreColor(
-                  summary?.totalScore || "-"
-                )}`}
-              />
+            <div className="p-1.5 rounded-md bg-green-100">
+              <FiCalendar className="h-4 w-4 text-green-600" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Credit Score</p>
-              <p
-                className={`text-2xl font-bold ${getScoreColor(
-                  summary?.totalScore || "-"
-                )}`}
-              >
-                {summary?.totalScore || "-"}
+            <div className="ml-2">
+              <p className="text-xs font-medium text-gray-600 uppercase tracking-wider">
+                Angkatan
+              </p>
+              <p className="text-sm font-semibold text-gray-900">
+                {student?.angkatan || "-"}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
           <div className="flex items-center">
-            <div className="p-3 rounded-full bg-red-100 text-red-600 relative">
-              <FiBell className="h-6 w-6" />
+            <div
+              className={`p-1.5 rounded-md ${getScoreBackground(
+                summary?.totalScore ?? 0
+              )}`}
+            >
+              <FiTarget
+                className={`h-4 w-4 ${getScoreColor(summary?.totalScore ?? 0)}`}
+              />
+            </div>
+            <div className="ml-2">
+              <p className="text-xs font-medium text-gray-600 uppercase tracking-wider">
+                Credit Score
+              </p>
+              <p
+                className={`text-base font-bold ${getScoreColor(
+                  summary?.totalScore ?? 0
+                )}`}
+              >
+                {summary?.totalScore ?? "-"}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
+          <div className="flex items-center">
+            <div className="p-1.5 rounded-md bg-red-100 relative">
+              <FiBell className="h-4 w-4 text-red-600" />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-3 h-3 text-xs flex items-center justify-center">
                   {unreadCount}
                 </span>
               )}
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Notifikasi</p>
-              <p className="text-lg font-semibold text-gray-900">
+            <div className="ml-2">
+              <p className="text-xs font-medium text-gray-600 uppercase tracking-wider">
+                Notifikasi
+              </p>
+              <p className="text-sm font-semibold text-gray-900">
                 {unreadCount} Belum dibaca
               </p>
             </div>
@@ -320,78 +304,134 @@ const SiswaDashboard = () => {
         </div>
       </div>
 
+      {/* Wali Kelas Info */}
+      <div className="mb-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
+          <div className="flex items-center">
+            <div className="p-1.5 rounded-md bg-indigo-100">
+              <FiUser className="h-4 w-4 text-indigo-600" />
+            </div>
+            <div className="ml-2">
+              <p className="text-xs font-medium text-gray-600 uppercase tracking-wider">
+                Wali Kelas
+              </p>
+              <p className="text-sm font-semibold text-gray-900">
+                {student?.waliKelas || "-"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Surat Peringatan Card */}
-      <div className="mb-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <FiAlertCircle className="text-yellow-500" /> Surat Peringatan
+      <div className="mb-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <div className="w-6 h-6 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+              <FiAlertCircle className="text-white w-3 h-3" />
+            </div>
+            Surat Peringatan
           </h2>
           {loadingSurat ? (
             <div className="text-center py-4">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-500 mx-auto"></div>
+              <p className="text-gray-500 mt-2 text-xs">
+                Memuat surat peringatan...
+              </p>
             </div>
           ) : surat && surat.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {surat.map((sp) => (
                 <div
                   key={sp.id}
-                  className="p-4 rounded border border-yellow-300 bg-yellow-50 text-yellow-900 font-bold text-lg cursor-pointer hover:bg-yellow-100"
+                  className="group p-3 rounded-lg border border-yellow-200 bg-gradient-to-r from-yellow-50 to-orange-50 hover:from-yellow-100 hover:to-orange-100 hover:border-yellow-300 cursor-pointer transition-all duration-300 hover:shadow-md"
                   onClick={() => setSelectedSurat(sp)}
                 >
-                  {sp.jenisSurat}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center">
+                        <FiAlertCircle className="text-white w-4 h-4" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-yellow-900 text-sm group-hover:text-yellow-800 transition-colors">
+                          {sp.jenisSurat}
+                        </h3>
+                        <p className="text-yellow-700 text-xs">
+                          {sp.tingkatSurat} • Score: {sp.totalScoreSaat}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-yellow-600 group-hover:text-yellow-500 transition-colors">
+                      <FiInfo className="w-4 h-4" />
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-center text-gray-500 py-4">
-              Belum ada surat peringatan
+            <div className="text-center text-gray-500 py-6 flex flex-col items-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center mb-2">
+                <FiCheckCircle className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="font-semibold text-gray-700 text-sm mb-1">
+                Selamat!
+              </h3>
+              <p className="text-xs text-gray-500">
+                Tidak ada surat peringatan
+              </p>
             </div>
           )}
         </div>
+
         {/* Modal Detail Surat */}
         {selectedSurat && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-            <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full relative">
-              <button
-                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl"
-                onClick={() => setSelectedSurat(null)}
-              >
-                &times;
-              </button>
-              <h3 className="text-xl font-bold mb-2 text-yellow-800">
-                {selectedSurat.jenisSurat}
-              </h3>
-              <div className="mb-2 text-gray-700">
-                <span className="font-semibold">Judul:</span>{" "}
-                {selectedSurat.judul || "-"}
-              </div>
-              <div className="mb-4 text-gray-800 border rounded bg-yellow-50 p-4 shadow-inner">
-                <div className="text-center mb-2">
-                  <span className="font-bold text-lg underline">
-                    {selectedSurat.judul || selectedSurat.jenisSurat}
-                  </span>
+          <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/80 p-4">
+            <div className="bg-white rounded-lg shadow-xl border border-gray-200 p-4 max-w-xl w-full max-h-[75vh] overflow-y-auto">
+              {/* Header */}
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gray-600 rounded-lg flex items-center justify-center">
+                    <FiAlertCircle className="text-white w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">
+                      Surat Peringatan
+                    </h3>
+                    <p className="text-xs text-gray-600">Detail Surat</p>
+                  </div>
                 </div>
-                <div className="whitespace-pre-line leading-relaxed text-justify max-h-60 overflow-auto">
-                  {selectedSurat.isiSurat || "-"}
+                <button
+                  className="w-6 h-6 bg-gray-100 hover:bg-gray-200 rounded-md flex items-center justify-center text-gray-500 hover:text-gray-700 transition-all"
+                  onClick={() => setSelectedSurat(null)}
+                >
+                  &times;
+                </button>
+              </div>
+
+              {/* Judul Surat */}
+              <div className="mb-4">
+                <h4 className="text-base font-semibold text-gray-800 mb-2">
+                  {selectedSurat.judul || selectedSurat.jenisSurat}
+                </h4>
+              </div>
+
+              {/* Isi Surat */}
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+                <div className="whitespace-pre-line leading-relaxed text-justify text-gray-700 text-xs">
+                  {selectedSurat.isiSurat ||
+                    "Tidak ada isi surat yang tersedia."}
                 </div>
               </div>
-              <div className="mb-2 text-gray-700">
-                <span className="font-semibold">Tingkat:</span>{" "}
-                {selectedSurat.tingkatSurat}
-              </div>
-              <div className="mb-2 text-gray-700">
-                <span className="font-semibold">Score Saat Surat:</span>{" "}
-                {selectedSurat.totalScoreSaat}
-              </div>
-              <div className="mb-2 text-gray-700">
-                <span className="font-semibold">Status:</span>{" "}
-                {selectedSurat.statusKirim}
-              </div>
-              <div className="mb-2 text-gray-700">
-                <span className="font-semibold">Tanggal Kirim:</span>{" "}
-                {selectedSurat.tanggalKirim
-                  ? new Date(selectedSurat.tanggalKirim).toLocaleString("id-ID")
-                  : "-"}
+
+              {/* Action Button */}
+              <div className="flex justify-center">
+                <button
+                  onClick={() => setSelectedSurat(null)}
+                  className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all text-sm"
+                >
+                  <FiCheckCircle className="w-3 h-3" />
+                  Tutup
+                </button>
               </div>
             </div>
           </div>
@@ -399,15 +439,15 @@ const SiswaDashboard = () => {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Notifications Panel */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                <FiBell /> Notifikasi
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                <FiBell className="w-4 h-4" /> Notifikasi
                 {unreadCount > 0 && (
-                  <span className="bg-red-500 text-white rounded-full px-2 py-1 text-xs">
+                  <span className="bg-red-500 text-white rounded-full px-1.5 py-0.5 text-xs">
                     {unreadCount}
                   </span>
                 )}
@@ -415,23 +455,23 @@ const SiswaDashboard = () => {
               {unreadCount > 0 && (
                 <button
                   onClick={markAllNotificationsAsRead}
-                  className="text-blue-600 hover:text-blue-700 text-sm"
+                  className="text-blue-600 hover:text-blue-700 text-xs font-medium"
                 >
-                  Tandai semua dibaca
+                  Tandai semua
                 </button>
               )}
             </div>
 
-            <div className="space-y-3 max-h-96 overflow-y-auto">
+            <div className="space-y-2 max-h-64 overflow-y-auto">
               {notificationLoading ? (
-                <div className="text-center py-4">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                <div className="text-center py-3">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mx-auto"></div>
                 </div>
               ) : notifications.length > 0 ? (
                 notifications.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                    className={`p-2 rounded-lg border cursor-pointer transition-colors ${
                       notification.isRead
                         ? "bg-gray-50 border-gray-200"
                         : "bg-blue-50 border-blue-200"
@@ -441,13 +481,13 @@ const SiswaDashboard = () => {
                       markNotificationAsRead(notification.id)
                     }
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="mt-1">
+                    <div className="flex items-start gap-2">
+                      <div className="mt-0.5">
                         {getNotificationIcon(notification.type)}
                       </div>
                       <div className="flex-1">
                         <h4
-                          className={`font-medium ${
+                          className={`font-medium text-xs ${
                             notification.isRead
                               ? "text-gray-700"
                               : "text-gray-900"
@@ -456,7 +496,7 @@ const SiswaDashboard = () => {
                           {notification.judul}
                         </h4>
                         <p
-                          className={`text-sm mt-1 ${
+                          className={`text-xs mt-1 ${
                             notification.isRead
                               ? "text-gray-500"
                               : "text-gray-600"
@@ -464,20 +504,20 @@ const SiswaDashboard = () => {
                         >
                           {notification.pesan}
                         </p>
-                        <p className="text-xs text-gray-400 mt-2">
+                        <p className="text-xs text-gray-400 mt-1">
                           {formatDateTime(notification.createdAt)}
                         </p>
                       </div>
                       {!notification.isRead && (
-                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1"></div>
                       )}
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <FiBell className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                  <p>Tidak ada notifikasi</p>
+                <div className="text-center py-4 text-gray-500">
+                  <FiBell className="h-6 w-6 mx-auto mb-2 text-gray-300" />
+                  <p className="text-xs">Tidak ada notifikasi</p>
                 </div>
               )}
             </div>
@@ -485,42 +525,38 @@ const SiswaDashboard = () => {
         </div>
 
         {/* Recent Activities */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4">
           {/* Recent Reports */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <FiActivity /> Laporan Terbaru
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
+            <h2 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <FiActivity className="w-4 h-4" /> Laporan Terbaru
             </h2>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {dashboardData?.recentActivity &&
               dashboardData.recentActivity.length > 0 ? (
                 dashboardData.recentActivity
-                  .slice(0, 5)
+                  .slice(0, 4)
                   .map((activity, index) => (
                     <div
                       key={index}
-                      className={`flex justify-between items-center p-3 rounded cursor-pointer ${
+                      className={`flex justify-between items-center p-2 rounded-lg ${
                         activity.type === "violation"
                           ? "bg-red-50 border-l-4 border-red-400"
                           : "bg-green-50 border-l-4 border-green-400"
                       }`}
-                      onClick={() => {
-                        setSelectedReport(activity.id);
-                        fetchReportDetail(activity.id);
-                      }}
                     >
-                      <div>
-                        <p className="font-medium text-gray-900">
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 text-xs">
                           {activity.itemName}
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-xs text-gray-600">
                           {formatDate(activity.tanggal)}
                         </p>
                         <p className="text-xs text-gray-500">
                           Dilaporkan oleh: {activity.reporter?.name}
                         </p>
                         <span
-                          className={`inline-block px-2 py-1 text-xs rounded-full mt-1 ${
+                          className={`inline-block px-1.5 py-0.5 text-xs rounded-full mt-1 ${
                             activity.type === "violation"
                               ? "bg-red-100 text-red-800"
                               : "bg-green-100 text-green-800"
@@ -531,9 +567,9 @@ const SiswaDashboard = () => {
                             : "Prestasi"}
                         </span>
                       </div>
-                      <div className="text-right">
+                      <div className="text-right ml-2">
                         <span
-                          className={`font-semibold ${
+                          className={`font-semibold text-xs ${
                             activity.type === "violation"
                               ? "text-red-600"
                               : "text-green-600"
@@ -546,128 +582,35 @@ const SiswaDashboard = () => {
                     </div>
                   ))
               ) : (
-                <p className="text-gray-500 text-center py-4">
-                  Tidak ada laporan terbaru
-                </p>
+                <div className="text-center py-4 text-gray-500">
+                  <FiActivity className="h-6 w-6 mx-auto mb-2 text-gray-300" />
+                  <p className="text-xs">Tidak ada laporan terbaru</p>
+                </div>
               )}
             </div>
-            {/* Modal Detail Laporan */}
-            {selectedReport && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
-                <div className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full relative">
-                  <button
-                    className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl"
-                    onClick={() => {
-                      setSelectedReport(null);
-                      setReportDetail(null);
-                    }}
-                  >
-                    &times;
-                  </button>
-                  <h3 className="text-xl font-bold mb-2 text-blue-800">
-                    Detail Laporan
-                  </h3>
-                  {loadingDetail ? (
-                    <div className="text-center py-4">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-                    </div>
-                  ) : reportDetail ? (
-                    <div className="space-y-2">
-                      <div>
-                        <span className="font-semibold">Nama Siswa:</span>{" "}
-                        {reportDetail.student?.nama}
-                      </div>
-                      <div>
-                        <span className="font-semibold">NISN:</span>{" "}
-                        {reportDetail.student?.nisn}
-                      </div>
-                      <div>
-                        <span className="font-semibold">Kelas:</span>{" "}
-                        {reportDetail.student?.kelas}
-                      </div>
-                      <div>
-                        <span className="font-semibold">Tanggal:</span>{" "}
-                        {formatDate(reportDetail.tanggal)}
-                      </div>
-                      <div>
-                        <span className="font-semibold">Jenis:</span>{" "}
-                        {reportDetail.item?.tipe}
-                      </div>
-                      <div>
-                        <span className="font-semibold">Item:</span>{" "}
-                        {reportDetail.item?.nama}
-                      </div>
-                      <div>
-                        <span className="font-semibold">Kategori:</span>{" "}
-                        {reportDetail.item?.kategori}
-                      </div>
-                      <div>
-                        <span className="font-semibold">Poin:</span>{" "}
-                        {reportDetail.item?.point}
-                      </div>
-                      <div>
-                        <span className="font-semibold">Deskripsi:</span>{" "}
-                        {reportDetail.deskripsi || "-"}
-                      </div>
-                      <div>
-                        <span className="font-semibold">Dilaporkan oleh:</span>{" "}
-                        {reportDetail.reporter}
-                      </div>
-                      {reportDetail.bukti && reportDetail.bukti.length > 0 && (
-                        <div>
-                          <span className="font-semibold">Bukti:</span>
-                          <ul className="list-disc ml-6">
-                            {reportDetail.bukti.map((b, i) => (
-                              <li key={i}>
-                                <a
-                                  href={b.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 underline"
-                                >
-                                  {b.url}
-                                </a>
-                                {b.tipe && (
-                                  <span className="ml-2 text-xs text-gray-500">
-                                    ({b.tipe})
-                                  </span>
-                                )}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="text-center text-gray-500 py-4">
-                      Data tidak ditemukan
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Automatic Actions */}
-          {tindakanOtomatis && tindakanOtomatis.length > 0 && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-yellow-800 mb-3 flex items-center gap-2">
-                <FiInfo /> Tindakan Otomatis Aktif
-              </h3>
-              <div className="space-y-2">
-                {tindakanOtomatis.map((tindakan, index) => (
-                  <div key={index} className="p-3 bg-yellow-100 rounded">
-                    <p className="font-medium text-yellow-900">
-                      {tindakan.nama}
-                    </p>
-                    <p className="text-sm text-yellow-700">
-                      {tindakan.deskripsi}
-                    </p>
-                  </div>
-                ))}
+          {dashboardData?.tindakanOtomatis &&
+            dashboardData.tindakanOtomatis.length > 0 && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <h3 className="text-base font-semibold text-yellow-800 mb-2 flex items-center gap-2">
+                  <FiInfo className="w-4 h-4" /> Tindakan Otomatis Aktif
+                </h3>
+                <div className="space-y-2">
+                  {dashboardData.tindakanOtomatis.map((tindakan, index) => (
+                    <div key={index} className="p-2 bg-yellow-100 rounded-lg">
+                      <p className="font-medium text-yellow-900 text-xs">
+                        {tindakan.nama}
+                      </p>
+                      <p className="text-xs text-yellow-700 mt-1">
+                        {tindakan.deskripsi}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
       </div>
     </div>

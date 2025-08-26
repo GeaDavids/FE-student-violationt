@@ -1,3 +1,4 @@
+// notif
 import { useEffect, useState, useCallback } from "react";
 import Swal from "sweetalert2";
 import API from "../../api/api";
@@ -99,13 +100,13 @@ const SiswaNotifikasi = () => {
   const getNotificationIcon = (type) => {
     switch (type) {
       case "violation":
-        return <FiAlertCircle className="text-red-500 text-xl" />;
+        return <FiAlertCircle className="text-red-500 text-lg" />;
       case "achievement":
-        return <FiAward className="text-green-500 text-xl" />;
+        return <FiAward className="text-green-500 text-lg" />;
       case "warning":
-        return <FiAlertCircle className="text-yellow-500 text-xl" />;
+        return <FiAlertCircle className="text-yellow-500 text-lg" />;
       default:
-        return <FiBell className="text-blue-500 text-xl" />;
+        return <FiBell className="text-blue-500 text-lg" />;
     }
   };
 
@@ -142,85 +143,87 @@ const SiswaNotifikasi = () => {
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4 bg-gray-50 min-h-screen">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <FiBell /> Notifikasi
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Kelola dan lihat semua notifikasi Anda
-          </p>
-        </div>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => fetchNotifications()}
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600"
-          >
-            <FiRefreshCw /> Refresh
-          </button>
-          {unreadCount > 0 && (
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white shadow-lg">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold flex items-center gap-2">
+              <FiBell className="text-xl" /> Notifikasi
+            </h1>
+            <p className="text-blue-100 text-sm mt-1">
+              Kelola dan lihat semua notifikasi Anda
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
             <button
-              onClick={markAllAsRead}
-              className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-600"
+              onClick={() => fetchNotifications()}
+              className="bg-white/20 backdrop-blur-sm text-white px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-white/30 transition-all text-sm"
             >
-              <FiCheckCircle /> Tandai Semua Dibaca
+              <FiRefreshCw className="text-sm" /> Refresh
             </button>
-          )}
+            {unreadCount > 0 && (
+              <button
+                onClick={markAllAsRead}
+                className="bg-green-500 text-white px-3 py-2 rounded-lg flex items-center gap-2 hover:bg-green-600 transition-all text-sm"
+              >
+                <FiCheckCircle className="text-sm" /> Tandai Semua
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
           <div className="flex items-center">
-            <div className="p-3 rounded-full bg-blue-100 text-blue-600">
-              <FiBell className="h-6 w-6" />
+            <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
+              <FiBell className="h-4 w-4" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total</p>
-              <p className="text-2xl font-bold text-gray-900">
+            <div className="ml-3">
+              <p className="text-xs font-medium text-gray-600">Total</p>
+              <p className="text-lg font-bold text-gray-900">
                 {notifications.length}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
           <div className="flex items-center">
-            <div className="p-3 rounded-full bg-red-100 text-red-600">
-              <FiEyeOff className="h-6 w-6" />
+            <div className="p-2 rounded-lg bg-red-100 text-red-600">
+              <FiEyeOff className="h-4 w-4" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Belum Dibaca</p>
-              <p className="text-2xl font-bold text-red-600">{unreadCount}</p>
+            <div className="ml-3">
+              <p className="text-xs font-medium text-gray-600">Belum Dibaca</p>
+              <p className="text-lg font-bold text-red-600">{unreadCount}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
           <div className="flex items-center">
-            <div className="p-3 rounded-full bg-green-100 text-green-600">
-              <FiEye className="h-6 w-6" />
+            <div className="p-2 rounded-lg bg-green-100 text-green-600">
+              <FiEye className="h-4 w-4" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Sudah Dibaca</p>
-              <p className="text-2xl font-bold text-green-600">
+            <div className="ml-3">
+              <p className="text-xs font-medium text-gray-600">Sudah Dibaca</p>
+              <p className="text-lg font-bold text-green-600">
                 {notifications.length - unreadCount}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
           <div className="flex items-center">
-            <div className="p-3 rounded-full bg-purple-100 text-purple-600">
-              <FiFilter className="h-6 w-6" />
+            <div className="p-2 rounded-lg bg-purple-100 text-purple-600">
+              <FiFilter className="h-4 w-4" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Ditampilkan</p>
-              <p className="text-2xl font-bold text-purple-600">
+            <div className="ml-3">
+              <p className="text-xs font-medium text-gray-600">Ditampilkan</p>
+              <p className="text-lg font-bold text-purple-600">
                 {filteredNotifications.length}
               </p>
             </div>
@@ -229,26 +232,26 @@ const SiswaNotifikasi = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex flex-col sm:flex-row gap-4">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+        <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex-1">
             <div className="relative">
-              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm" />
               <input
                 type="text"
                 placeholder="Cari notifikasi..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => setFilter("all")}
-              className={`px-4 py-2 rounded-lg ${
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                 filter === "all"
-                  ? "bg-blue-500 text-white"
+                  ? "bg-blue-500 text-white shadow-sm"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
@@ -256,9 +259,9 @@ const SiswaNotifikasi = () => {
             </button>
             <button
               onClick={() => setFilter("unread")}
-              className={`px-4 py-2 rounded-lg ${
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                 filter === "unread"
-                  ? "bg-blue-500 text-white"
+                  ? "bg-blue-500 text-white shadow-sm"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
@@ -266,9 +269,9 @@ const SiswaNotifikasi = () => {
             </button>
             <button
               onClick={() => setFilter("read")}
-              className={`px-4 py-2 rounded-lg ${
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                 filter === "read"
-                  ? "bg-blue-500 text-white"
+                  ? "bg-blue-500 text-white shadow-sm"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
@@ -279,33 +282,33 @@ const SiswaNotifikasi = () => {
       </div>
 
       {/* Notifications List */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100">
         {loading ? (
           <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Memuat notifikasi...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-3 text-sm text-gray-600">Memuat notifikasi...</p>
           </div>
         ) : filteredNotifications.length > 0 ? (
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-100">
             {filteredNotifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`p-6 hover:bg-gray-50 transition-colors ${
+                className={`p-4 hover:bg-gray-50/70 transition-all duration-200 ${
                   !notification.isRead
-                    ? "bg-blue-50 border-l-4 border-blue-500"
+                    ? "bg-blue-50/50 border-l-4 border-blue-500"
                     : ""
                 }`}
               >
-                <div className="flex items-start gap-4">
-                  <div className="mt-1">
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 p-2 rounded-lg bg-gray-50">
                     {getNotificationIcon(notification.type)}
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1.5">
                           <h3
-                            className={`font-semibold ${
+                            className={`font-semibold text-sm truncate ${
                               notification.isRead
                                 ? "text-gray-700"
                                 : "text-gray-900"
@@ -314,18 +317,18 @@ const SiswaNotifikasi = () => {
                             {notification.judul}
                           </h3>
                           <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${getNotificationBadgeColor(
+                            className={`px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${getNotificationBadgeColor(
                               notification.type
                             )}`}
                           >
                             {getNotificationBadge(notification.type)}
                           </span>
                           {!notification.isRead && (
-                            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                            <span className="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0"></span>
                           )}
                         </div>
                         <p
-                          className={`text-sm mb-3 ${
+                          className={`text-sm mb-2 line-clamp-2 ${
                             notification.isRead
                               ? "text-gray-600"
                               : "text-gray-700"
@@ -333,9 +336,9 @@ const SiswaNotifikasi = () => {
                         >
                           {notification.pesan}
                         </p>
-                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                        <div className="flex items-center gap-3 text-xs text-gray-500">
                           <span className="flex items-center gap-1">
-                            <FiClock />
+                            <FiClock className="text-xs" />
                             {formatDateTime(notification.createdAt)}
                           </span>
                         </div>
@@ -343,7 +346,7 @@ const SiswaNotifikasi = () => {
                       {!notification.isRead && (
                         <button
                           onClick={() => markAsRead(notification.id)}
-                          className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                          className="text-blue-600 hover:text-blue-700 text-xs font-medium ml-2 flex-shrink-0 hover:bg-blue-50 px-2 py-1 rounded transition-all"
                         >
                           Tandai dibaca
                         </button>
@@ -355,12 +358,12 @@ const SiswaNotifikasi = () => {
             ))}
           </div>
         ) : (
-          <div className="p-12 text-center text-gray-500">
-            <FiBell className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <div className="p-8 text-center text-gray-500">
+            <FiBell className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+            <h3 className="text-base font-medium text-gray-900 mb-1">
               Tidak ada notifikasi
             </h3>
-            <p>
+            <p className="text-sm">
               {filter === "unread"
                 ? "Semua notifikasi sudah dibaca"
                 : filter === "read"

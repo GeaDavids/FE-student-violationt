@@ -24,11 +24,11 @@ const Login = () => {
 
       // Arahkan ke dashboard berdasarkan role
       switch (role) {
-        case "student":
-          navigate("/dashboard");
+        case "siswa":
+          navigate("/siswa/dashboard");
           break;
-        case "teacher":
-          navigate("/dashboard");
+        case "guru":
+          navigate("/guru/dashboard");
           break;
         case "bk":
           navigate("/bk/dashboard");
