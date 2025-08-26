@@ -4,10 +4,10 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import MainLayout from "./layouts/MainLayout";
 import SiswaDashboard from "./pages/siswa/SiswaDashboard";
+import { ImportSiswa } from "./pages/import";
 // Import all superadmin components from the new structured folders
 import {
   DetailSiswa,
-  ImportSiswa,
   KelolaKelas,
   DetailKelas,
   KelolaGuru,

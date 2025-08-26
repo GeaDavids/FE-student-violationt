@@ -50,7 +50,7 @@ const LaporanPelanggaran = () => {
     tanggal: new Date().toISOString().split("T")[0],
     waktu: "",
     deskripsi: "",
-    bukti: [],
+    bukti: "",
   });
   const [evidenceForm, setEvidenceForm] = useState({
     file: null,
@@ -215,14 +215,7 @@ const LaporanPelanggaran = () => {
       const filePath = await uploadFile(evidenceForm.file);
       setForm((prev) => ({
         ...prev,
-        bukti: [
-          ...prev.bukti,
-          {
-            url: filePath,
-            tipe: evidenceForm.tipe,
-            originalName: evidenceForm.file.name,
-          },
-        ],
+        bukti: filePath,
       }));
       setEvidenceForm({ file: null, tipe: "image" });
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -234,10 +227,10 @@ const LaporanPelanggaran = () => {
       setUploadLoading(false);
     }
   };
-  const removeEvidence = (index) => {
+  const removeEvidence = () => {
     setForm((prev) => ({
       ...prev,
-      bukti: prev.bukti.filter((_, i) => i !== index),
+      bukti: "",
     }));
   };
 
@@ -271,7 +264,7 @@ const LaporanPelanggaran = () => {
         tanggal: form.tanggal,
         waktu: form.waktu || null,
         deskripsi: form.deskripsi || null,
-        bukti: form.bukti.length > 0 ? form.bukti : null,
+        bukti: form.bukti || null,
       };
       await createReport(reportData);
       Swal.fire("Berhasil!", "Laporan berhasil ditambahkan", "success");
@@ -283,7 +276,7 @@ const LaporanPelanggaran = () => {
         tanggal: new Date().toISOString().split("T")[0],
         waktu: "",
         deskripsi: "",
-        bukti: [],
+        bukti: "",
       });
       setSelectedStudent(null);
       setStudentSearch("");
@@ -308,7 +301,7 @@ const LaporanPelanggaran = () => {
       tanggal: new Date().toISOString().split("T")[0],
       waktu: "",
       deskripsi: "",
-      bukti: [],
+      bukti: "",
     });
     setSelectedStudent(null);
     setStudentSearch("");
@@ -909,7 +902,9 @@ const LaporanPelanggaran = () => {
                     <button
                       type="button"
                       onClick={addEvidence}
-                      disabled={!evidenceForm.file || uploadLoading}
+                      disabled={
+                        !evidenceForm.file || uploadLoading || form.bukti
+                      }
                       className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg flex items-center justify-center gap-1"
                     >
                       {uploadLoading ? (
@@ -926,52 +921,31 @@ const LaporanPelanggaran = () => {
                     </button>
                   </div>
                 </div>
-                {/* Evidence List */}
-                {form.bukti.length > 0 && (
+                {/* Evidence Preview */}
+                {form.bukti && (
                   <div className="space-y-2 mt-4">
-                    <h4 className="font-medium text-gray-900">Daftar Bukti:</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {form.bukti.map((bukti, index) => (
-                        <div
-                          key={index}
-                          className="relative border border-gray-200 rounded-lg p-3 bg-gray-50"
-                        >
-                          <div className="aspect-square mb-2 bg-gray-100 rounded-lg overflow-hidden">
-                            {bukti.tipe === "image" ? (
-                              <img
-                                src={`${import.meta.env.VITE_API_BASE_URL}${
-                                  bukti.url
-                                }`}
-                                alt={`Bukti ${index + 1}`}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  e.target.src =
-                                    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' fill='%236b7280' text-anchor='middle' dy='0.3em'%3EGambar tidak dapat dimuat%3C/text%3E%3C/svg%3E";
-                                }}
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <FiImage className="w-8 h-8 text-gray-400" />
-                              </div>
-                            )}
-                          </div>
-                          <div className="text-center">
-                            <p className="text-sm font-medium text-gray-900">
-                              {bukti.tipe || "File"} {index + 1}
-                            </p>
-                            <p className="text-xs text-gray-600 truncate">
-                              {bukti.originalName || bukti.url.split("/").pop()}
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeEvidence(index)}
-                            className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full"
-                          >
-                            <FiX size={14} />
-                          </button>
-                        </div>
-                      ))}
+                    <h4 className="font-medium text-gray-900">Bukti:</h4>
+                    <div className="relative border border-gray-200 rounded-lg p-3 bg-gray-50 w-48">
+                      <div className="aspect-square mb-2 bg-gray-100 rounded-lg overflow-hidden">
+                        <img
+                          src={`${import.meta.env.VITE_API_BASE_URL}${
+                            form.bukti
+                          }`}
+                          alt="Bukti"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.src =
+                              "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' fill='%236b7280' text-anchor='middle' dy='0.3em'%3EGambar tidak dapat dimuat%3C/text%3E%3C/svg%3E";
+                          }}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={removeEvidence}
+                        className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full"
+                      >
+                        <FiX size={14} />
+                      </button>
                     </div>
                   </div>
                 )}

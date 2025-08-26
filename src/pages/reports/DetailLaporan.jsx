@@ -268,56 +268,29 @@ const DetailLaporan = () => {
               </div>
             )}
 
-            {report.bukti && report.bukti.length > 0 && (
+            {report.bukti && (
               <div className="mb-3">
                 <h4 className="text-sm font-semibold text-gray-900 mb-1">
                   Bukti
                 </h4>
-                <div className="space-y-2">
-                  {report.bukti.map((bukti, index) => (
-                    <div
-                      key={index}
-                      className="p-2 bg-gray-50 rounded flex items-center gap-2"
-                    >
-                      {bukti.tipe === "image" && bukti.url ? (
-                        <>
-                          <img
-                            src={`${import.meta.env.VITE_API_BASE_URL}${
-                              bukti.url
-                            }`}
-                            alt={`Bukti ${index + 1}`}
-                            className="w-16 h-16 object-cover rounded border border-gray-200"
-                            onError={(e) => {
-                              e.target.src = "/placeholder-image.png";
-                            }}
-                          />
-                          <a
-                            href={`${import.meta.env.VITE_API_BASE_URL}${
-                              bukti.url
-                            }`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 text-xs flex items-center gap-1"
-                          >
-                            <FiExternalLink size={12} />
-                            Lihat
-                          </a>
-                        </>
-                      ) : (
-                        <>
-                          <FiImage className="text-gray-400" />
-                          <a
-                            href={bukti.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 text-xs flex items-center gap-1"
-                          >
-                            Lihat Bukti <FiExternalLink size={12} />
-                          </a>
-                        </>
-                      )}
-                    </div>
-                  ))}
+                <div className="p-2 bg-gray-50 rounded flex items-center gap-2">
+                  <img
+                    src={`${import.meta.env.VITE_API_BASE_URL}${report.bukti}`}
+                    alt="Bukti"
+                    className="w-16 h-16 object-cover rounded border border-gray-200"
+                    onError={(e) => {
+                      e.target.src = "/placeholder-image.png";
+                    }}
+                  />
+                  <a
+                    href={`${import.meta.env.VITE_API_BASE_URL}${report.bukti}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 text-xs flex items-center gap-1"
+                  >
+                    <FiExternalLink size={12} />
+                    Lihat
+                  </a>
                 </div>
               </div>
             )}
