@@ -160,6 +160,7 @@ const DetailSiswa = () => {
       tglLahir: form.tglLahir,
       alamat: form.alamat,
       noHp: form.noHp,
+      kelas: form.kelas,
       classroomId: siswa.classroomId || kelasDipilih,
       angkatanId: form.angkatanId ? parseInt(form.angkatanId) : 1,
     };
@@ -373,7 +374,7 @@ const DetailSiswa = () => {
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-center gap-2 text-gray-600">
                   <FiBook />
-                  <span>{siswa.kelas || "-"}</span>
+                  <span>{namaKelasDipilih}</span>
                 </div>
                 <div className="flex items-center justify-center gap-2 text-gray-600">
                   <FiCalendar />
@@ -448,13 +449,13 @@ const DetailSiswa = () => {
               <table className="w-full">
                 <tbody className="space-y-2">
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-2 font-medium text-gray-700 w-1/3">
+                    <td className="py-2 px-2 font-medium text-gray-700 w-1/3">
                       <div className="flex items-center gap-2">
                         <FiUser className="text-blue-500" />
                         NISN
                       </div>
                     </td>
-                    <td className="py-4 px-2">
+                    <td className="py-2 px-2">
                       {isEditing ? (
                         <input
                           type="text"
@@ -472,13 +473,13 @@ const DetailSiswa = () => {
                     </td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-2 font-medium text-gray-700">
+                    <td className="py-2 px-2 font-medium text-gray-700">
                       <div className="flex items-center gap-2">
                         <FiUser className="text-green-500" />
                         Nama Lengkap
                       </div>
                     </td>
-                    <td className="py-4 px-2">
+                    <td className="py-2 px-2">
                       {isEditing ? (
                         <input
                           type="text"
@@ -496,13 +497,13 @@ const DetailSiswa = () => {
                     </td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-2 font-medium text-gray-700">
+                    <td className="py-2 px-2 font-medium text-gray-700">
                       <div className="flex items-center gap-2">
                         <FiMail className="text-purple-500" />
                         Email
                       </div>
                     </td>
-                    <td className="py-4 px-2">
+                    <td className="py-2 px-2">
                       {isEditing ? (
                         <input
                           type="email"
@@ -520,39 +521,39 @@ const DetailSiswa = () => {
                     </td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-2 font-medium text-gray-700">
+                    <td className="py-2 px-2 font-medium text-gray-700">
                       <div className="flex items-center gap-2">
                         <FiBook className="text-indigo-500" />
                         Kelas
                       </div>
                     </td>
-                    <td className="py-4 px-2">
+                    <td className="py-2 px-2">
                       <span className="inline-flex px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                        {siswa.kelas || "-"}
+                        {namaKelasDipilih}
                       </span>
                     </td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-2 font-medium text-gray-700">
+                    <td className="py-2 px-2 font-medium text-gray-700">
                       <div className="flex items-center gap-2">
                         <FiCalendar className="text-orange-500" />
                         Angkatan
                       </div>
                     </td>
-                    <td className="py-4 px-2">
+                    <td className="py-2 px-2">
                       <span className="inline-flex px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
                         {siswa.angkatan.tahun || "-"}
                       </span>
                     </td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-2 font-medium text-gray-700">
+                    <td className="py-2 px-2 font-medium text-gray-700">
                       <div className="flex items-center gap-2">
                         <FiUser className="text-pink-500" />
                         Jenis Kelamin
                       </div>
                     </td>
-                    <td className="py-4 px-2">
+                    <td className="py-2 px-2">
                       {isEditing ? (
                         <select
                           name="gender"
@@ -578,13 +579,13 @@ const DetailSiswa = () => {
                     </td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-2 font-medium text-gray-700">
+                    <td className="py-2 px-2 font-medium text-gray-700">
                       <div className="flex items-center gap-2">
                         <FiPhone className="text-green-500" />
                         No. HP
                       </div>
                     </td>
-                    <td className="py-4 px-2">
+                    <td className="py-2 px-2">
                       {isEditing ? (
                         <input
                           type="text"
@@ -602,13 +603,13 @@ const DetailSiswa = () => {
                     </td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-2 font-medium text-gray-700">
+                    <td className="py-2 px-2 font-medium text-gray-700">
                       <div className="flex items-center gap-2">
                         <FiMapPin className="text-red-500" />
                         Tempat Lahir
                       </div>
                     </td>
-                    <td className="py-4 px-2">
+                    <td className="py-2 px-2">
                       {isEditing ? (
                         <input
                           type="text"
@@ -626,13 +627,13 @@ const DetailSiswa = () => {
                     </td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-2 font-medium text-gray-700">
+                    <td className="py-2 px-2 font-medium text-gray-700">
                       <div className="flex items-center gap-2">
                         <FiCalendar className="text-purple-500" />
                         Tanggal Lahir
                       </div>
                     </td>
-                    <td className="py-4 px-2">
+                    <td className="py-2 px-2">
                       {isEditing ? (
                         <input
                           type="date"
@@ -650,13 +651,13 @@ const DetailSiswa = () => {
                     </td>
                   </tr>
                   <tr className="border-b border-gray-100">
-                    <td className="py-4 px-2 font-medium text-gray-700">
+                    <td className="py-2 px-2 font-medium text-gray-700">
                       <div className="flex items-center gap-2">
                         <FiMapPin className="text-orange-500" />
                         Alamat
                       </div>
                     </td>
-                    <td className="py-4 px-2">
+                    <td className="py-2 px-2">
                       {isEditing ? (
                         <textarea
                           name="alamat"

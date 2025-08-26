@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import bkAPI from "../../api/bk";
+import { FiUsers } from "react-icons/fi";
 
 const MonitoringSiswa = () => {
   const [data, setData] = useState([]);
@@ -86,7 +87,7 @@ const MonitoringSiswa = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
+      <div className="max-w-6x1 mx-auto px-3 sm:px-4 lg:px-6 py-4">
         {/* Header Section */}
         <div className="mb-4">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
@@ -223,9 +224,6 @@ const MonitoringSiswa = () => {
                             </td>
                             <td className="px-3 py-2 whitespace-nowrap">
                               <div className="flex items-center">
-                                <div className="w-5 h-5 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full flex items-center justify-center text-white font-medium text-xs mr-1.5">
-                                  {siswa.nama.charAt(0).toUpperCase()}
-                                </div>
                                 <span className="text-xs font-medium text-gray-900">
                                   {siswa.nama}
                                 </span>
@@ -233,7 +231,7 @@ const MonitoringSiswa = () => {
                             </td>
                             <td className="px-3 py-2 whitespace-nowrap">
                               <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-green-100 to-green-200 text-green-800 border border-green-300">
-                                {siswa.kodeKelas} - {siswa.kelas}
+                                {siswa.kodeKelas}
                               </span>
                             </td>
                             <td className="px-3 py-2 whitespace-nowrap text-center">
@@ -311,22 +309,22 @@ const MonitoringSiswa = () => {
                 <table className="min-w-full">
                   <thead>
                     <tr className="bg-gradient-to-r from-gray-50 to-gray-100">
-                      <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase rounded-tl-md">
+                      <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase rounded-tl-md">
                         Kode
                       </th>
-                      <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">
+                      <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase">
                         Nama Kelas
                       </th>
                       <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase">
                         Siswa
                       </th>
-                      <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase">
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider">
                         Pelanggaran
                       </th>
-                      <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase">
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider">
                         Prestasi
                       </th>
-                      <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase rounded-tr-md">
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider">
                         Avg Point
                       </th>
                     </tr>
@@ -367,82 +365,42 @@ const MonitoringSiswa = () => {
                             navigate(`/bk/classrooms/${kelas.id}/students`)
                           }
                         >
-                          <td className="px-3 py-2 whitespace-nowrap">
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border border-blue-300">
+                          <td className="px-3 py-2 text-center whitespace-nowrap">
+                            <span className="text-xs font-medium text-gray-900 bg-gray-100 px-1.5 py-0.5 rounded">
                               {kelas.kodeKelas}
                             </span>
                           </td>
-                          <td className="px-3 py-2 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div className="w-6 h-6 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full flex items-center justify-center text-white font-medium text-xs mr-2">
-                                {kelas.namaKelas.charAt(0).toUpperCase()}
-                              </div>
-                              <span className="text-xs font-medium text-gray-900">
-                                {kelas.namaKelas}
-                              </span>
-                            </div>
-                          </td>
                           <td className="px-3 py-2 whitespace-nowrap text-center">
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800">
-                              <svg
-                                className="w-2.5 h-2.5 mr-1"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
-                                />
-                              </svg>
-                              {kelas.jmlSiswa}
+                            <span className="text-xs font-medium text-gray-900">
+                              {kelas.namaKelas}
                             </span>
                           </td>
+                          <td className="px-3 py-2.5 text-[#004080] text-sm flex items-center gap-2 font-semibold justify-center text-center">
+                            <FiUsers className="text-[#003366] text-xs" />
+                            <span>{kelas.jmlSiswa}</span>
+                          </td>
                           <td className="px-3 py-2 whitespace-nowrap text-center">
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-red-100 to-red-200 text-red-800 border border-red-300">
-                              <svg
-                                className="w-2.5 h-2.5 mr-1"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.864-.833-2.634 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                                />
-                              </svg>
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-50 text-red-700 rounded-lg text-sm font-medium">
+                              <span>⚠️</span>
+
                               {kelas.jmlPelanggaran}
                             </span>
                           </td>
                           <td className="px-3 py-2 whitespace-nowrap text-center">
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-green-100 to-green-200 text-green-800 border border-green-300">
-                              <svg
-                                className="w-2.5 h-2.5 mr-1"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                              </svg>
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 text-green-700 rounded-lg text-sm font-medium">
+                              <span>🏆</span>
                               {kelas.jmlPrestasi}
                             </span>
                           </td>
                           <td className="px-3 py-2 whitespace-nowrap text-center">
                             <span
                               className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                                parseFloat(kelas.avrgPoint) >= 80
+                                parseFloat(kelas.avrgPoint) >= -99
                                   ? "bg-gradient-to-r from-green-100 to-green-200 text-green-800 border border-green-300"
-                                  : parseFloat(kelas.avrgPoint) >= 60
+                                  : parseFloat(kelas.avrgPoint) <= -100
                                   ? "bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border border-yellow-300"
+                                  : parseFloat(kelas.avrgPoint) <= -200
+                                  ? "bg-gradient-to-r from-red-100 to-red-200 text-red-800 border border-red-300"
                                   : "bg-gradient-to-r from-red-100 to-red-200 text-red-800 border border-red-300"
                               }`}
                             >

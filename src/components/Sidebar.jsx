@@ -181,7 +181,7 @@ const Sidebar = ({ onKelolaUserClick }) => {
                       className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-all duration-200 group text-sm"
                     >
                       <FiFileText className="text-green-300 group-hover:text-white transition-colors text-sm" />
-                      <span>Laporan P&P</span>
+                      <span>Laporan</span>
                     </Link>
                     <Link
                       to="/bk/monitoring-siswa"
@@ -192,6 +192,13 @@ const Sidebar = ({ onKelolaUserClick }) => {
                     </Link>
                   </div>
                 )}
+                <Link
+                  to="/guru/profile"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition-all duration-200 group"
+                >
+                  <FiUser className="text-lg text-purple-300 group-hover:text-white transition-colors" />
+                  <span className="font-medium">Profil</span>
+                </Link>
               </div>
 
               {/* Master Data */}
@@ -258,18 +265,11 @@ const Sidebar = ({ onKelolaUserClick }) => {
                 {showBKMonitoringSubmenu && (
                   <div className="ml-4 mt-2 space-y-1 border-l-2 border-cyan-400/30 pl-4">
                     <Link
-                      to="/bk/manajemen-resiko"
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-all duration-200 group text-sm"
-                    >
-                      <FiShield className="text-cyan-300 group-hover:text-white transition-colors text-sm" />
-                      <span>Manajemen Resiko</span>
-                    </Link>
-                    <Link
-                      to="/bk/adjustment-poin"
+                      to="/bk/penanganan"
                       className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-all duration-200 group text-sm"
                     >
                       <FiEdit className="text-cyan-300 group-hover:text-white transition-colors text-sm" />
-                      <span>Adjustment Poin</span>
+                      <span>Penanganan</span>
                     </Link>
                     <Link
                       to="/bk/automasi-surat-peringatan"
@@ -440,13 +440,6 @@ const Sidebar = ({ onKelolaUserClick }) => {
                     >
                       <FiFileText className="text-green-300 group-hover:text-white transition-colors text-sm" />
                       <span>Laporan</span>
-                    </Link>
-                    <Link
-                      to="/superadmin/rekap-historis"
-                      className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-all duration-200 group text-sm"
-                    >
-                      <FiBarChart2 className="text-green-300 group-hover:text-white transition-colors text-sm" />
-                      <span>Rekap Historis</span>
                     </Link>
                   </div>
                 )}

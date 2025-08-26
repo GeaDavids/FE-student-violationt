@@ -258,7 +258,7 @@ const DashboardGuru = () => {
           <div className="bg-white rounded-xl shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Pelanggaran Saya</p>
+                <p className="text-sm text-gray-600">Pelanggaran</p>
                 <p className="text-2xl font-bold text-red-600">
                   {myReportSummary?.violationReports ?? 0}
                 </p>
@@ -271,7 +271,7 @@ const DashboardGuru = () => {
           <div className="bg-white rounded-xl shadow p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Prestasi Saya</p>
+                <p className="text-sm text-gray-600">Prestasi</p>
                 <p className="text-2xl font-bold text-green-600">
                   {myReportSummary?.achievementReports ?? 0}
                 </p>

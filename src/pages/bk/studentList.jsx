@@ -132,16 +132,16 @@ const StudentList = () => {
   }, [classroomId, selectedTahun]);
 
   const getScoreColor = (score) => {
-    if (score >= 75) return "text-red-600 bg-red-50 border-red-200";
-    if (score >= 50) return "text-orange-600 bg-orange-50 border-orange-200";
-    if (score >= 25) return "text-yellow-600 bg-yellow-50 border-yellow-200";
+    if (score <= -300) return "text-red-600 bg-red-50 border-red-200";
+    if (score <= -200) return "text-orange-600 bg-orange-50 border-orange-200";
+    if (score <= -100) return "text-yellow-600 bg-yellow-50 border-yellow-200";
     return "text-green-600 bg-green-50 border-green-200";
   };
 
   const getScoreIcon = (score) => {
-    if (score >= 75) return "🚨";
-    if (score >= 50) return "⚠️";
-    if (score >= 25) return "⚡";
+    if (score <= -300) return "🚨";
+    if (score <= -200) return "⚠️";
+    if (score <= -100) return "⚡";
     return "✅";
   };
 

@@ -26,6 +26,23 @@ const SiswaDashboard = () => {
   // HOOKS: custom hooks must be called before any early return or conditional
   const { surat, loading: loadingSurat } = useSuratPeringatan();
   const [selectedSurat, setSelectedSurat] = useState(null);
+  // State untuk detail laporan
+  const [selectedReport, setSelectedReport] = useState(null);
+  const [reportDetail, setReportDetail] = useState(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+  // Ambil detail laporan
+  const fetchReportDetail = async (reportId) => {
+    setLoadingDetail(true);
+    setReportDetail(null);
+    try {
+      const res = await API.get(`/student/report/${reportId}`);
+      setReportDetail(res.data.data);
+    } catch (err) {
+      Swal.fire("Error!", "Gagal mengambil detail laporan", "error");
+    } finally {
+      setLoadingDetail(false);
+    }
+  };
 
   const [dashboardData, setDashboardData] = useState(null);
   const [notifications, setNotifications] = useState([]);
@@ -149,16 +166,16 @@ const SiswaDashboard = () => {
   };
 
   const getScoreColor = (score) => {
-    if (score >= 80) return "text-green-600";
-    if (score >= 60) return "text-yellow-600";
-    if (score >= 40) return "text-orange-600";
+    if (score >= 0) return "text-green-600";
+    if (score <= -100) return "text-yellow-600";
+    if (score <= -200) return "text-orange-600";
     return "text-red-600";
   };
 
   const getScoreBackground = (score) => {
-    if (score >= 80) return "bg-green-100";
-    if (score >= 60) return "bg-yellow-100";
-    if (score >= 40) return "bg-orange-100";
+    if (score >= 0) return "bg-green-100";
+    if (score <= -100) return "bg-yellow-100";
+    if (score <= -200) return "bg-orange-100";
     return "bg-red-100";
   };
 
@@ -251,7 +268,7 @@ const SiswaDashboard = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Kelas</p>
               <p className="text-lg font-semibold text-gray-900">
-                {student?.classroom?.namaKelas || "-"}
+                {student?.kelas || "-"}
               </p>
             </div>
           </div>
@@ -261,12 +278,12 @@ const SiswaDashboard = () => {
           <div className="flex items-center">
             <div
               className={`p-3 rounded-full ${getScoreBackground(
-                summary?.totalScore || 100
+                summary?.totalScore || "-"
               )}`}
             >
               <FiTarget
                 className={`h-6 w-6 ${getScoreColor(
-                  summary?.totalScore || 100
+                  summary?.totalScore || "-"
                 )}`}
               />
             </div>
@@ -274,10 +291,10 @@ const SiswaDashboard = () => {
               <p className="text-sm font-medium text-gray-600">Credit Score</p>
               <p
                 className={`text-2xl font-bold ${getScoreColor(
-                  summary?.totalScore || 100
+                  summary?.totalScore || "-"
                 )}`}
               >
-                {summary?.totalScore || 100}
+                {summary?.totalScore || "-"}
               </p>
             </div>
           </div>
@@ -482,11 +499,15 @@ const SiswaDashboard = () => {
                   .map((activity, index) => (
                     <div
                       key={index}
-                      className={`flex justify-between items-center p-3 rounded ${
+                      className={`flex justify-between items-center p-3 rounded cursor-pointer ${
                         activity.type === "violation"
                           ? "bg-red-50 border-l-4 border-red-400"
                           : "bg-green-50 border-l-4 border-green-400"
                       }`}
+                      onClick={() => {
+                        setSelectedReport(activity.id);
+                        fetchReportDetail(activity.id);
+                      }}
                     >
                       <div>
                         <p className="font-medium text-gray-900">
@@ -530,6 +551,101 @@ const SiswaDashboard = () => {
                 </p>
               )}
             </div>
+            {/* Modal Detail Laporan */}
+            {selectedReport && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm">
+                <div className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full relative">
+                  <button
+                    className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl"
+                    onClick={() => {
+                      setSelectedReport(null);
+                      setReportDetail(null);
+                    }}
+                  >
+                    &times;
+                  </button>
+                  <h3 className="text-xl font-bold mb-2 text-blue-800">
+                    Detail Laporan
+                  </h3>
+                  {loadingDetail ? (
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                    </div>
+                  ) : reportDetail ? (
+                    <div className="space-y-2">
+                      <div>
+                        <span className="font-semibold">Nama Siswa:</span>{" "}
+                        {reportDetail.student?.nama}
+                      </div>
+                      <div>
+                        <span className="font-semibold">NISN:</span>{" "}
+                        {reportDetail.student?.nisn}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Kelas:</span>{" "}
+                        {reportDetail.student?.kelas}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Tanggal:</span>{" "}
+                        {formatDate(reportDetail.tanggal)}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Jenis:</span>{" "}
+                        {reportDetail.item?.tipe}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Item:</span>{" "}
+                        {reportDetail.item?.nama}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Kategori:</span>{" "}
+                        {reportDetail.item?.kategori}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Poin:</span>{" "}
+                        {reportDetail.item?.point}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Deskripsi:</span>{" "}
+                        {reportDetail.deskripsi || "-"}
+                      </div>
+                      <div>
+                        <span className="font-semibold">Dilaporkan oleh:</span>{" "}
+                        {reportDetail.reporter}
+                      </div>
+                      {reportDetail.bukti && reportDetail.bukti.length > 0 && (
+                        <div>
+                          <span className="font-semibold">Bukti:</span>
+                          <ul className="list-disc ml-6">
+                            {reportDetail.bukti.map((b, i) => (
+                              <li key={i}>
+                                <a
+                                  href={b.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 underline"
+                                >
+                                  {b.url}
+                                </a>
+                                {b.tipe && (
+                                  <span className="ml-2 text-xs text-gray-500">
+                                    ({b.tipe})
+                                  </span>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center text-gray-500 py-4">
+                      Data tidak ditemukan
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Automatic Actions */}

@@ -244,7 +244,9 @@ const DetailKelas = () => {
               {/* Quick Actions */}
               <div className="mt-6 pt-4 border-t border-gray-200">
                 <button
-                  onClick={viewStudents}
+                  onClick={() =>
+                    navigate(`/superadmin/kelola-siswa/${kelas.id}`)
+                  }
                   className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-200 shadow-md"
                 >
                   <FiUsers />
@@ -361,19 +363,7 @@ const DetailKelas = () => {
                       )}
                     </td>
                   </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-2 font-medium text-gray-700">
-                      <div className="flex items-center gap-2">
-                        <FiUser className="text-orange-500" />
-                        NIP Wali Kelas
-                      </div>
-                    </td>
-                    <td className="py-4 px-2">
-                      <span className="text-gray-800">
-                        {kelas.waliKelas?.nip || "-"}
-                      </span>
-                    </td>
-                  </tr>
+
                   <tr className="border-b border-gray-100">
                     <td className="py-4 px-2 font-medium text-gray-700">
                       <div className="flex items-center gap-2">
@@ -386,12 +376,6 @@ const DetailKelas = () => {
                         <span className="text-gray-800">
                           {kelas.jmlSiswa || kelas.jumlahSiswa || 0} siswa
                         </span>
-                        <button
-                          onClick={viewStudents}
-                          className="text-sm px-3 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors duration-200"
-                        >
-                          Lihat Detail
-                        </button>
                       </div>
                     </td>
                   </tr>

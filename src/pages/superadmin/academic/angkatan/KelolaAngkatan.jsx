@@ -23,10 +23,9 @@ const KelolaAngkatan = () => {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
     tahun: "",
-    status: "aktif",
   });
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
+  // const [filterStatus, setFilterStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [showYearDropdown, setShowYearDropdown] = useState(false);
 
@@ -38,12 +37,6 @@ const KelolaAngkatan = () => {
       Authorization: `Bearer ${token}`,
     },
   };
-
-  const statusList = [
-    { value: "", label: "Semua Status", color: "" },
-    { value: "aktif", label: "Aktif", color: "bg-green-100 text-green-800" },
-    { value: "lulus", label: "Lulus", color: "bg-blue-100 text-blue-800" },
-  ];
 
   const fetchAngkatan = async () => {
     try {
@@ -76,7 +69,6 @@ const KelolaAngkatan = () => {
 
     const payload = {
       tahun: form.tahun,
-      status: form.status,
     };
 
     console.log("Payload:", payload);
@@ -118,7 +110,6 @@ const KelolaAngkatan = () => {
     setEditingId(angkatan.id);
     setForm({
       tahun: angkatan.tahun,
-      status: angkatan.status,
     });
     setFormVisible(true);
   };
@@ -174,7 +165,6 @@ const KelolaAngkatan = () => {
     setShowYearDropdown(false);
     setForm({
       tahun: "",
-      status: "aktif",
     });
   };
 
@@ -292,36 +282,6 @@ const KelolaAngkatan = () => {
               />
             </div>
 
-            <div className="relative">
-              <select
-                value={filterStatus}
-                onChange={handleFilterStatus}
-                className="appearance-none bg-white border border-gray-300 px-3 py-2 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 shadow-sm cursor-pointer text-sm min-w-[120px]"
-              >
-                <option value="">Semua Status</option>
-                {statusList.slice(1).map((status) => (
-                  <option key={status.value} value={status.value}>
-                    {status.label}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                <svg
-                  className="w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M19 9l-7 7-7-7"
-                  ></path>
-                </svg>
-              </div>
-            </div>
-
             <button
               onClick={() => {
                 fetchAngkatan();
@@ -337,7 +297,6 @@ const KelolaAngkatan = () => {
             onClick={() => {
               setForm({
                 tahun: "",
-                status: "aktif",
               });
               setEditingId(null);
               setFormVisible(true);
@@ -421,29 +380,6 @@ const KelolaAngkatan = () => {
                       </button>
                     </div>
                   </div>
-                  <div className="relative z-30">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Status Angkatan <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="status"
-                      value={form.status}
-                      onChange={handleChange}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-sm appearance-none bg-white cursor-pointer"
-                      style={{
-                        position: "relative",
-                        zIndex: 30,
-                        backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
-                        backgroundRepeat: "no-repeat",
-                        backgroundPosition: "right 12px center",
-                        backgroundSize: "16px",
-                        paddingRight: "40px",
-                      }}
-                    >
-                      <option value="aktif">Aktif</option>
-                      <option value="lulus">Lulus</option>
-                    </select>
-                  </div>
                 </div>
 
                 <div className="flex gap-3 pt-4">
@@ -485,9 +421,6 @@ const KelolaAngkatan = () => {
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide w-1/4">
                     Tahun Angkatan
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide w-1/4">
-                    Status
-                  </th>
                   <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide w-1/4">
                     Siswa
                   </th>
@@ -510,17 +443,7 @@ const KelolaAngkatan = () => {
                           {angkatan.tahun}
                         </div>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span
-                          className={`${
-                            angkatan.status === "lulus"
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-green-100 text-green-800"
-                          } px-2 py-1 rounded-full text-xs font-medium`}
-                        >
-                          {angkatan.status === "lulus" ? "Lulus" : "Aktif"}
-                        </span>
-                      </td>
+
                       <td className="px-4 py-3 whitespace-nowrap text-center">
                         <button
                           onClick={() => viewStudents(angkatan)}
@@ -594,37 +517,7 @@ const KelolaAngkatan = () => {
       )}
 
       {/* Statistics */}
-      <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-green-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-1">
-                Angkatan Aktif
-              </h3>
-              <p className="text-2xl font-bold text-green-600">
-                {dataAngkatan.filter((a) => a.status === "aktif").length}
-              </p>
-            </div>
-            <div className="bg-green-100 p-2.5 rounded-full">
-              <FiAward className="w-5 h-5 text-green-600" />
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-blue-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-1">
-                Angkatan Lulus
-              </h3>
-              <p className="text-2xl font-bold text-blue-600">
-                {dataAngkatan.filter((a) => a.status === "lulus").length}
-              </p>
-            </div>
-            <div className="bg-blue-100 p-2.5 rounded-full">
-              <FiUsers className="w-5 h-5 text-blue-600" />
-            </div>
-          </div>
-        </div>
+      <div className="mt-5 grid grid-cols-1 md:grid-cols-1 gap-3">
         <div className="bg-white rounded-lg shadow-md p-4 border-l-4 border-purple-500">
           <div className="flex items-center justify-between">
             <div>

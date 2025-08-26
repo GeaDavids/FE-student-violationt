@@ -22,6 +22,7 @@ import {
   StudentList,
   StudentDetail,
   AutomasiSuratPeringatanPage,
+  AdjustmentPoin,
 } from "./pages/bk";
 
 import { DashboardWaliKelas, DetailSiswaWK } from "./pages/guru/walikelas";
@@ -64,6 +65,15 @@ const App = () => {
           element={
             <MainLayout>
               <DashboardWaliKelas />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/bk/penanganan"
+          element={
+            <MainLayout>
+              <AdjustmentPoin />
             </MainLayout>
           }
         />

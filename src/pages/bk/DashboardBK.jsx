@@ -6,6 +6,7 @@ import {
   FaMedal,
   FaChalkboardTeacher,
 } from "react-icons/fa";
+import { FiUsers } from "react-icons/fi";
 import bkAPI from "../../api/bk";
 import academicYearAPI from "../../api/academicYear";
 
@@ -91,9 +92,8 @@ const DashboardBK = () => {
   return (
     <div className="p-8 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <FaChalkboardTeacher className="text-blue-600 text-3xl" />
-        <h1 className="text-3xl font-extrabold tracking-tight text-gray-800 drop-shadow">
+      <div className="flex items-center gap-3 mb-5">
+        <h1 className="text-3xl font-bold tracking-tight text-gray-800 drop-shadow">
           Dashboard BK
         </h1>
       </div>
@@ -101,21 +101,15 @@ const DashboardBK = () => {
       {/* Shortcut */}
       <div className="mb-8 flex flex-wrap gap-4">
         <button
-          onClick={() => navigate("/bk/monitoring")}
+          onClick={() => navigate("/bk/monitoring-siswa")}
           className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg shadow transition-all flex items-center gap-2"
         >
           <FaUserGraduate /> Monitoring Siswa
         </button>
-        <button
-          onClick={() => navigate("/bk/rekap")}
-          className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-lg shadow transition-all flex items-center gap-2"
-        >
-          <FaMedal /> Rekap Laporan
-        </button>
       </div>
 
       {/* Ringkasan total */}
-      <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
         <div className="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-blue-400 animate-fade-in">
           <div className="flex justify-center mb-2">
             <FaUserGraduate className="text-blue-500 text-3xl" />
@@ -173,10 +167,10 @@ const DashboardBK = () => {
               <table className="min-w-full">
                 <thead>
                   <tr className="bg-gradient-to-r from-gray-50 to-gray-100">
-                    <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase rounded-tl-md">
+                    <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase rounded-tl-md">
                       Kode
                     </th>
-                    <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">
+                    <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase">
                       Nama Kelas
                     </th>
                     <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase">
@@ -204,9 +198,8 @@ const DashboardBK = () => {
                         }
                       >
                         {/* Kode */}
-                        <td className="px-3 py-2 whitespace-nowrap">
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border border-blue-300">
-                            <FaUserGraduate className="inline text-blue-400" />
+                        <td className="px-3 py-2 whitespace-nowrap text-center">
+                          <span className="text-xs font-medium text-gray-900 bg-gray-100 px-1.5 py-0.5 rounded">
                             {kelas.kodeKelas ||
                               kelas.kode ||
                               kelas.namaKelas?.split(" ").join("-") ||
@@ -214,30 +207,31 @@ const DashboardBK = () => {
                           </span>
                         </td>
                         {/* Nama Kelas */}
-                        <td className="px-3 py-2 whitespace-nowrap">
-                          <span className="inline-flex items-center gap-1 text-gray-700 font-semibold">
+                        <td className="px-3 py-2 whitespace-nowrap text-center">
+                          <span className="inline-flex text-xs items-center gap-1 text-gray-700 font-semibold">
                             <span className="flex items-center">X</span>
                             {kelas.namaKelas}
                           </span>
                         </td>
                         {/* Siswa */}
                         <td className="px-3 py-2 whitespace-nowrap text-center">
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800">
-                            <FaUserGraduate className="inline text-gray-400" />
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r gap-1.5 from-gray-100 to-gray-200 text-gray-800">
+                            <FiUsers className="text-[#003366] text-xs" />
                             {kelas.jmlSiswa}
                           </span>
                         </td>
                         {/* Pelanggaran */}
                         <td className="px-3 py-2 whitespace-nowrap text-center">
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-red-100 to-red-200 text-red-800 border border-red-300">
-                            <FaExclamationTriangle className="inline text-red-400" />
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-50 text-red-700 rounded-lg text-sm font-medium">
+                            <span>⚠️</span>
+
                             {kelas.jmlPelanggaran}
                           </span>
                         </td>
                         {/* Prestasi */}
                         <td className="px-4 py-3 text-center">
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-green-100 to-green-200 text-green-800 border border-green-300">
-                            <FaMedal className="inline text-green-400" />
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 text-green-700 rounded-lg text-sm font-medium">
+                            <span>🏆</span>
                             {kelas.jmlPrestasi}
                           </span>
                         </td>

@@ -376,18 +376,27 @@ const ReportsGuru = () => {
                     {reports.map((report) => (
                       <tr key={report.id} className="hover:bg-gray-50">
                         <td className="px-4 py-4 whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getTipeColor(
-                              report.item?.tipe
-                            )}`}
-                          >
-                            {getTipeIcon(report.item?.tipe)}
-                            {report.item?.tipe === "pelanggaran"
-                              ? "Pelanggaran"
-                              : report.item?.tipe === "prestasi"
-                              ? "Prestasi"
-                              : "-"}
-                          </span>
+                          {(() => {
+                            // Prefer report.tipe, fallback to item.kategori.tipe, fallback to item.tipe
+                            const tipe =
+                              report.tipe ||
+                              report.item?.kategori?.tipe ||
+                              report.item?.tipe;
+                            return (
+                              <span
+                                className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getTipeColor(
+                                  tipe
+                                )}`}
+                              >
+                                {getTipeIcon(tipe)}
+                                {tipe === "pelanggaran"
+                                  ? "Pelanggaran"
+                                  : tipe === "prestasi"
+                                  ? "Prestasi"
+                                  : "-"}
+                              </span>
+                            );
+                          })()}
                         </td>
                         <td className="px-4 py-4">
                           <div>
@@ -409,18 +418,32 @@ const ReportsGuru = () => {
                             </p>
                           </div>
                         </td>
-                        <td className="px-4 py-4 text-center">
-                          <span
-                            className={`font-bold ${
-                              report.item?.tipe === "pelanggaran"
-                                ? "text-red-600"
-                                : report.item?.tipe === "prestasi"
-                                ? "text-green-600"
-                                : "text-gray-600"
-                            }`}
-                          >
-                            {report.pointSaat}
-                          </span>
+                        <td className="px-4 py-3 text-center">
+                          {(() => {
+                            const tipe =
+                              report.tipe ||
+                              report.item?.kategori?.tipe ||
+                              report.item?.tipe;
+                            if (tipe === "pelanggaran") {
+                              return (
+                                <span className="inline-flex px-2 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
+                                  -{report.pointSaat}
+                                </span>
+                              );
+                            } else if (tipe === "prestasi") {
+                              return (
+                                <span className="inline-flex px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
+                                  +{report.pointSaat}
+                                </span>
+                              );
+                            } else {
+                              return (
+                                <span className="inline-flex px-2 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700">
+                                  {report.pointSaat}
+                                </span>
+                              );
+                            }
+                          })()}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                           {formatDate(report.tanggal)}

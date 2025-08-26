@@ -15,6 +15,7 @@ import {
   FiCalendar,
   FiBook,
   FiUserCheck,
+  FiAward,
 } from "react-icons/fi";
 
 const SiswaProfile = () => {
@@ -53,8 +54,6 @@ const SiswaProfile = () => {
       setLoading(true);
       const response = await API.get("/student/profile");
       setProfileData(response.data);
-
-      // Set initial form data
       setEditForm({
         name: response.data.user?.name || "",
         email: response.data.user?.email || "",
@@ -208,7 +207,19 @@ const SiswaProfile = () => {
     );
   }
 
-  const { user, nisn, classroom, angkatan } = profileData;
+  const {
+    user,
+    nisn,
+    jenisKelamin,
+    tempatLahir,
+    tglLahir,
+    alamat,
+    phone,
+    kelas,
+    angkatan,
+    waliKelas,
+    totalScore,
+  } = profileData;
 
   return (
     <div className="p-6 space-y-6">
@@ -252,22 +263,31 @@ const SiswaProfile = () => {
             <h2 className="text-xl font-bold text-gray-900 mb-2">
               {user?.name || "Nama tidak tersedia"}
             </h2>
-            <p className="text-gray-600 mb-4">NISN: {nisn || "-"}</p>
+            <p className="text-gray-600 mb-2">NISN: {nisn || "-"}</p>
             <div className="space-y-2 text-sm">
               <div className="flex items-center justify-center gap-2 text-gray-600">
                 <FiBook />
-                <span>{classroom?.namaKelas || "Kelas tidak tersedia"}</span>
+                <span>{kelas || "Kelas tidak tersedia"}</span>
               </div>
               <div className="flex items-center justify-center gap-2 text-gray-600">
                 <FiCalendar />
-                <span>Angkatan {angkatan?.tahunAngkatan || "-"}</span>
+                <span>Angkatan {angkatan || "-"}</span>
               </div>
-              {classroom?.waliKelas && (
+              {waliKelas && (
                 <div className="flex items-center justify-center gap-2 text-gray-600">
                   <FiUserCheck />
-                  <span>Wali Kelas: {classroom.waliKelas.name}</span>
+                  <span>Wali Kelas: {waliKelas}</span>
                 </div>
               )}
+              <div className="flex items-center justify-center gap-2 text-gray-600">
+                <FiAward />
+                <span>
+                  Total Poin:{" "}
+                  <span className="font-bold text-blue-700">
+                    {totalScore ?? 0}
+                  </span>
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -569,17 +589,36 @@ const SiswaProfile = () => {
                     </label>
                     <div className="flex items-center gap-2 text-gray-900">
                       <FiBook className="text-gray-400" />
-                      <span>{classroom?.namaKelas || "-"}</span>
+                      <span>{kelas || "-"}</span>
                     </div>
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-600 mb-1">
                       Angkatan
                     </label>
                     <div className="flex items-center gap-2 text-gray-900">
                       <FiCalendar className="text-gray-400" />
-                      <span>{angkatan?.tahunAngkatan || "-"}</span>
+                      <span>{angkatan || "-"}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">
+                      Jenis Kelamin
+                    </label>
+                    <div className="flex items-center gap-2 text-gray-900">
+                      <FiUser className="text-gray-400" />
+                      <span>{jenisKelamin || "-"}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">
+                      Tempat, Tanggal Lahir
+                    </label>
+                    <div className="flex items-center gap-2 text-gray-900">
+                      <FiCalendar className="text-gray-400" />
+                      <span>
+                        {tempatLahir || "-"}, {formatDate(tglLahir)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -590,7 +629,7 @@ const SiswaProfile = () => {
                   </label>
                   <div className="flex items-start gap-2 text-gray-900">
                     <FiMapPin className="text-gray-400 mt-1" />
-                    <span>{profileData.alamat || "-"}</span>
+                    <span>{alamat || "-"}</span>
                   </div>
                 </div>
               </div>

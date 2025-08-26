@@ -165,9 +165,12 @@ const PilihKelas = () => {
 
             {/* Classes List */}
             <div className="bg-white rounded-lg shadow-md border border-slate-200 overflow-hidden">
-              <div className="overflow-x-auto">
+              <div className="overflow-hidden">
                 <table className="w-full">
-                  <thead className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                  <thead
+                    className="text-gray-700"
+                    style={{ backgroundColor: "oklch(96.7% 0.003 264.542)" }}
+                  >
                     <tr>
                       <th className="px-3 py-2.5 text-left font-semibold text-xs tracking-wide uppercase">
                         Kode
