@@ -495,20 +495,6 @@ const DaftarSiswa = () => {
                         ) : null}
                       </select>
                     </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        ID Orang Tua (Opsional)
-                      </label>
-                      <input
-                        type="number"
-                        name="orangTuaId"
-                        placeholder="Masukkan ID orang tua"
-                        value={form.orangTuaId}
-                        onChange={handleChange}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-sm"
-                      />
-                    </div>
                   </div>
 
                   {errorMsg && (
