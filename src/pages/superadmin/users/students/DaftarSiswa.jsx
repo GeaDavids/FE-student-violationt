@@ -495,20 +495,6 @@ const DaftarSiswa = () => {
                         ) : null}
                       </select>
                     </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        ID Orang Tua (Opsional)
-                      </label>
-                      <input
-                        type="number"
-                        name="orangTuaId"
-                        placeholder="Masukkan ID orang tua"
-                        value={form.orangTuaId}
-                        onChange={handleChange}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-sm"
-                      />
-                    </div>
                   </div>
 
                   {errorMsg && (
@@ -540,7 +526,7 @@ const DaftarSiswa = () => {
 
         {/* Statistik Data */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-xl shadow-lg">
+          <div className="bg-blue-800 text-white p-4 rounded-xl shadow-lg">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white/20 rounded-lg">
                 <FiUsers className="text-xl" />
@@ -560,34 +546,6 @@ const DaftarSiswa = () => {
               <div>
                 <p className="text-blue-100 text-sm">Kelas</p>
                 <p className="text-xl font-bold">{kelasInfo.nama || "N/A"}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-4 rounded-xl shadow-lg">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/20 rounded-lg">
-                <FiMail className="text-xl" />
-              </div>
-              <div>
-                <p className="text-purple-100 text-sm">Laki-laki</p>
-                <p className="text-xl font-bold">
-                  {filteredSiswa.filter((s) => s.gender === "L").length}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-r from-pink-500 to-pink-600 text-white p-4 rounded-xl shadow-lg">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/20 rounded-lg">
-                <FiPhone className="text-xl" />
-              </div>
-              <div>
-                <p className="text-pink-100 text-sm">Perempuan</p>
-                <p className="text-xl font-bold">
-                  {filteredSiswa.filter((s) => s.gender === "P").length}
-                </p>
               </div>
             </div>
           </div>

@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import bkAPI from "../../api/bk";
+<<<<<<< HEAD
+=======
+import { FiUsers } from "react-icons/fi";
+>>>>>>> main
 
 const MonitoringSiswa = () => {
   const [data, setData] = useState([]);
@@ -30,20 +34,65 @@ const MonitoringSiswa = () => {
 
   // Icon Components
   const SearchIcon = () => (
+<<<<<<< HEAD
     <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+=======
+    <svg
+      className="w-5 h-5 text-gray-400"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+      />
+>>>>>>> main
     </svg>
   );
 
   const UserIcon = () => (
+<<<<<<< HEAD
     <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+=======
+    <svg
+      className="w-5 h-5 text-blue-500"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+      />
+>>>>>>> main
     </svg>
   );
 
   const ChartBarIcon = () => (
+<<<<<<< HEAD
     <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+=======
+    <svg
+      className="w-5 h-5 text-green-500"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+      />
+>>>>>>> main
     </svg>
   );
 
@@ -56,7 +105,11 @@ const MonitoringSiswa = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+<<<<<<< HEAD
       <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-4">
+=======
+      <div className="max-w-6x1 mx-auto px-3 sm:px-4 lg:px-6 py-4">
+>>>>>>> main
         {/* Header Section */}
         <div className="mb-4">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3">
@@ -65,8 +118,17 @@ const MonitoringSiswa = () => {
                 <ChartBarIcon />
               </div>
               <div>
+<<<<<<< HEAD
                 <h1 className="text-xl font-bold text-gray-900">Monitoring Siswa</h1>
                 <p className="text-gray-600 text-xs">Pantau dan kelola data siswa serta kelas</p>
+=======
+                <h1 className="text-xl font-bold text-gray-900">
+                  Monitoring Siswa
+                </h1>
+                <p className="text-gray-600 text-xs">
+                  Pantau dan kelola data siswa serta kelas
+                </p>
+>>>>>>> main
               </div>
             </div>
           </div>
@@ -77,10 +139,19 @@ const MonitoringSiswa = () => {
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-3 py-2">
             <div className="flex items-center gap-2">
               <UserIcon />
+<<<<<<< HEAD
               <h2 className="text-base font-semibold text-white">Pencarian Siswa</h2>
             </div>
           </div>
           
+=======
+              <h2 className="text-base font-semibold text-white">
+                Pencarian Siswa
+              </h2>
+            </div>
+          </div>
+
+>>>>>>> main
           <div className="p-3">
             <form
               onSubmit={async (e) => {
@@ -133,10 +204,29 @@ const MonitoringSiswa = () => {
             {studentError && (
               <div className="mt-3 p-2.5 bg-red-50 border border-red-200 rounded-md">
                 <div className="flex items-center gap-1.5">
+<<<<<<< HEAD
                   <svg className="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <p className="text-red-600 text-xs font-medium">{studentError}</p>
+=======
+                  <svg
+                    className="w-3.5 h-3.5 text-red-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <p className="text-red-600 text-xs font-medium">
+                    {studentError}
+                  </p>
+>>>>>>> main
                 </div>
               </div>
             )}
@@ -148,15 +238,37 @@ const MonitoringSiswa = () => {
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gradient-to-r from-gray-100 to-gray-200">
                         <tr>
+<<<<<<< HEAD
                           <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">NISN</th>
                           <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">Nama</th>
                           <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">Kelas</th>
                           <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase">Aksi</th>
+=======
+                          <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">
+                            NISN
+                          </th>
+                          <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">
+                            Nama
+                          </th>
+                          <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">
+                            Kelas
+                          </th>
+                          <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase">
+                            Aksi
+                          </th>
+>>>>>>> main
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {studentResults.map((siswa, idx) => (
+<<<<<<< HEAD
                           <tr key={idx} className="hover:bg-blue-50 transition-colors duration-200">
+=======
+                          <tr
+                            key={idx}
+                            className="hover:bg-blue-50 transition-colors duration-200"
+                          >
+>>>>>>> main
                             <td className="px-3 py-2 whitespace-nowrap">
                               <span className="text-xs font-mono font-medium text-gray-900 bg-gray-100 px-1.5 py-0.5 rounded">
                                 {siswa.nisn}
@@ -164,25 +276,60 @@ const MonitoringSiswa = () => {
                             </td>
                             <td className="px-3 py-2 whitespace-nowrap">
                               <div className="flex items-center">
+<<<<<<< HEAD
                                 <div className="w-5 h-5 bg-gradient-to-r from-blue-400 to-blue-500 rounded-full flex items-center justify-center text-white font-medium text-xs mr-1.5">
                                   {siswa.nama.charAt(0).toUpperCase()}
                                 </div>
                                 <span className="text-xs font-medium text-gray-900">{siswa.nama}</span>
+=======
+                                <span className="text-xs font-medium text-gray-900">
+                                  {siswa.nama}
+                                </span>
+>>>>>>> main
                               </div>
                             </td>
                             <td className="px-3 py-2 whitespace-nowrap">
                               <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-green-100 to-green-200 text-green-800 border border-green-300">
+<<<<<<< HEAD
                                 {siswa.kodeKelas} - {siswa.kelas}
+=======
+                                {siswa.kodeKelas}
+>>>>>>> main
                               </span>
                             </td>
                             <td className="px-3 py-2 whitespace-nowrap text-center">
                               <button
                                 className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-blue-500 transition-all duration-200"
+<<<<<<< HEAD
                                 onClick={() => navigate(`/bk/students/${siswa.nisn}/detail`)}
                               >
                                 <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+=======
+                                onClick={() =>
+                                  navigate(`/bk/students/${siswa.nisn}/detail`)
+                                }
+                              >
+                                <svg
+                                  className="w-3 h-3 mr-1"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                  />
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                  />
+>>>>>>> main
                                 </svg>
                                 Detail
                               </button>
@@ -212,8 +359,23 @@ const MonitoringSiswa = () => {
             ) : error ? (
               <div className="text-center py-6">
                 <div className="inline-flex items-center px-3 py-2 bg-red-50 border border-red-200 rounded-md text-red-600">
+<<<<<<< HEAD
                   <svg className="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+=======
+                  <svg
+                    className="w-3.5 h-3.5 mr-1.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+>>>>>>> main
                   </svg>
                   <span className="text-xs">{error}</span>
                 </div>
@@ -223,12 +385,33 @@ const MonitoringSiswa = () => {
                 <table className="min-w-full">
                   <thead>
                     <tr className="bg-gradient-to-r from-gray-50 to-gray-100">
+<<<<<<< HEAD
                       <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase rounded-tl-md">Kode</th>
                       <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">Nama Kelas</th>
                       <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase">Siswa</th>
                       <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase">Pelanggaran</th>
                       <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase">Prestasi</th>
                       <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase rounded-tr-md">Avg Point</th>
+=======
+                      <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase rounded-tl-md">
+                        Kode
+                      </th>
+                      <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase">
+                        Nama Kelas
+                      </th>
+                      <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase">
+                        Siswa
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                        Pelanggaran
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                        Prestasi
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                        Avg Point
+                      </th>
+>>>>>>> main
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
@@ -236,16 +419,39 @@ const MonitoringSiswa = () => {
                       <tr>
                         <td colSpan={6} className="px-3 py-6 text-center">
                           <div className="flex flex-col items-center">
+<<<<<<< HEAD
                             <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                             </svg>
                             <p className="text-gray-500 text-sm font-medium">Tidak ada data kelas</p>
                             <p className="text-gray-400 text-xs">Data akan muncul di sini</p>
+=======
+                            <svg
+                              className="w-8 h-8 text-gray-400 mb-2"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                              />
+                            </svg>
+                            <p className="text-gray-500 text-sm font-medium">
+                              Tidak ada data kelas
+                            </p>
+                            <p className="text-gray-400 text-xs">
+                              Data akan muncul di sini
+                            </p>
+>>>>>>> main
                           </div>
                         </td>
                       </tr>
                     ) : (
                       data.map((kelas, index) => (
+<<<<<<< HEAD
                           <tr
                             key={kelas.id}
                             className="hover:bg-blue-50 cursor-pointer transition-colors duration-200"
@@ -306,6 +512,72 @@ const MonitoringSiswa = () => {
                             </td>
                           </tr>
                         ))
+=======
+                        <tr
+                          key={kelas.id}
+                          className="hover:bg-blue-50 cursor-pointer transition-colors duration-200"
+                          onClick={() =>
+                            navigate(`/bk/classrooms/${kelas.id}/students`)
+                          }
+                        >
+                          <td className="px-3 py-2 text-center whitespace-nowrap">
+                            <span className="text-xs font-medium text-gray-900 bg-gray-100 px-1.5 py-0.5 rounded">
+                              {kelas.kodeKelas}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2 whitespace-nowrap text-center">
+                            <span className="text-xs font-medium text-gray-900">
+                              {kelas.namaKelas}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2.5 text-[#004080] text-sm flex items-center gap-2 font-semibold justify-center text-center">
+                            <FiUsers className="text-[#003366] text-xs" />
+                            <span>{kelas.jmlSiswa}</span>
+                          </td>
+                          <td className="px-3 py-2 whitespace-nowrap text-center">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-50 text-red-700 rounded-lg text-sm font-medium">
+                              <span>⚠️</span>
+
+                              {kelas.jmlPelanggaran}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2 whitespace-nowrap text-center">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 text-green-700 rounded-lg text-sm font-medium">
+                              <span>🏆</span>
+                              {kelas.jmlPrestasi}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2 whitespace-nowrap text-center">
+                            <span
+                              className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                                parseFloat(kelas.avrgPoint) >= -99
+                                  ? "bg-gradient-to-r from-green-100 to-green-200 text-green-800 border border-green-300"
+                                  : parseFloat(kelas.avrgPoint) <= -100
+                                  ? "bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border border-yellow-300"
+                                  : parseFloat(kelas.avrgPoint) <= -200
+                                  ? "bg-gradient-to-r from-red-100 to-red-200 text-red-800 border border-red-300"
+                                  : "bg-gradient-to-r from-red-100 to-red-200 text-red-800 border border-red-300"
+                              }`}
+                            >
+                              <svg
+                                className="w-2.5 h-2.5 mr-1"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                                />
+                              </svg>
+                              {kelas.avrgPoint}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+>>>>>>> main
                     )}
                   </tbody>
                 </table>

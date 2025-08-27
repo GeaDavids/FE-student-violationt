@@ -9,7 +9,7 @@ const StudentDetail = () => {
   const { nisn } = useParams();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loadingLaporan, setLoadingLaporan] = useState(true);
   const [error, setError] = useState(null);
   const [academicYears, setAcademicYears] = useState([]);
   const [selectedYear, setSelectedYear] = useState("all");
@@ -18,33 +18,114 @@ const StudentDetail = () => {
 
   // Icon Components
   const ArrowLeftIcon = () => (
+<<<<<<< HEAD
     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+=======
+    <svg
+      className="w-5 h-5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M10 19l-7-7m0 0l7-7m-7 7h18"
+      />
+>>>>>>> main
     </svg>
   );
 
   const UserIcon = () => (
+<<<<<<< HEAD
     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+=======
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+      />
+>>>>>>> main
     </svg>
   );
 
   const DocumentIcon = () => (
+<<<<<<< HEAD
     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+=======
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+      />
+>>>>>>> main
     </svg>
   );
 
   const MailIcon = () => (
+<<<<<<< HEAD
     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+=======
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+      />
+>>>>>>> main
     </svg>
   );
 
   const EyeIcon = () => (
+<<<<<<< HEAD
     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+=======
+    <svg
+      className="w-4 h-4"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+      />
+>>>>>>> main
     </svg>
   );
 
@@ -61,24 +142,47 @@ const StudentDetail = () => {
     fetchYears();
   }, []);
 
-  // Fetch student detail for selected year
+  // Fetch student info (static, tidak ikut filter tahun ajaran)
   useEffect(() => {
-    if (!selectedYear) return;
-    const fetchData = async () => {
-      setLoading(true);
+    const fetchInfo = async () => {
       setError(null);
       try {
+<<<<<<< HEAD
         const tahunParam = selectedYear === "all" ? undefined : selectedYear;
         const res = await bkAPI.getStudentDetail(nisn, tahunParam);
         setData(res.data);
         await fetchSuratPeringatan(nisn);
+=======
+        // Ambil info siswa tanpa filter tahun ajaran
+        const res = await bkAPI.getStudentDetail(nisn);
+        setData((prev) => ({ ...res.data, laporan: prev?.laporan || [] }));
+>>>>>>> main
       } catch (err) {
         setError("Gagal memuat detail siswa");
-      } finally {
-        setLoading(false);
       }
     };
-    fetchData();
+    fetchInfo();
+    // Surat peringatan juga hanya fetch sekali
+    fetchSuratPeringatan(nisn);
+  }, [nisn]);
+
+  // Fetch laporan (riwayat laporan) sesuai tahun ajaran
+  useEffect(() => {
+    if (!selectedYear) return;
+    const fetchLaporan = async () => {
+      setLoadingLaporan(true);
+      setError(null);
+      try {
+        const tahunParam = selectedYear === "all" ? undefined : selectedYear;
+        const res = await bkAPI.getStudentDetail(nisn, tahunParam);
+        setData((prev) => ({ ...prev, laporan: res.data.laporan }));
+      } catch (err) {
+        setError("Gagal memuat riwayat laporan");
+      } finally {
+        setLoadingLaporan(false);
+      }
+    };
+    fetchLaporan();
   }, [nisn, selectedYear]);
 
   // Fungsi untuk mengambil surat peringatan
@@ -162,7 +266,13 @@ const StudentDetail = () => {
     };
 
     return (
+<<<<<<< HEAD
       <span className={`px-1.5 py-0.5 rounded-full text-xs font-semibold ${colors[status]}`}>
+=======
+      <span
+        className={`px-1.5 py-0.5 rounded-full text-xs font-semibold ${colors[status]}`}
+      >
+>>>>>>> main
         {labels[status]}
       </span>
     );
@@ -183,13 +293,23 @@ const StudentDetail = () => {
     };
 
     return (
+<<<<<<< HEAD
       <span className={`px-1.5 py-0.5 rounded-full text-xs font-semibold ${colors[jenis]}`}>
+=======
+      <span
+        className={`px-1.5 py-0.5 rounded-full text-xs font-semibold ${colors[jenis]}`}
+      >
+>>>>>>> main
         {labels[jenis] || jenis}
       </span>
     );
   };
 
+<<<<<<< HEAD
   if (loading) {
+=======
+  if (!data) {
+>>>>>>> main
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="flex flex-col items-center justify-center py-8">
@@ -198,7 +318,13 @@ const StudentDetail = () => {
             <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent absolute top-0 left-0"></div>
           </div>
           <div className="mt-3 text-center">
+<<<<<<< HEAD
             <h3 className="text-sm font-semibold text-slate-900 mb-1">Memuat data siswa...</h3>
+=======
+            <h3 className="text-sm font-semibold text-slate-900 mb-1">
+              Memuat data siswa...
+            </h3>
+>>>>>>> main
             <p className="text-slate-500 text-xs">Mohon tunggu sebentar</p>
           </div>
         </div>
@@ -213,7 +339,13 @@ const StudentDetail = () => {
           <div className="mx-auto w-12 h-12 bg-gradient-to-br from-red-100 to-red-200 rounded-lg flex items-center justify-center mb-3">
             <span className="text-lg">❌</span>
           </div>
+<<<<<<< HEAD
           <h3 className="text-sm font-semibold text-slate-900 mb-1">Terjadi Kesalahan</h3>
+=======
+          <h3 className="text-sm font-semibold text-slate-900 mb-1">
+            Terjadi Kesalahan
+          </h3>
+>>>>>>> main
           <p className="text-red-600 text-xs">{error}</p>
         </div>
       </div>
@@ -257,6 +389,7 @@ const StudentDetail = () => {
           </div>
         </div>
 
+<<<<<<< HEAD
         {/* Student Info Card */}
         <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md border border-slate-200 mb-4">
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-t-lg">
@@ -294,10 +427,192 @@ const StudentDetail = () => {
                   {new Date(siswa.tanggalLahir).toLocaleDateString("id-ID")}
                 </p>
               </div>
+=======
+        {/* Grid: Info Siswa (kiri), Riwayat Laporan (kanan) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          {/* Student Info Card */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md border border-slate-200 md:col-span-1">
+            <div className="bg-gray-300 text-black p-3 rounded-t-lg">
+              <h2 className="text-lg font-bold">Informasi Siswa</h2>
+            </div>
+            <div className="p-4">
+              <div className="grid grid-cols-1 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-slate-600">
+                    NISN
+                  </label>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {siswa.nisn}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-600">
+                    Nama Lengkap
+                  </label>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {siswa.nama}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-600">
+                    Kelas
+                  </label>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {siswa.kelas || "-"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-600">
+                    Angkatan
+                  </label>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {siswa.angkatan}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-600">
+                    Total Score
+                  </label>
+                  <p className="text-sm font-semibold text-slate-900">
+                    {siswa.totalScore}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Reports History Section */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md border border-slate-200 md:col-span-2">
+            <div className="bg-gray-300 text-black p-4 rounded-t-lg">
+              <h2 className="text-lg font-bold">Riwayat Laporan</h2>
+              <p className="text-black-100 text-xs mt-1">
+                Total {laporan?.length || 0} laporan (pelanggaran & prestasi)
+              </p>
+            </div>
+            <div className="p-4">
+              {loadingLaporan ? (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <div className="relative">
+                    <div className="animate-spin rounded-full h-8 w-8 border-2 border-slate-200"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent absolute top-0 left-0"></div>
+                  </div>
+                  <div className="mt-3 text-center">
+                    <h3 className="text-sm font-semibold text-slate-900 mb-1">
+                      Memuat riwayat laporan...
+                    </h3>
+                    <p className="text-slate-500 text-xs">
+                      Mohon tunggu sebentar
+                    </p>
+                  </div>
+                </div>
+              ) : laporan && laporan.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-slate-200">
+                        <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                          Tanggal
+                        </th>
+                        <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                          Tipe
+                        </th>
+                        <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                          Item
+                        </th>
+                        <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                          Poin
+                        </th>
+                        <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                          Pelapor
+                        </th>
+                        <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                          Deskripsi
+                        </th>
+                        <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                          Bukti
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {laporan.map((item, index) => (
+                        <tr
+                          key={index}
+                          className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
+                        >
+                          <td className="py-2 px-3 text-slate-600">
+                            {new Date(item.tanggal).toLocaleDateString("id-ID")}
+                          </td>
+                          <td className="py-2 px-3">
+                            <span
+                              className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${
+                                item.tipe === "pelanggaran"
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-green-100 text-green-800"
+                              }`}
+                            >
+                              {item.tipe.charAt(0).toUpperCase() +
+                                item.tipe.slice(1)}
+                            </span>
+                          </td>
+                          <td className="py-2 px-3 font-medium text-slate-900">
+                            {item.namaItem || "-"}
+                          </td>
+                          <td className="py-2 px-3">
+                            <span
+                              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                item.tipe === "pelanggaran"
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-green-100 text-green-800"
+                              }`}
+                            >
+                              {item.tipe === "pelanggaran" ? "-" : "+"}
+                              {item.point || 0}
+                            </span>
+                          </td>
+                          <td className="py-2 px-3 text-slate-600">
+                            {item.reporter?.name || "-"}
+                          </td>
+                          <td
+                            className="py-2 px-3 text-slate-600 max-w-xs truncate"
+                            title={item.deskripsi}
+                          >
+                            {item.deskripsi || "-"}
+                          </td>
+                          <td className="py-2 px-3">
+                            {item.bukti && item.bukti.length > 0 ? (
+                              <span
+                                className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 cursor-pointer"
+                                title="Lihat Bukti"
+                              >
+                                Ada
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="text-center py-6">
+                  <div className="mx-auto w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center mb-3">
+                    <span className="text-lg">✅</span>
+                  </div>
+                  <h3 className="text-sm font-semibold text-slate-900 mb-1">
+                    Tidak Ada Laporan
+                  </h3>
+                  <p className="text-slate-500 text-xs">
+                    Siswa ini belum memiliki catatan laporan
+                  </p>
+                </div>
+              )}
+>>>>>>> main
             </div>
           </div>
         </div>
 
+<<<<<<< HEAD
         {/* Reports History Section */}
         <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md border border-slate-200 mb-4">
           <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-4 rounded-t-lg">
@@ -427,6 +742,96 @@ const StudentDetail = () => {
               </div>
             )}
           </div>
+=======
+        {/* Warning Letters Section */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md border border-slate-200">
+          <div className="bg-gray-300 text-black p-4 rounded-t-lg">
+            <h2 className="text-lg font-bold">Riwayat Surat Peringatan</h2>
+            <p className="text-black-100 text-xs mt-1">
+              Total {suratPeringatan.length} surat peringatan
+            </p>
+          </div>
+          <div className="p-4">
+            {loadingSurat ? (
+              <div className="flex justify-center py-6">
+                <div className="relative">
+                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-200"></div>
+                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-purple-500 border-t-transparent absolute top-0 left-0"></div>
+                </div>
+              </div>
+            ) : suratPeringatan.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-200">
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Tanggal
+                      </th>
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Jenis Surat
+                      </th>
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Total Poin
+                      </th>
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Status
+                      </th>
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Aksi
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {suratPeringatan.map((surat, index) => (
+                      <tr
+                        key={index}
+                        className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
+                      >
+                        <td className="py-2 px-3 text-slate-600">
+                          {new Date(surat.createdAt).toLocaleDateString(
+                            "id-ID"
+                          )}
+                        </td>
+                        <td className="py-2 px-3">
+                          {getJenisSuratBadge(surat.jenisSurat)}
+                        </td>
+                        <td className="py-2 px-3">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            {surat.totalScoreSaat}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3">
+                          {getStatusBadge(surat.statusKirim)}
+                        </td>
+                        <td className="py-2 px-3">
+                          <button
+                            onClick={() => viewSuratDetail(surat)}
+                            className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
+                          >
+                            <EyeIcon />
+                            <span className="ml-1">Lihat</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                <div className="mx-auto w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center mb-3">
+                  <span className="text-lg">📄</span>
+                </div>
+                <h3 className="text-sm font-semibold text-slate-900 mb-1">
+                  Belum Ada Surat Peringatan
+                </h3>
+                <p className="text-slate-500 text-xs">
+                  Siswa ini belum pernah mendapat surat peringatan
+                </p>
+              </div>
+            )}
+          </div>
+>>>>>>> main
         </div>
       </div>
     </div>

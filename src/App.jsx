@@ -4,10 +4,10 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import MainLayout from "./layouts/MainLayout";
 import SiswaDashboard from "./pages/siswa/SiswaDashboard";
+import { ImportSiswa } from "./pages/import";
 // Import all superadmin components from the new structured folders
 import {
   DetailSiswa,
-  ImportSiswa,
   KelolaKelas,
   DetailKelas,
   KelolaGuru,
@@ -16,12 +16,15 @@ import {
   DetailAngkatan,
 } from "./pages/superadmin";
 
+import { ExportLaporan, ExportPoinSiswa } from "./pages/bk/export";
+
 import {
   DashboardBK,
   MonitoringSiswa,
   StudentList,
   StudentDetail,
   AutomasiSuratPeringatanPage,
+  AdjustmentPoin,
 } from "./pages/bk";
 
 import { DashboardWaliKelas, DetailSiswaWK } from "./pages/guru/walikelas";
@@ -64,6 +67,33 @@ const App = () => {
           element={
             <MainLayout>
               <DashboardWaliKelas />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/bk/penanganan"
+          element={
+            <MainLayout>
+              <AdjustmentPoin />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/bk/export-laporan"
+          element={
+            <MainLayout>
+              <ExportLaporan />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/bk/export-poin-siswa"
+          element={
+            <MainLayout>
+              <ExportPoinSiswa />
             </MainLayout>
           }
         />

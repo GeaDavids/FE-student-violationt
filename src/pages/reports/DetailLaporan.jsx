@@ -139,37 +139,38 @@ const DetailLaporan = () => {
   }
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
+    <div className="p-4 bg-gray-50 min-h-screen">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-4">
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => navigate("/reports")}
-            className="bg-gray-100 hover:bg-gray-200 text-gray-700 p-2 rounded-lg transition-colors"
+            className="bg-gray-100 hover:bg-gray-200 text-gray-700 p-1 rounded transition-colors"
+            title="Kembali"
           >
-            <FiArrowLeft size={20} />
+            <FiArrowLeft size={18} />
           </button>
-          <h2 className="text-3xl font-bold text-[#003366] flex items-center gap-3">
+          <h2 className="text-xl font-bold text-[#003366] flex items-center gap-2">
             <FiFileText className="text-blue-600" />
             Detail Laporan
           </h2>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1">
           <button
             onClick={() => navigate(`/reports/edit/${reportId}`)}
-            className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+            className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded flex items-center gap-1 text-sm"
           >
             <FiEdit3 /> Edit
           </button>
           <button
             onClick={handleDelete}
             disabled={deleteLoading}
-            className="bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+            className="bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white px-3 py-1 rounded flex items-center gap-1 text-sm"
           >
             {deleteLoading ? (
               <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Menghapus...
+                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ...
               </>
             ) : (
               <>
@@ -180,22 +181,22 @@ const DetailLaporan = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Main Information */}
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <div className="flex items-center gap-3 mb-4">
+        <div>
+          <div className="bg-white rounded shadow-sm p-4 mb-4">
+            <div className="flex items-center gap-2 mb-2">
               {report.item?.tipe === "pelanggaran" ? (
-                <FiAlertTriangle className="text-2xl text-red-500" />
+                <FiAlertTriangle className="text-lg text-red-500" />
               ) : (
-                <FiAward className="text-2xl text-green-500" />
+                <FiAward className="text-lg text-green-500" />
               )}
               <div>
-                <h3 className="text-xl font-bold text-gray-900">
+                <h3 className="text-base font-bold text-gray-900">
                   {report.item?.nama}
                 </h3>
                 <span
-                  className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
+                  className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
                     report.item?.tipe === "pelanggaran"
                       ? "bg-red-100 text-red-800"
                       : "bg-green-100 text-green-800"
@@ -208,145 +209,88 @@ const DetailLaporan = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <div className="flex items-center gap-2 bg-gray-50 rounded p-2">
                 <FiCalendar className="text-gray-500" />
-                <div>
-                  <p className="text-sm text-gray-600">Tanggal</p>
-                  <p className="font-medium text-gray-900">
-                    {formatDateForDisplay(report.tanggal)}
-                  </p>
-                </div>
+                <span className="text-xs text-gray-600">
+                  {formatDateForDisplay(report.tanggal)}
+                </span>
               </div>
-
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-2 bg-gray-50 rounded p-2">
                 <FiClock className="text-gray-500" />
-                <div>
-                  <p className="text-sm text-gray-600">Waktu</p>
-                  <p className="font-medium text-gray-900">
-                    {formatTimeForDisplay(report.waktu)}
-                  </p>
-                </div>
+                <span className="text-xs text-gray-600">
+                  {formatTimeForDisplay(report.waktu)}
+                </span>
               </div>
             </div>
 
-            <div className="mb-6">
-              <h4 className="text-lg font-semibold text-gray-900 mb-3">
-                Informasi Laporan
-              </h4>
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <FiInfo className="text-gray-500 mt-1" />
-                  <div>
-                    <p className="text-sm text-gray-600">Kategori</p>
-                    <p className="font-medium text-gray-900">
-                      {report.item?.kategori}
-                    </p>
-                  </div>
+            <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+              <div className="flex items-center gap-2">
+                <FiInfo className="text-gray-400" />
+                <span>Kategori:</span>
+                <span className="font-medium text-gray-900">
+                  {report.item?.kategori}
+                </span>
+              </div>
+              {report.item?.jenis && (
+                <div className="flex items-center gap-2">
+                  <FiInfo className="text-gray-400" />
+                  <span>Jenis:</span>
+                  <span className="font-medium text-gray-900">
+                    {report.item?.jenis}
+                  </span>
                 </div>
-
-                {report.item?.jenis && (
-                  <div className="flex items-start gap-3">
-                    <FiInfo className="text-gray-500 mt-1" />
-                    <div>
-                      <p className="text-sm text-gray-600">Jenis</p>
-                      <p className="font-medium text-gray-900">
-                        {report.item?.jenis}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex items-start gap-3">
-                  <FiInfo className="text-gray-500 mt-1" />
-                  <div>
-                    <p className="text-sm text-gray-600">Poin</p>
-                    <span
-                      className={`inline-flex px-3 py-1 rounded-full text-sm font-bold ${
-                        report.item?.tipe === "pelanggaran"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-green-100 text-green-800"
-                      }`}
-                    >
-                      {report.item?.tipe === "pelanggaran" ? "-" : "+"}
-                      {report.pointSaat}
-                    </span>
-                  </div>
-                </div>
+              )}
+              <div className="flex items-center gap-2">
+                <FiInfo className="text-gray-400" />
+                <span>Poin:</span>
+                <span
+                  className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${
+                    report.item?.tipe === "pelanggaran"
+                      ? "bg-red-100 text-red-800"
+                      : "bg-green-100 text-green-800"
+                  }`}
+                >
+                  {report.item?.tipe === "pelanggaran" ? "-" : "+"}
+                  {report.pointSaat}
+                </span>
               </div>
             </div>
 
             {report.deskripsi && (
-              <div className="mb-6">
-                <h4 className="text-lg font-semibold text-gray-900 mb-3">
+              <div className="mb-3">
+                <h4 className="text-sm font-semibold text-gray-900 mb-1">
                   Deskripsi
                 </h4>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-gray-700 whitespace-pre-wrap">
-                    {report.deskripsi}
-                  </p>
+                <div className="bg-gray-50 rounded p-2 text-xs text-gray-700 whitespace-pre-wrap">
+                  {report.deskripsi}
                 </div>
               </div>
             )}
 
-            {report.bukti && report.bukti.length > 0 && (
-              <div className="mb-6">
-                <h4 className="text-lg font-semibold text-gray-900 mb-3">
+            {report.bukti && (
+              <div className="mb-3">
+                <h4 className="text-sm font-semibold text-gray-900 mb-1">
                   Bukti
                 </h4>
-                <div className="space-y-3">
-                  {report.bukti.map((bukti, index) => (
-                    <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                      {bukti.tipe === "image" && bukti.url ? (
-                        <div className="space-y-2">
-                          <p className="text-sm font-medium text-gray-700">
-                            {bukti.originalName || `Gambar ${index + 1}`}
-                          </p>
-                          <div className="w-full max-w-md">
-                            <img
-                              src={`${import.meta.env.VITE_API_BASE_URL}${
-                                bukti.url
-                              }`}
-                              alt={`Bukti ${index + 1}`}
-                              className="w-full h-auto rounded-lg shadow-sm border border-gray-200"
-                              onError={(e) => {
-                                e.target.src = "/placeholder-image.png";
-                              }}
-                            />
-                          </div>
-                          <a
-                            href={`${import.meta.env.VITE_API_BASE_URL}${
-                              bukti.url
-                            }`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
-                          >
-                            <FiExternalLink size={14} />
-                            Lihat Gambar Penuh
-                          </a>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-3">
-                          <FiImage className="text-gray-500" />
-                          <div className="flex-1">
-                            <p className="text-sm text-gray-600">
-                              {bukti.originalName ||
-                                `${bukti.tipe || "File"} ${index + 1}`}
-                            </p>
-                            <a
-                              href={bukti.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
-                            >
-                              Lihat Bukti <FiExternalLink size={14} />
-                            </a>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                <div className="p-2 bg-gray-50 rounded flex items-center gap-2">
+                  <img
+                    src={`${import.meta.env.VITE_API_BASE_URL}${report.bukti}`}
+                    alt="Bukti"
+                    className="w-16 h-16 object-cover rounded border border-gray-200"
+                    onError={(e) => {
+                      e.target.src = "/placeholder-image.png";
+                    }}
+                  />
+                  <a
+                    href={`${import.meta.env.VITE_API_BASE_URL}${report.bukti}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 text-xs flex items-center gap-1"
+                  >
+                    <FiExternalLink size={12} />
+                    Lihat
+                  </a>
                 </div>
               </div>
             )}
@@ -354,44 +298,44 @@ const DetailLaporan = () => {
         </div>
 
         {/* Student and Reporter Information */}
-        <div className="space-y-6">
+        <div className="space-y-3">
           {/* Student Information */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <div className="bg-white rounded shadow-sm p-4">
+            <h3 className="text-base font-semibold text-gray-900 mb-2 flex items-center gap-2">
               <FiUser className="text-blue-600" />
-              Informasi Siswa
+              Siswa
             </h3>
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2 text-xs">
               <div>
-                <p className="text-sm text-gray-600">Nama</p>
-                <p className="font-medium text-gray-900">
+                <span className="text-gray-600">Nama:</span>{" "}
+                <span className="font-medium text-gray-900">
                   {report.student?.nama}
-                </p>
+                </span>
               </div>
               <div>
-                <p className="text-sm text-gray-600">NISN</p>
-                <p className="font-medium text-gray-900">
+                <span className="text-gray-600">NISN:</span>{" "}
+                <span className="font-medium text-gray-900">
                   {report.student?.nisn}
-                </p>
+                </span>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Kelas</p>
-                <p className="font-medium text-gray-900">
+                <span className="text-gray-600">Kelas:</span>{" "}
+                <span className="font-medium text-gray-900">
                   {report.student?.kelas}
-                </p>
+                </span>
               </div>
               {report.student?.angkatan && (
                 <div>
-                  <p className="text-sm text-gray-600">Angkatan</p>
-                  <p className="font-medium text-gray-900">
+                  <span className="text-gray-600">Angkatan:</span>{" "}
+                  <span className="font-medium text-gray-900">
                     {report.student?.angkatan}
-                  </p>
+                  </span>
                 </div>
               )}
-              <div>
-                <p className="text-sm text-gray-600">Total Poin Saat Ini</p>
+              <div className="col-span-2">
+                <span className="text-gray-600">Total Poin:</span>{" "}
                 <span
-                  className={`inline-flex px-3 py-1 rounded-full text-sm font-bold ${
+                  className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${
                     report.student?.totalScore >= 0
                       ? "bg-green-100 text-green-800"
                       : "bg-red-100 text-red-800"
@@ -404,18 +348,20 @@ const DetailLaporan = () => {
           </div>
 
           {/* Reporter Information */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Informasi Pelapor
+          <div className="bg-white rounded shadow-sm p-4">
+            <h3 className="text-base font-semibold text-gray-900 mb-2">
+              Pelapor
             </h3>
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2 text-xs">
               <div>
-                <p className="text-sm text-gray-600">Nama</p>
-                <p className="font-medium text-gray-900">{report.reporter}</p>
+                <span className="text-gray-600">Nama:</span>{" "}
+                <span className="font-medium text-gray-900">
+                  {report.reporter}
+                </span>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Role</p>
-                <span className="inline-flex px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 capitalize">
+                <span className="text-gray-600">Role:</span>{" "}
+                <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
                   {report.reporterRole}
                 </span>
               </div>
@@ -423,53 +369,53 @@ const DetailLaporan = () => {
           </div>
 
           {/* Report Metadata */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Metadata Laporan
+          <div className="bg-white rounded shadow-sm p-4">
+            <h3 className="text-base font-semibold text-gray-900 mb-2">
+              Metadata
             </h3>
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2 text-xs">
               <div>
-                <p className="text-sm text-gray-600">ID Laporan</p>
-                <p className="font-medium text-gray-900">#{report.id}</p>
+                <span className="text-gray-600">ID:</span>{" "}
+                <span className="font-medium text-gray-900">#{report.id}</span>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Dibuat Pada</p>
-                <p className="font-medium text-gray-900">
+                <span className="text-gray-600">Dibuat:</span>{" "}
+                <span className="font-medium text-gray-900">
                   {formatDateForDisplay(report.createdAt)}
-                </p>
+                </span>
               </div>
             </div>
           </div>
 
           {/* Penanganan (if exists for violation) */}
           {report.penanganan && (
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="bg-white rounded shadow-sm p-4">
+              <h3 className="text-base font-semibold text-gray-900 mb-2">
                 Penanganan
               </h3>
-              <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <p className="text-sm text-gray-600">Jenis Penanganan</p>
-                  <p className="font-medium text-gray-900">
+                  <span className="text-gray-600">Jenis:</span>{" "}
+                  <span className="font-medium text-gray-900">
                     {report.penanganan.jenisPenanganan}
-                  </p>
+                  </span>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Deskripsi</p>
-                  <p className="font-medium text-gray-900">
+                  <span className="text-gray-600">Deskripsi:</span>{" "}
+                  <span className="font-medium text-gray-900">
                     {report.penanganan.deskripsi}
-                  </p>
+                  </span>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Penanggung Jawab</p>
-                  <p className="font-medium text-gray-900">
+                  <span className="text-gray-600">Penanggung Jawab:</span>{" "}
+                  <span className="font-medium text-gray-900">
                     {report.penanganan.penanggungJawab}
-                  </p>
+                  </span>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Status</p>
+                  <span className="text-gray-600">Status:</span>{" "}
                   <span
-                    className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${
+                    className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
                       report.penanganan.statusSelesai
                         ? "bg-green-100 text-green-800"
                         : "bg-yellow-100 text-yellow-800"

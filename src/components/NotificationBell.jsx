@@ -12,7 +12,7 @@ const NotificationBell = ({ studentId, onNotificationUpdate }) => {
 
     try {
       setLoading(true);
-      const response = await API.get(`/api/notifications/${studentId}`);
+      const response = await API.get(`/notifications/${studentId}`);
       setNotifications(response.data);
 
       if (onNotificationUpdate) {

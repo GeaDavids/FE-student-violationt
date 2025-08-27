@@ -126,13 +126,15 @@ const PilihKelas = () => {
                 </p>
               </div>
             </div>
-            <Link
-              to="/import-siswa"
-              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md transition-all duration-200 hover:scale-105 font-medium text-sm"
-            >
-              <FiDownload className="text-sm" />
-              Import Data
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/import-siswa"
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md transition-all duration-200 hover:scale-105 font-medium text-sm"
+              >
+                <FiDownload className="text-sm" />
+                Import Data
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -165,9 +167,12 @@ const PilihKelas = () => {
 
             {/* Classes List */}
             <div className="bg-white rounded-lg shadow-md border border-slate-200 overflow-hidden">
-              <div className="overflow-x-auto">
+              <div className="overflow-hidden">
                 <table className="w-full">
-                  <thead className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                  <thead
+                    className="text-gray-700"
+                    style={{ backgroundColor: "oklch(96.7% 0.003 264.542)" }}
+                  >
                     <tr>
                       <th className="px-3 py-2.5 text-left font-semibold text-xs tracking-wide uppercase">
                         Kode

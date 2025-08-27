@@ -170,7 +170,7 @@ const Kategori = () => {
           <tbody className="bg-white divide-y divide-gray-200">
             {categories.length === 0 ? (
               <tr className="h-12">
-                <td colSpan="4" className="px-4 py-12 text-center">
+                <td colSpan="4" className="px-4 py-5 text-center">
                   <div className="flex flex-col items-center">
                     <div
                       className={`p-3 rounded-full mb-3 ${

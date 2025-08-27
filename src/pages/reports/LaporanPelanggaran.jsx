@@ -27,6 +27,7 @@ import {
   deleteReport,
 } from "../../api/reports";
 import { getAllClassrooms } from "../../api/classroom";
+import EditLaporanModal from "./EditLaporan";
 
 const LaporanPelanggaran = () => {
   const navigate = useNavigate();
@@ -34,6 +35,8 @@ const LaporanPelanggaran = () => {
   const [classrooms, setClassrooms] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editData, setEditData] = useState(null);
 
   // --- TambahLaporan-style form state ---
   const [students, setStudents] = useState([]);
@@ -50,13 +53,12 @@ const LaporanPelanggaran = () => {
     tanggal: new Date().toISOString().split("T")[0],
     waktu: "",
     deskripsi: "",
-    bukti: [],
+    bukti: "",
   });
   const [evidenceForm, setEvidenceForm] = useState({
     file: null,
-    tipe: "image",
   });
-  const [uploadLoading, setUploadLoading] = useState(false);
+  // removed uploadLoading, no separate upload step
   const [formLoading, setFormLoading] = useState(false);
   const fileInputRef = useRef();
 
@@ -165,10 +167,7 @@ const LaporanPelanggaran = () => {
   };
 
   // --- Evidence logic ---
-  const handleEvidenceFormChange = (e) => {
-    const { name, value } = e.target;
-    setEvidenceForm((prev) => ({ ...prev, [name]: value }));
-  };
+  // removed handleEvidenceFormChange, no evidence type
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -183,62 +182,9 @@ const LaporanPelanggaran = () => {
       setEvidenceForm((prev) => ({ ...prev, file }));
     }
   };
-  const uploadFile = async (file) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("folder", "bukti");
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/upload`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: formData,
-        }
-      );
-      if (!response.ok) throw new Error("Upload failed");
-      const result = await response.json();
-      return result.filePath;
-    } catch (error) {
-      throw error;
-    }
-  };
-  const addEvidence = async () => {
-    if (!evidenceForm.file) {
-      Swal.fire("Error!", "Silakan pilih file gambar terlebih dahulu", "error");
-      return;
-    }
-    try {
-      setUploadLoading(true);
-      const filePath = await uploadFile(evidenceForm.file);
-      setForm((prev) => ({
-        ...prev,
-        bukti: [
-          ...prev.bukti,
-          {
-            url: filePath,
-            tipe: evidenceForm.tipe,
-            originalName: evidenceForm.file.name,
-          },
-        ],
-      }));
-      setEvidenceForm({ file: null, tipe: "image" });
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      Swal.fire("Berhasil!", "File berhasil diupload", "success");
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      Swal.fire("Error!", "Gagal mengupload file", "error");
-    } finally {
-      setUploadLoading(false);
-    }
-  };
-  const removeEvidence = (index) => {
-    setForm((prev) => ({
-      ...prev,
-      bukti: prev.bukti.filter((_, i) => i !== index),
-    }));
+  // removed uploadFile and addEvidence, evidence is sent with form submit
+  const removeEvidence = () => {
+    setEvidenceForm({ file: null });
   };
 
   // --- Form change logic ---
@@ -265,17 +211,16 @@ const LaporanPelanggaran = () => {
     }
     try {
       setFormLoading(true);
-      const reportData = {
-        studentId: parseInt(form.studentId),
-        itemId: parseInt(form.itemId),
-        tanggal: form.tanggal,
-        waktu: form.waktu || null,
-        deskripsi: form.deskripsi || null,
-        bukti: form.bukti.length > 0 ? form.bukti : null,
-      };
-      await createReport(reportData);
+      const formData = new FormData();
+      formData.append("studentId", form.studentId);
+      formData.append("itemId", form.itemId);
+      formData.append("tanggal", form.tanggal);
+      if (form.waktu) formData.append("waktu", form.waktu);
+      if (form.deskripsi) formData.append("deskripsi", form.deskripsi);
+      if (evidenceForm.file) formData.append("bukti", evidenceForm.file);
+
+      await createReport(formData, true); // true = multipart
       Swal.fire("Berhasil!", "Laporan berhasil ditambahkan", "success");
-      setShowAddModal(false);
       setForm({
         studentId: "",
         tipe: "pelanggaran",
@@ -283,18 +228,46 @@ const LaporanPelanggaran = () => {
         tanggal: new Date().toISOString().split("T")[0],
         waktu: "",
         deskripsi: "",
-        bukti: [],
+        bukti: "",
       });
+      setEvidenceForm({ file: null });
       setSelectedStudent(null);
       setStudentSearch("");
-      setShowStudentDropdown(false);
-      fetchReports(pagination.page);
+      setShowAddModal(false);
+      fetchReports(1);
     } catch (error) {
-      console.error("Error creating report:", error);
-      const message = error.response?.data?.error || "Gagal membuat laporan";
-      Swal.fire("Error!", message, "error");
+      Swal.fire("Error!", "Gagal menambah laporan", "error");
     } finally {
       setFormLoading(false);
+    }
+  };
+
+  // Tambahkan handler untuk tombol edit
+  const handleEdit = (report) => {
+    setEditData({
+      studentId: report.studentId,
+      tipe: report.item?.tipe || "pelanggaran",
+      itemId: report.itemId,
+      tanggal: report.tanggal?.split("T")[0] || "",
+      waktu: report.waktu || "",
+      deskripsi: report.deskripsi || "",
+      bukti: report.bukti || "",
+    });
+    setShowEditModal(true);
+  };
+
+  // Handler submit edit
+  const handleEditSubmit = async (formData) => {
+    try {
+      // Panggil API updateReport (bisa disesuaikan sesuai implementasi Anda)
+      // Contoh:
+      await updateReport(editData.id, formData, true);
+      Swal.fire("Berhasil!", "Laporan berhasil diperbarui", "success");
+      setShowEditModal(false);
+      setEditData(null);
+      fetchReports(1);
+    } catch (error) {
+      Swal.fire("Error!", "Gagal memperbarui laporan", "error");
     }
   };
 
@@ -308,7 +281,7 @@ const LaporanPelanggaran = () => {
       tanggal: new Date().toISOString().split("T")[0],
       waktu: "",
       deskripsi: "",
-      bukti: [],
+      bukti: "",
     });
     setSelectedStudent(null);
     setStudentSearch("");
@@ -402,11 +375,6 @@ const LaporanPelanggaran = () => {
     }
   };
 
-  // Export data
-  const handleExport = () => {
-    Swal.fire("Info", "Fitur export akan segera tersedia", "info");
-  };
-
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       <div className="flex justify-between items-center mb-6">
@@ -415,12 +383,6 @@ const LaporanPelanggaran = () => {
           Laporan Siswa
         </h2>
         <div className="flex gap-2">
-          <button
-            onClick={handleExport}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
-          >
-            <FiDownload /> Export
-          </button>
           <button
             onClick={() => {
               setShowAddModal(true);
@@ -522,13 +484,16 @@ const LaporanPelanggaran = () => {
             >
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">
+                  Dibuat
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">
                   Siswa
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">
                   Tipe
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">
-                  Pelanggaran/Prestasi
+                  Tindakan
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide">
                   Tanggal
@@ -553,6 +518,18 @@ const LaporanPelanggaran = () => {
                   >
                     <td className="px-4 py-3">
                       <div>
+                        <p className="text-xs text-gray-700">
+                          {report.createdAt
+                            ? new Date(report.createdAt).toLocaleString(
+                                "id-ID",
+                                { dateStyle: "short", timeStyle: "short" }
+                              )
+                            : "-"}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div>
                         <p className="font-medium text-gray-900 text-sm">
                           {report.student?.nama}
                         </p>
@@ -574,9 +551,7 @@ const LaporanPelanggaran = () => {
                         ) : (
                           <FiAward className="mr-1 w-3 h-3" />
                         )}
-                        {report.item?.tipe === "pelanggaran"
-                          ? "Pelanggaran"
-                          : "Prestasi"}
+                        {report.item?.tipe === "pelanggaran" ? "" : ""}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -631,7 +606,7 @@ const LaporanPelanggaran = () => {
                           <FiEye className="w-3 h-3" />
                         </button>
                         <button
-                          onClick={() => navigate(`/reports/edit/${report.id}`)}
+                          onClick={() => handleEdit(report)}
                           className="bg-yellow-100 text-yellow-700 p-1.5 rounded hover:bg-yellow-200 transition-colors"
                           title="Edit"
                         >
@@ -863,118 +838,41 @@ const LaporanPelanggaran = () => {
                 <h4 className="font-medium text-gray-900 mb-3">
                   Upload Bukti Gambar
                 </h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="md:col-span-2">
-                    <div className="flex items-center justify-center w-full">
-                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <FiUpload className="w-8 h-8 mb-4 text-gray-500" />
-                          <p className="mb-2 text-sm text-gray-500">
-                            <span className="font-semibold">
-                              Klik untuk upload
-                            </span>{" "}
-                            atau drag and drop
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            PNG, JPG, JPEG (MAX. 5MB)
-                          </p>
-                          {evidenceForm.file && (
-                            <p className="text-xs text-blue-600 mt-2">
-                              Dipilih: {evidenceForm.file.name}
-                            </p>
-                          )}
-                        </div>
-                        <input
-                          type="file"
-                          className="hidden"
-                          accept="image/*"
-                          onChange={handleFileChange}
-                          ref={fileInputRef}
-                        />
-                      </label>
+                <div className="flex items-center justify-center w-full">
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <FiUpload className="w-8 h-8 mb-4 text-gray-500" />
+                      <p className="mb-2 text-sm text-gray-500">
+                        <span className="font-semibold">Klik untuk upload</span>{" "}
+                        atau drag and drop
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        PNG, JPG, JPEG (MAX. 5MB)
+                      </p>
+                      {evidenceForm.file && (
+                        <p className="text-xs text-blue-600 mt-2">
+                          Dipilih: {evidenceForm.file.name}
+                        </p>
+                      )}
                     </div>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <select
-                      name="tipe"
-                      value={evidenceForm.tipe}
-                      onChange={handleEvidenceFormChange}
-                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option value="image">Gambar</option>
-                      <option value="document">Dokumen</option>
-                      <option value="video">Video</option>
-                      <option value="other">Lainnya</option>
-                    </select>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      ref={fileInputRef}
+                    />
+                  </label>
+                  {evidenceForm.file && (
                     <button
                       type="button"
-                      onClick={addEvidence}
-                      disabled={!evidenceForm.file || uploadLoading}
-                      className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg flex items-center justify-center gap-1"
+                      onClick={removeEvidence}
+                      className="ml-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full"
                     >
-                      {uploadLoading ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Upload...
-                        </>
-                      ) : (
-                        <>
-                          <FiPlus size={16} />
-                          Tambah
-                        </>
-                      )}
+                      <FiX size={16} />
                     </button>
-                  </div>
+                  )}
                 </div>
-                {/* Evidence List */}
-                {form.bukti.length > 0 && (
-                  <div className="space-y-2 mt-4">
-                    <h4 className="font-medium text-gray-900">Daftar Bukti:</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {form.bukti.map((bukti, index) => (
-                        <div
-                          key={index}
-                          className="relative border border-gray-200 rounded-lg p-3 bg-gray-50"
-                        >
-                          <div className="aspect-square mb-2 bg-gray-100 rounded-lg overflow-hidden">
-                            {bukti.tipe === "image" ? (
-                              <img
-                                src={`${import.meta.env.VITE_API_BASE_URL}${
-                                  bukti.url
-                                }`}
-                                alt={`Bukti ${index + 1}`}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  e.target.src =
-                                    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f3f4f6'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' fill='%236b7280' text-anchor='middle' dy='0.3em'%3EGambar tidak dapat dimuat%3C/text%3E%3C/svg%3E";
-                                }}
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <FiImage className="w-8 h-8 text-gray-400" />
-                              </div>
-                            )}
-                          </div>
-                          <div className="text-center">
-                            <p className="text-sm font-medium text-gray-900">
-                              {bukti.tipe || "File"} {index + 1}
-                            </p>
-                            <p className="text-xs text-gray-600 truncate">
-                              {bukti.originalName || bukti.url.split("/").pop()}
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeEvidence(index)}
-                            className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full"
-                          >
-                            <FiX size={14} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
               {/* Modal Footer */}
               <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 rounded-b-xl flex justify-end gap-3">
@@ -1008,6 +906,17 @@ const LaporanPelanggaran = () => {
           </div>
         </div>
       )}
+
+      {/* Modal Edit Laporan */}
+      <EditLaporanModal
+        open={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        initialData={editData}
+        onSubmit={handleEditSubmit}
+        students={students}
+        violations={violations}
+        achievements={achievements}
+      />
     </div>
   );
 };

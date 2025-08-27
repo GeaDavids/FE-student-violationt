@@ -54,7 +54,10 @@ const KelolaKelas = () => {
 
   const fetchGuru = async () => {
     try {
-      const res = await axios.get("/api/superadmin/teachers/all", axiosConfig);
+      const res = await axios.get(
+        "/api/superadmin/masterdata/teachers",
+        axiosConfig
+      );
       setGuruList(res.data.data || []); // Mengambil array data dari response
     } catch (err) {
       console.error("Gagal mengambil data guru:", err);
@@ -73,10 +76,16 @@ const KelolaKelas = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    let waliKelasIdNum = null;
+    if (form.waliKelasId && form.waliKelasId !== "") {
+      const parsed = parseInt(form.waliKelasId);
+      waliKelasIdNum = isNaN(parsed) ? null : parsed;
+    }
+
     const payload = {
       kodeKelas: form.kodeKelas,
       namaKelas: form.namaKelas,
-      waliKelasId: form.waliKelasId ? parseInt(form.waliKelasId) : null,
+      waliKelasId: waliKelasIdNum,
     };
 
     console.log("Payload:", payload);
@@ -254,7 +263,7 @@ const KelolaKelas = () => {
                       <option value="">Pilih Wali Kelas (Opsional)</option>
                       {guruList.map((guru) => (
                         <option key={guru.id} value={guru.id}>
-                          {guru.nama} - {guru.nip}
+                          {guru.name || guru.nama} - {guru.nip}
                         </option>
                       ))}
                     </select>
@@ -343,12 +352,7 @@ const KelolaKelas = () => {
                         </div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-center">
-                        <button
-                          onClick={() =>
-                            viewStudents(kelas.id, kelas.namaKelas)
-                          }
-                          className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-medium transition-colors text-xs bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-md"
-                        >
+                        <button className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-medium transition-colors text-xs bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-md">
                           <FiUsers className="w-3 h-3" />
                           <span>{kelas.jumlahSiswa || 0}</span>
                         </button>

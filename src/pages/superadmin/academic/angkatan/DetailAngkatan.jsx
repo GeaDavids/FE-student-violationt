@@ -30,17 +30,11 @@ const DetailAngkatan = () => {
     },
   };
 
-  const statusList = [
-    { value: "aktif", label: "Aktif", color: "bg-green-100 text-green-800" },
-    { value: "lulus", label: "Lulus", color: "bg-blue-100 text-blue-800" },
-  ];
-
   useEffect(() => {
     if (location.state?.angkatan) {
       setAngkatan(location.state.angkatan);
       setEditForm({
         tahun: location.state.angkatan.tahun,
-        status: location.state.angkatan.status,
       });
     } else {
       navigate("/superadmin/kelola-angkatan");
@@ -58,7 +52,6 @@ const DetailAngkatan = () => {
     try {
       const payload = {
         tahun: editForm.tahun,
-        status: editForm.status,
       };
 
       await axios.put(
@@ -71,7 +64,6 @@ const DetailAngkatan = () => {
       setAngkatan({
         ...angkatan,
         tahun: editForm.tahun,
-        status: editForm.status,
       });
 
       setIsEditing(false);
@@ -125,32 +117,12 @@ const DetailAngkatan = () => {
   const handleCancel = () => {
     setEditForm({
       tahun: angkatan.tahun,
-      status: angkatan.status,
     });
     setIsEditing(false);
   };
 
   const handleBack = () => {
     navigate("/superadmin/kelola-angkatan");
-  };
-
-  const getStatusBadge = (angkatan) => {
-    let color = "";
-    let label = "";
-
-    if (angkatan.status === "lulus") {
-      color = "bg-blue-100 text-blue-800";
-      label = "Lulus";
-    } else {
-      color = "bg-green-100 text-green-800";
-      label = "Aktif";
-    }
-
-    return (
-      <span className={`${color} px-2 py-1 rounded-full text-xs font-medium`}>
-        {label}
-      </span>
-    );
   };
 
   // Generate tahun options
@@ -202,10 +174,6 @@ const DetailAngkatan = () => {
                 <div className="flex items-center gap-3">
                   <FiCalendar className="text-gray-500" />
                   <span className="text-gray-700">Tahun: {angkatan.tahun}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <FiTag className="text-gray-500" />
-                  <span>Status: {getStatusBadge(angkatan)}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <FiUsers className="text-gray-500" />
@@ -310,29 +278,7 @@ const DetailAngkatan = () => {
                       )}
                     </td>
                   </tr>
-                  <tr className="border-b border-gray-100">
-                    <td className="py-4 px-2 font-medium text-gray-700">
-                      <div className="flex items-center gap-2">
-                        <FiAward className="text-purple-500" />
-                        Status
-                      </div>
-                    </td>
-                    <td className="py-4 px-2">
-                      {isEditing ? (
-                        <select
-                          name="status"
-                          value={editForm.status}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                          <option value="aktif">Aktif</option>
-                          <option value="lulus">Lulus</option>
-                        </select>
-                      ) : (
-                        <span>{getStatusBadge(angkatan)}</span>
-                      )}
-                    </td>
-                  </tr>
+                  <tr className="border-b border-gray-100"></tr>
                   <tr className="border-b border-gray-100">
                     <td className="py-4 px-2 font-medium text-gray-700">
                       <div className="flex items-center gap-2">
