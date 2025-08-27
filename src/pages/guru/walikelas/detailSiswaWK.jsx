@@ -3,9 +3,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import bkAPI from "../../../api/bk";
 import academicYearAPI from "../../../api/academicYear";
 import api from "../../../api/api";
+import { getReportById } from "../../../api/reports";
+import {
+  getRiwayatPenanganan,
+  getDetailPenanganan,
+} from "../../../api/penanganan";
 import Swal from "sweetalert2";
 
-const DetailSiswaWK = () => {
+const detailSiswaWK = () => {
   const { nisn } = useParams();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
@@ -15,6 +20,8 @@ const DetailSiswaWK = () => {
   const [selectedYear, setSelectedYear] = useState("all");
   const [suratPeringatan, setSuratPeringatan] = useState([]);
   const [loadingSurat, setLoadingSurat] = useState(false);
+  const [adjustmentHistory, setAdjustmentHistory] = useState([]);
+  const [loadingAdjustment, setLoadingAdjustment] = useState(false);
 
   // Icon Components
   const ArrowLeftIcon = () => (
@@ -129,9 +136,14 @@ const DetailSiswaWK = () => {
       }
     };
     fetchInfo();
-    // Surat peringatan juga hanya fetch sekali
-    fetchSuratPeringatan(nisn);
   }, [nisn]);
+
+  // Fetch surat peringatan & adjustment history when nisn or selectedYear changes
+  useEffect(() => {
+    if (!nisn) return;
+    fetchSuratPeringatan(nisn, selectedYear);
+    fetchAdjustmentHistory(nisn, selectedYear);
+  }, [nisn, selectedYear]);
 
   // Fetch laporan (riwayat laporan) sesuai tahun ajaran
   useEffect(() => {
@@ -152,17 +164,36 @@ const DetailSiswaWK = () => {
     fetchLaporan();
   }, [nisn, selectedYear]);
 
-  // Fungsi untuk mengambil surat peringatan
-  const fetchSuratPeringatan = async (studentNisn) => {
+  // Fungsi untuk mengambil surat peringatan (filtered by tahun ajaran)
+  const fetchSuratPeringatan = async (studentNisn, tahunAjaranId) => {
     try {
       setLoadingSurat(true);
-      const response = await api.get(`/automasi/history?nisn=${studentNisn}`);
+      let url = `/automasi/history?nisn=${studentNisn}`;
+      if (tahunAjaranId && tahunAjaranId !== "all") {
+        url += `&tahunAjaranId=${tahunAjaranId}`;
+      }
+      const response = await api.get(url);
       setSuratPeringatan(response.data.data || []);
     } catch (error) {
       console.error("Error fetching surat peringatan:", error);
       setSuratPeringatan([]);
     } finally {
       setLoadingSurat(false);
+    }
+  };
+
+  // Fungsi untuk mengambil riwayat penanganan (adjustment history)
+  // Fungsi untuk mengambil riwayat penanganan (dari penanganan.controller)
+  const fetchAdjustmentHistory = async (studentNisn, tahunAjaranId) => {
+    try {
+      setLoadingAdjustment(true);
+      const response = await getRiwayatPenanganan(studentNisn, tahunAjaranId);
+      setAdjustmentHistory(response.data || []);
+    } catch (error) {
+      console.error("Error fetching adjustment history:", error);
+      setAdjustmentHistory([]);
+    } finally {
+      setLoadingAdjustment(false);
     }
   };
 
@@ -311,7 +342,7 @@ const DetailSiswaWK = () => {
 
   if (!data) return null;
 
-  const { siswa, laporan } = data;
+  const { siswa, laporan } = data || {};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -360,7 +391,7 @@ const DetailSiswaWK = () => {
                     NISN
                   </label>
                   <p className="text-sm font-semibold text-slate-900">
-                    {siswa.nisn}
+                    {siswa?.nisn || "-"}
                   </p>
                 </div>
                 <div>
@@ -368,7 +399,7 @@ const DetailSiswaWK = () => {
                     Nama Lengkap
                   </label>
                   <p className="text-sm font-semibold text-slate-900">
-                    {siswa.nama}
+                    {siswa?.nama || "-"}
                   </p>
                 </div>
                 <div>
@@ -376,7 +407,7 @@ const DetailSiswaWK = () => {
                     Kelas
                   </label>
                   <p className="text-sm font-semibold text-slate-900">
-                    {siswa.kelas || "-"}
+                    {siswa?.kelas || "-"}
                   </p>
                 </div>
                 <div>
@@ -384,7 +415,7 @@ const DetailSiswaWK = () => {
                     Angkatan
                   </label>
                   <p className="text-sm font-semibold text-slate-900">
-                    {siswa.angkatan}
+                    {siswa?.angkatan || "-"}
                   </p>
                 </div>
                 <div>
@@ -392,7 +423,7 @@ const DetailSiswaWK = () => {
                     Total Score
                   </label>
                   <p className="text-sm font-semibold text-slate-900">
-                    {siswa.totalScore}
+                    {siswa?.totalScore ?? "-"}
                   </p>
                 </div>
               </div>
@@ -448,6 +479,9 @@ const DetailSiswaWK = () => {
                         <th className="text-left py-2 px-3 font-semibold text-slate-700">
                           Bukti
                         </th>
+                        <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                          Aksi
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -482,8 +516,9 @@ const DetailSiswaWK = () => {
                                   : "bg-green-100 text-green-800"
                               }`}
                             >
-                              {item.tipe === "pelanggaran" ? "-" : "+"}
-                              {item.point || 0}
+                              {item.tipe === "pelanggaran"
+                                ? `-${item.point || 0}`
+                                : `+${item.point || 0}`}
                             </span>
                           </td>
                           <td className="py-2 px-3 text-slate-600">
@@ -507,6 +542,95 @@ const DetailSiswaWK = () => {
                               <span className="text-gray-400">-</span>
                             )}
                           </td>
+                          <td className="py-2 px-3">
+                            <button
+                              onClick={async () => {
+                                try {
+                                  const res = await getReportById(item.id);
+                                  const detail = res.data;
+                                  Swal.fire({
+                                    title: `Detail Laporan #${item.id}`,
+                                    html: (() => {
+                                      const BASE_URL =
+                                        import.meta.env.VITE_API_BASE_URL || "";
+                                      let buktiHtml = "-";
+                                      let buktiArr = [];
+                                      if (detail.bukti) {
+                                        if (Array.isArray(detail.bukti)) {
+                                          buktiArr = detail.bukti;
+                                        } else if (
+                                          typeof detail.bukti === "string" &&
+                                          detail.bukti.trim() !== ""
+                                        ) {
+                                          buktiArr = [detail.bukti];
+                                        }
+                                      }
+                                      if (buktiArr.length > 0) {
+                                        buktiHtml = buktiArr
+                                          .map((bukti, idx) => {
+                                            const url = `${BASE_URL}${bukti}`;
+                                            return `
+                                            <div style='display:flex;align-items:center;gap:8px;margin-bottom:4px;'>
+                                              <img src='${url}' alt='Bukti' style='width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb' onerror="this.src='/placeholder-image.png'" />
+                                              <a href='${url}' target='_blank' rel='noopener noreferrer' style='color:#2563eb;text-decoration:underline;font-size:12px;'>Lihat</a>
+                                            </div>
+                                          `;
+                                          })
+                                          .join("");
+                                      }
+                                      return `
+                                        <div class='text-left space-y-2'>
+                                          <div><b>Tanggal:</b> ${
+                                            detail.tanggal
+                                              ? new Date(
+                                                  detail.tanggal
+                                                ).toLocaleDateString("id-ID")
+                                              : "-"
+                                          }</div>
+                                          <div><b>Tipe:</b> ${
+                                            detail.item?.tipe
+                                              ? detail.item.tipe
+                                                  .charAt(0)
+                                                  .toUpperCase() +
+                                                detail.item.tipe.slice(1)
+                                              : "-"
+                                          }</div>
+                                          <div><b>Item:</b> ${
+                                            detail.item?.nama || "-"
+                                          }</div>
+                                          <div><b>Poin:</b> ${
+                                            detail.item?.tipe === "pelanggaran"
+                                              ? `-${detail.item?.point || 0}`
+                                              : `+${detail.item?.point || 0}`
+                                          }</div>
+                                          <div><b>Pelapor:</b> ${
+                                            detail.reporter || "-"
+                                          }</div>
+                                          <div><b>Deskripsi:</b> ${
+                                            detail.deskripsi || "-"
+                                          }</div>
+                                          <div><b>Bukti:</b><br/>${buktiHtml}</div>
+                                        </div>
+                                      `;
+                                    })(),
+                                    width: "500px",
+                                    confirmButtonText: "Tutup",
+                                    confirmButtonColor: "#3B82F6",
+                                  });
+                                } catch (e) {
+                                  Swal.fire(
+                                    "Error",
+                                    "Gagal memuat detail laporan",
+                                    "error"
+                                  );
+                                }
+                              }}
+                              className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
+                            >
+                              <EyeIcon />
+                              <span className="ml-1">Detail</span>
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -529,8 +653,211 @@ const DetailSiswaWK = () => {
           </div>
         </div>
 
+        {/* Adjustment History Section */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md border border-slate-200 mt-6">
+          <div className="bg-gray-300 text-black p-4 rounded-t-lg">
+            <h2 className="text-lg font-bold">
+              Riwayat Penanganan (Adjustment History)
+            </h2>
+            <p className="text-black-100 text-xs mt-1">
+              Total {adjustmentHistory.length} penanganan
+            </p>
+          </div>
+          <div className="p-4">
+            {loadingAdjustment ? (
+              <div className="flex justify-center py-6">
+                <div className="relative">
+                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-200"></div>
+                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-green-500 border-t-transparent absolute top-0 left-0"></div>
+                </div>
+              </div>
+            ) : adjustmentHistory.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-200">
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Tanggal
+                      </th>
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Poin Sebelum
+                      </th>
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Poin Sesudah
+                      </th>
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Poin
+                      </th>
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Deskripsi
+                      </th>
+                      <th className="text-left py-2 px-3 font-semibold text-slate-700">
+                        Petugas
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {adjustmentHistory.map((adj, idx) => {
+                      // Field mapping sesuai response: tanggal, tipe, pointPengurangan, alasan, keterangan, pointSebelum, pointSesudah, teacher.name
+                      const tipe =
+                        adj.tipe ||
+                        (adj.pointPengurangan ? "pengurangan" : "penambahan");
+                      let tipeColor = "bg-gray-100 text-gray-800";
+                      if (tipe === "penambahan") {
+                        tipeColor = "bg-green-100 text-green-800";
+                      } else if (tipe === "pengurangan") {
+                        tipeColor = "bg-red-100 text-red-800";
+                      }
+                      return (
+                        <tr
+                          key={idx}
+                          className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
+                        >
+                          <td className="py-2 px-3 text-slate-600">
+                            {adj.tanggal
+                              ? new Date(adj.tanggal).toLocaleDateString(
+                                  "id-ID"
+                                )
+                              : "-"}
+                          </td>
+                          <td className="py-2 px-3 text-slate-600">
+                            {adj.pointSebelum ?? "-"}
+                          </td>
+                          <td className="py-2 px-3 text-slate-600">
+                            {adj.pointSesudah ?? "-"}
+                          </td>
+                          <td className="py-2 px-3">
+                            <span
+                              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${tipeColor}`}
+                            >
+                              {tipe === "pengurangan"
+                                ? "-"
+                                : tipe === "penambahan"
+                                ? "+"
+                                : ""}
+                              {adj.pointPengurangan || adj.point || 0}
+                            </span>
+                          </td>
+                          <td
+                            className="py-2 px-3 text-slate-600 max-w-xs truncate"
+                            title={adj.alasan || adj.keterangan || "-"}
+                          >
+                            {adj.alasan || adj.keterangan || "-"}
+                          </td>
+                          <td className="py-2 px-3 text-slate-600">
+                            {adj.teacher?.name || "-"}
+                          </td>
+                          <td className="py-2 px-3">
+                            <button
+                              onClick={async () => {
+                                try {
+                                  const res = await getDetailPenanganan(adj.id);
+                                  const detail = res.data;
+                                  Swal.fire({
+                                    title: `Detail Penanganan #${adj.id}`,
+                                    html: (() => {
+                                      const BASE_URL =
+                                        import.meta.env.VITE_API_BASE_URL || "";
+                                      let buktiHtml = "-";
+                                      let buktiArr = [];
+                                      if (detail.bukti) {
+                                        if (Array.isArray(detail.bukti)) {
+                                          buktiArr = detail.bukti;
+                                        } else if (
+                                          typeof detail.bukti === "string" &&
+                                          detail.bukti.trim() !== ""
+                                        ) {
+                                          buktiArr = [detail.bukti];
+                                        }
+                                      }
+                                      if (buktiArr.length > 0) {
+                                        buktiHtml = buktiArr
+                                          .map((bukti, idx) => {
+                                            const url = `${BASE_URL}${bukti}`;
+                                            return `
+                                            <div style='display:flex;align-items:center;gap:8px;margin-bottom:4px;'>
+                                              <img src='${url}' alt='Bukti' style='width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb' onerror="this.src='/placeholder-image.png'" />
+                                              <a href='${url}' target='_blank' rel='noopener noreferrer' style='color:#2563eb;text-decoration:underline;font-size:12px;'>Lihat</a>
+                                            </div>
+                                          `;
+                                          })
+                                          .join("");
+                                      }
+                                      return `
+                                        <div class='text-left space-y-2'>
+                                          <div><b>Tanggal:</b> ${
+                                            detail.tanggal
+                                              ? new Date(
+                                                  detail.tanggal
+                                                ).toLocaleDateString("id-ID")
+                                              : "-"
+                                          }</div>
+                                          <div><b>Poin Sebelum:</b> ${
+                                            detail.pointSebelum ?? "-"
+                                          }</div>
+                                          <div><b>Poin Sesudah:</b> ${
+                                            detail.pointSesudah ?? "-"
+                                          }</div>
+                                          <div><b>Poin:</b> ${
+                                            detail.pointPengurangan ||
+                                            detail.point ||
+                                            0
+                                          }</div>
+                                          <div><b>Alasan:</b> ${
+                                            detail.alasan || "-"
+                                          }</div>
+                                          <div><b>Keterangan:</b> ${
+                                            detail.keterangan || "-"
+                                          }</div>
+                                          <div><b>Petugas:</b> ${
+                                            detail.teacher?.name || "-"
+                                          }</div>
+                                          <div><b>Bukti:</b><br/>${buktiHtml}</div>
+                                        </div>
+                                      `;
+                                    })(),
+                                    width: "500px",
+                                    confirmButtonText: "Tutup",
+                                    confirmButtonColor: "#3B82F6",
+                                  });
+                                } catch (e) {
+                                  Swal.fire(
+                                    "Error",
+                                    "Gagal memuat detail penanganan",
+                                    "error"
+                                  );
+                                }
+                              }}
+                              className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
+                            >
+                              <EyeIcon />
+                              <span className="ml-1">Detail</span>
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                <div className="mx-auto w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center mb-3">
+                  <span className="text-lg">📝</span>
+                </div>
+                <h3 className="text-sm font-semibold text-slate-900 mb-1">
+                  Belum Ada Riwayat Penanganan
+                </h3>
+                <p className="text-slate-500 text-xs">
+                  Siswa ini belum pernah mendapat penanganan/adjustment
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Warning Letters Section */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md border border-slate-200">
+        <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-md border border-slate-200 mt-6">
           <div className="bg-gray-300 text-black p-4 rounded-t-lg">
             <h2 className="text-lg font-bold">Riwayat Surat Peringatan</h2>
             <p className="text-black-100 text-xs mt-1">
@@ -623,4 +950,4 @@ const DetailSiswaWK = () => {
   );
 };
 
-export default DetailSiswaWK;
+export default detailSiswaWK;

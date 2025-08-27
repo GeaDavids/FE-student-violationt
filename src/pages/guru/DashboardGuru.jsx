@@ -41,11 +41,8 @@ const DashboardGuru = () => {
 
   const fetchMyReportSummary = async () => {
     try {
-      const response = await axios.get(
-        "/api/guru/my-reports?limit=1",
-        axiosConfig
-      );
-      setMyReportSummary(response.data.summary);
+      const response = await axios.get("/api/guru/dashboard", axiosConfig);
+      setMyReportSummary(response.data);
     } catch (error) {
       setMyReportSummary(null);
     }
@@ -130,7 +127,7 @@ const DashboardGuru = () => {
             Dashboard {dashboardData.isWaliKelas ? "Wali Kelas" : "Guru"}
           </h2>
           <p className="text-gray-600">
-            Selamat datang, {dashboardData.teacherInfo.name}
+            Selamat datang, {dashboardData?.teacherInfo?.name || "Guru"}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -152,39 +149,6 @@ const DashboardGuru = () => {
           >
             <FiRefreshCw /> Refresh
           </button>
-        </div>
-      </div>
-
-      {/* Teacher Info Card */}
-      <div className="bg-white rounded-xl shadow p-6 mb-6">
-        <h3 className="text-lg font-semibold text-[#003366] mb-4 flex items-center gap-2">
-          <FiUserCheck /> Informasi Guru
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-3 bg-blue-50 rounded-lg">
-            <p className="text-sm text-gray-500">Nama</p>
-            <p className="font-medium text-[#003366]">
-              {dashboardData.teacherInfo.name}
-            </p>
-          </div>
-          <div className="p-3 bg-blue-50 rounded-lg">
-            <p className="text-sm text-gray-500">NIP</p>
-            <p className="font-medium text-[#003366]">
-              {dashboardData.teacherInfo.nip || "-"}
-            </p>
-          </div>
-          <div className="p-3 bg-blue-50 rounded-lg">
-            <p className="text-sm text-gray-500">Email</p>
-            <p className="font-medium text-[#003366]">
-              {dashboardData.teacherInfo.email}
-            </p>
-          </div>
-          <div className="p-3 bg-blue-50 rounded-lg">
-            <p className="text-sm text-gray-500">No HP</p>
-            <p className="font-medium text-[#003366]">
-              {dashboardData.teacherInfo.noHp || "-"}
-            </p>
-          </div>
         </div>
       </div>
 

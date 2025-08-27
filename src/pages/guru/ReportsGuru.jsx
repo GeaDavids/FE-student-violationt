@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
 import axios from "axios";
+import Swal from "sweetalert2";
+
+import { useState, useEffect } from "react";
 import {
   FiPlus,
   FiFilter,
@@ -21,15 +23,28 @@ const ReportsGuru = () => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({});
-  const [summary, setSummary] = useState({});
+  const [summary, setSummary] = useState({
+    totalReports: 0,
+    violationReports: 0,
+    achievementReports: 0,
+  });
+
+  const [detailModal, setDetailModal] = useState({
+    open: false,
+    data: null,
+    loading: false,
+  });
+  // Fungsi ambil detail laporan
+
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [selectedAcademicYear, setSelectedAcademicYear] = useState(null);
+  const [selectedAcademicYear, setSelectedAcademicYear] = useState("");
+  const [itemSearchTerm, setItemSearchTerm] = useState("");
+  const [itemSearchResults, setItemSearchResults] = useState([]);
   const [filters, setFilters] = useState({
     page: 1,
     limit: 10,
     tipe: "",
-    startDate: "",
-    endDate: "",
+    bulan: "",
     studentId: "",
     tahunAjaranId: "",
   });
@@ -45,8 +60,10 @@ const ReportsGuru = () => {
   });
 
   const [students, setStudents] = useState([]);
-  const [violations, setViolations] = useState([]);
-  const [achievements, setAchievements] = useState([]);
+  const [reportItems, setReportItems] = useState({
+    pelanggaran: [],
+    prestasi: [],
+  });
   const [reportType, setReportType] = useState("pelanggaran");
   const [submitting, setSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -64,39 +81,56 @@ const ReportsGuru = () => {
   }, [filters]);
 
   useEffect(() => {
-    fetchViolations();
-    fetchAchievements();
+    fetchReportItems();
   }, []);
 
   // Update filters when academic year changes
   useEffect(() => {
-    if (selectedAcademicYear) {
-      setFilters((prev) => ({
-        ...prev,
-        tahunAjaranId: selectedAcademicYear,
-        page: 1,
-      }));
-    }
+    setFilters((prev) => ({
+      ...prev,
+      tahunAjaranId: selectedAcademicYear || "",
+      page: 1,
+    }));
   }, [selectedAcademicYear]);
 
   const fetchReports = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams();
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value) params.append(key, value);
-      });
-
-      // Use academic year specific endpoint if academic year is selected
-      const endpoint = filters.tahunAjaranId
-        ? `/api/guru/reports-by-academic-year?${params.toString()}`
-        : `/api/guru/my-reports?${params.toString()}`;
-
-      const response = await axios.get(endpoint, axiosConfig);
-
-      setReports(response.data.data);
-      setPagination(response.data.pagination);
-      setSummary(response.data.summary);
+      // Gunakan teacherAPI.getMyReports, params: userId, tahunAjaranId, tipe, bulan, page, limit
+      const user = JSON.parse(localStorage.getItem("user"));
+      const userId = user?.id;
+      if (!userId) {
+        alert(
+          "Akun Anda tidak memiliki userId. Silakan logout dan login kembali, atau hubungi admin."
+        );
+        setLoading(false);
+        setReports([]);
+        setPagination({});
+        setSummary({
+          totalReports: 0,
+          violationReports: 0,
+          achievementReports: 0,
+        });
+        return;
+      }
+      const params = { ...filters, userId };
+      // Hapus key kosong
+      Object.keys(params).forEach(
+        (k) => (params[k] === "" || params[k] == null) && delete params[k]
+      );
+      const response = await teacherAPI.getMyReports(params);
+      const data = response.data.data || [];
+      setReports(data);
+      setPagination(response.data.pagination || {});
+      // Hitung summary berdasarkan data yang sudah terfilter
+      const totalReports = data.length;
+      const violationReports = data.filter(
+        (r) => r.tipe === "pelanggaran"
+      ).length;
+      const achievementReports = data.filter(
+        (r) => r.tipe === "prestasi"
+      ).length;
+      setSummary({ totalReports, violationReports, achievementReports });
     } catch (error) {
       console.error("Error fetching reports:", error);
     } finally {
@@ -104,28 +138,62 @@ const ReportsGuru = () => {
     }
   };
 
-  const fetchViolations = async () => {
+  const fetchReportDetail = async (id) => {
+    setDetailModal({ open: true, data: null, loading: true });
     try {
-      const response = await axios.get("/api/guru/violations", axiosConfig);
-      setViolations(response.data.violations);
+      const response = await axios.get(
+        `/api/guru/report-detail/${id}`,
+        axiosConfig
+      );
+      setDetailModal({ open: true, data: response.data.data, loading: false });
     } catch (error) {
-      console.error("Error fetching violations:", error);
+      setDetailModal({ open: false, data: null, loading: false });
+      Swal.fire(
+        "Gagal memuat detail laporan",
+        error?.response?.data?.message || error.message,
+        "error"
+      );
     }
   };
 
-  const fetchAchievements = async () => {
+  const fetchReportItems = async () => {
     try {
-      const response = await axios.get("/api/guru/achievements", axiosConfig);
-      setAchievements(response.data.achievements);
+      const response = await axios.get("/api/guru/report-items", axiosConfig);
+      setReportItems({
+        pelanggaran: response.data.data.pelanggaran || [],
+        prestasi: response.data.data.prestasi || [],
+      });
     } catch (error) {
-      console.error("Error fetching achievements:", error);
+      console.error("Error fetching report items:", error);
+    }
+  };
+
+  const searchReportItems = async (query, type) => {
+    try {
+      if (!query || query.length < 2) {
+        setItemSearchResults([]);
+        return;
+      }
+      const response = await axios.get(
+        `/api/guru/search-report-items?query=${encodeURIComponent(
+          query
+        )}&type=${type}`,
+        axiosConfig
+      );
+      setItemSearchResults(response.data.data);
+    } catch (error) {
+      setItemSearchResults([]);
     }
   };
 
   const searchStudents = async (query) => {
     try {
+      if (!query || query.length < 2) {
+        setStudents([]);
+        return;
+      }
       const response = await axios.get(
-        `/api/guru/search-students?query=${query}&limit=20`,
+        `/api/guru/search-students?query=${encodeURIComponent(query)}`,
         axiosConfig
       );
       setStudents(response.data.data);
@@ -138,7 +206,21 @@ const ReportsGuru = () => {
     e.preventDefault();
     try {
       setSubmitting(true);
-      await axios.post("/api/guru/report-student", formData, axiosConfig);
+      const data = new FormData();
+      data.append("studentId", formData.studentId);
+      data.append("itemId", formData.itemId);
+      data.append("tanggal", formData.tanggal);
+      data.append("waktu", formData.waktu);
+      data.append("deskripsi", formData.deskripsi);
+      if (formData.bukti) {
+        data.append("bukti", formData.bukti);
+      }
+      await axios.post("/api/guru/report-student", data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          // Jangan set Content-Type, biarkan browser yang mengatur
+        },
+      });
 
       // Reset form and close modal
       setFormData({
@@ -294,38 +376,35 @@ const ReportsGuru = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
             >
               <option value="">Semua</option>
-              <option value="violation">Pelanggaran</option>
-              <option value="achievement">Prestasi</option>
+              <option value="pelanggaran">Pelanggaran</option>
+              <option value="prestasi">Prestasi</option>
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Dari Tanggal
+              Bulan
             </label>
-            <input
-              type="date"
-              value={filters.startDate}
-              onChange={(e) => handleFilterChange("startDate", e.target.value)}
+            <select
+              value={filters.bulan}
+              onChange={(e) => handleFilterChange("bulan", e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Sampai Tanggal
-            </label>
-            <input
-              type="date"
-              value={filters.endDate}
-              onChange={(e) => handleFilterChange("endDate", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
-            />
+            >
+              <option value="">Semua</option>
+              {[...Array(12)].map((_, i) => (
+                <option key={i + 1} value={i + 1}>
+                  {new Date(0, i).toLocaleString("id-ID", { month: "long" })}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="flex items-end">
             <button
-              onClick={fetchReports}
+              onClick={() => {
+                setFilters((f) => ({ ...f, page: 1 }));
+                setTimeout(fetchReports, 0);
+              }}
               className="w-full bg-[#003366] text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-[#002244] transition-colors"
             >
               <FiRefreshCw /> Refresh
@@ -340,7 +419,6 @@ const ReportsGuru = () => {
           <h3 className="text-lg font-semibold text-[#003366] mb-4">
             Daftar Laporan
           </h3>
-
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#003366] mx-auto"></div>
@@ -374,76 +452,59 @@ const ReportsGuru = () => {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {reports.map((report) => (
-                      <tr key={report.id} className="hover:bg-gray-50">
+                      <tr
+                        key={report.id}
+                        className="hover:bg-gray-50 cursor-pointer"
+                        onClick={() => fetchReportDetail(report.id)}
+                      >
                         <td className="px-4 py-4 whitespace-nowrap">
-                          {(() => {
-                            // Prefer report.tipe, fallback to item.kategori.tipe, fallback to item.tipe
-                            const tipe =
-                              report.tipe ||
-                              report.item?.kategori?.tipe ||
-                              report.item?.tipe;
-                            return (
-                              <span
-                                className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getTipeColor(
-                                  tipe
-                                )}`}
-                              >
-                                {getTipeIcon(tipe)}
-                                {tipe === "pelanggaran"
-                                  ? "Pelanggaran"
-                                  : tipe === "prestasi"
-                                  ? "Prestasi"
-                                  : "-"}
-                              </span>
-                            );
-                          })()}
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getTipeColor(
+                              report.tipe
+                            )}`}
+                          >
+                            {getTipeIcon(report.tipe)}
+                            {report.tipe === "pelanggaran"
+                              ? "Pelanggaran"
+                              : report.tipe === "prestasi"
+                              ? "Prestasi"
+                              : "-"}
+                          </span>
                         </td>
                         <td className="px-4 py-4">
                           <div>
                             <p className="font-medium text-gray-900">
-                              {report.student.name}
+                              {report.namaSiswa || "-"}
                             </p>
                             <p className="text-sm text-gray-500">
-                              {report.student.nisn} • {report.student.className}
+                              {report.classAtTime || "-"}
                             </p>
                           </div>
                         </td>
                         <td className="px-4 py-4">
                           <div>
                             <p className="font-medium text-gray-900">
-                              {report.item?.nama}
+                              {report.itemNama || "-"}
                             </p>
                             <p className="text-sm text-gray-500">
-                              {report.item?.kategori?.nama || "-"}
+                              {report.kategori || "-"}
                             </p>
                           </div>
                         </td>
                         <td className="px-4 py-3 text-center">
-                          {(() => {
-                            const tipe =
-                              report.tipe ||
-                              report.item?.kategori?.tipe ||
-                              report.item?.tipe;
-                            if (tipe === "pelanggaran") {
-                              return (
-                                <span className="inline-flex px-2 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
-                                  -{report.pointSaat}
-                                </span>
-                              );
-                            } else if (tipe === "prestasi") {
-                              return (
-                                <span className="inline-flex px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
-                                  +{report.pointSaat}
-                                </span>
-                              );
-                            } else {
-                              return (
-                                <span className="inline-flex px-2 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700">
-                                  {report.pointSaat}
-                                </span>
-                              );
-                            }
-                          })()}
+                          {report.tipe === "pelanggaran" ? (
+                            <span className="inline-flex px-2 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
+                              -{report.pointSaat}
+                            </span>
+                          ) : report.tipe === "prestasi" ? (
+                            <span className="inline-flex px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
+                              +{report.pointSaat}
+                            </span>
+                          ) : (
+                            <span className="inline-flex px-2 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700">
+                              {report.pointSaat}
+                            </span>
+                          )}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                           {formatDate(report.tanggal)}
@@ -458,13 +519,11 @@ const ReportsGuru = () => {
                   </tbody>
                 </table>
               </div>
-
               {reports.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
                   Tidak ada laporan ditemukan
                 </div>
               )}
-
               {/* Pagination */}
               {pagination.totalPages > 1 && (
                 <div className="flex items-center justify-between mt-6 pt-4 border-t">
@@ -503,6 +562,102 @@ const ReportsGuru = () => {
         </div>
       </div>
 
+      {/* Modal Detail Laporan (hanya satu, di luar map/table) */}
+      {detailModal.open && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg max-w-lg w-full p-6 relative">
+            <button
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-xl"
+              onClick={() =>
+                setDetailModal({ open: false, data: null, loading: false })
+              }
+              type="button"
+            >
+              ×
+            </button>
+            {detailModal.loading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#003366] mx-auto"></div>
+                <p className="mt-2 text-gray-500">Memuat detail laporan...</p>
+              </div>
+            ) : detailModal.data ? (
+              <div>
+                <h3 className="text-xl font-bold mb-2 text-[#003366]">
+                  Detail Laporan
+                </h3>
+                <div className="mb-2">
+                  <b>Nama Siswa:</b> {detailModal.data.namaSiswa}
+                </div>
+                <div className="mb-2">
+                  <b>NISN:</b> {detailModal.data.nisn}
+                </div>
+                <div className="mb-2">
+                  <b>Kelas:</b> {detailModal.data.classAtTime}
+                </div>
+                <div className="mb-2">
+                  <b>Tanggal:</b> {formatDate(detailModal.data.tanggal)}
+                </div>
+                <div className="mb-2">
+                  <b>Jenis:</b> {detailModal.data.tipe}
+                </div>
+                <div className="mb-2">
+                  <b>Kategori:</b> {detailModal.data.kategori}
+                </div>
+                <div className="mb-2">
+                  <b>Item:</b> {detailModal.data.itemNama}
+                </div>
+                <div className="mb-2">
+                  <b>Poin:</b>{" "}
+                  {detailModal.data.tipe === "pelanggaran"
+                    ? `-${detailModal.data.pointSaat}`
+                    : `+${detailModal.data.pointSaat}`}
+                </div>
+                <div className="mb-2">
+                  <b>Deskripsi:</b> {detailModal.data.deskripsi || "-"}
+                </div>
+                <div className="mb-2">
+                  <b>Bukti:</b>
+                  <br />
+                  {detailModal.data.bukti ? (
+                    <>
+                      <img
+                        src={`${import.meta.env.VITE_API_BASE_URL}${
+                          detailModal.data.bukti
+                        }`}
+                        alt="Bukti"
+                        className="w-24 h-24 object-cover border mt-2 rounded shadow"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "/no-image.png";
+                        }}
+                      />
+                      <a
+                        href={`${import.meta.env.VITE_API_BASE_URL}${
+                          detailModal.data.bukti
+                        }`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-3 text-blue-600 underline text-sm hover:text-blue-800"
+                      >
+                        Lihat
+                      </a>
+                    </>
+                  ) : (
+                    <span className="text-gray-500">Tidak ada bukti</span>
+                  )}
+                </div>
+                <div className="mb-2">
+                  <b>Dibuat:</b> {formatDate(detailModal.data.createdAt)}
+                </div>
+                <div className="mb-2">
+                  <b>Diupdate:</b> {formatDate(detailModal.data.updatedAt)}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
+
       {/* Create Report Modal */}
       {showCreateForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -521,7 +676,7 @@ const ReportsGuru = () => {
               </div>
 
               <form onSubmit={handleCreateReport} className="space-y-4">
-                {/* Student Search */}
+                {/* Student Search ala laporanPelanggaran */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Cari Siswa
@@ -556,7 +711,7 @@ const ReportsGuru = () => {
                         >
                           <p className="font-medium">{student.name}</p>
                           <p className="text-sm text-gray-500">
-                            {student.nisn} • {student.className}
+                            {student.nisn} • {student.kodeKelas}{" "}
                           </p>
                         </button>
                       ))}
@@ -599,70 +754,86 @@ const ReportsGuru = () => {
                       Prestasi
                     </button>
                   </div>
-                  <select
-                    value={formData.itemId}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        itemId: e.target.value,
-                      }))
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
-                    required
-                  >
-                    <option value="">
-                      Pilih{" "}
-                      {reportType === "pelanggaran"
-                        ? "pelanggaran"
-                        : "prestasi"}
-                    </option>
-                    {(reportType === "pelanggaran"
-                      ? violations
-                      : achievements
-                    ).map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.nama} ({reportType === "pelanggaran" ? "-" : "+"}
-                        {item.point} poin)
-                      </option>
-                    ))}
-                  </select>
+                  {/* Kategori dan item berdasarkan reportItems */}
+                  <input
+                    type="text"
+                    value={itemSearchTerm}
+                    onChange={(e) => {
+                      setItemSearchTerm(e.target.value);
+                      searchReportItems(e.target.value, reportType);
+                    }}
+                    placeholder={`Cari bentuk ${reportType} atau kategori...`}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent mb-2"
+                  />
+                  {itemSearchTerm.length >= 2 &&
+                    itemSearchResults.length > 0 && (
+                      <div className="border border-gray-200 rounded-lg max-h-40 overflow-y-auto mb-2 bg-white z-10 relative">
+                        {itemSearchResults.map((item) => (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => {
+                              setFormData((prev) => ({
+                                ...prev,
+                                itemId: item.id,
+                              }));
+                              setItemSearchTerm(item.label);
+                              setItemSearchResults([]);
+                            }}
+                            className="w-full p-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                          >
+                            <span className="font-medium">{item.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
 
                   {/* Score Impact Indicator */}
-                  {formData.itemId && (
-                    <div
-                      className={`mt-2 p-2 rounded-lg text-sm ${
-                        reportType === "pelanggaran"
-                          ? "bg-red-50 text-red-700 border border-red-200"
-                          : "bg-green-50 text-green-700 border border-green-200"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        {reportType === "pelanggaran" ? (
-                          <>
-                            <span className="font-semibold">⚠️ Dampak:</span>
-                            <span>
-                              Skor siswa akan <strong>dikurangi</strong>{" "}
-                              {violations.find(
-                                (v) => v.id === parseInt(formData.itemId)
-                              )?.point || 0}{" "}
-                              poin
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <span className="font-semibold">✅ Dampak:</span>
-                            <span>
-                              Skor siswa akan <strong>ditambah</strong>{" "}
-                              {achievements.find(
-                                (a) => a.id === parseInt(formData.itemId)
-                              )?.point || 0}{" "}
-                              poin
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                  {formData.itemId &&
+                    (() => {
+                      let point = 0;
+                      let tipe = reportType;
+                      const found = itemSearchResults.find(
+                        (i) => i.id === parseInt(formData.itemId)
+                      );
+                      if (found) {
+                        point = found.point;
+                        tipe = found.tipe;
+                      }
+                      return (
+                        <div
+                          className={`mt-2 p-2 rounded-lg text-sm ${
+                            tipe === "pelanggaran"
+                              ? "bg-red-50 text-red-700 border border-red-200"
+                              : "bg-green-50 text-green-700 border border-green-200"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            {tipe === "pelanggaran" ? (
+                              <>
+                                <span className="font-semibold">
+                                  ⚠️ Dampak:
+                                </span>
+                                <span>
+                                  Skor siswa akan <strong>dikurangi</strong>{" "}
+                                  {point} poin
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="font-semibold">
+                                  ✅ Dampak:
+                                </span>
+                                <span>
+                                  Skor siswa akan <strong>ditambah</strong>{" "}
+                                  {point} poin
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
                 </div>
 
                 {/* Date and Time */}
@@ -721,23 +892,52 @@ const ReportsGuru = () => {
                   />
                 </div>
 
-                {/* Evidence */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Bukti (Opsional)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.bukti}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        bukti: e.target.value,
-                      }))
-                    }
-                    placeholder="URL foto/dokumen bukti..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#003366] focus:border-transparent"
-                  />
+                {/* Evidence ala laporanPelanggaran */}
+                <div className="border border-gray-200 rounded-lg p-4 mb-4 mt-4">
+                  <h4 className="font-medium text-gray-900 mb-3">
+                    Upload Bukti Gambar
+                  </h4>
+                  <div className="flex items-center justify-center w-full">
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <FiPlus className="w-8 h-8 mb-4 text-gray-500" />
+                        <p className="mb-2 text-sm text-gray-500">
+                          <span className="font-semibold">
+                            Klik untuk upload
+                          </span>{" "}
+                          atau drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          PNG, JPG, JPEG (MAX. 5MB)
+                        </p>
+                        {formData.bukti && (
+                          <p className="text-xs text-blue-600 mt-2">
+                            Dipilih: {formData.bukti.name || formData.bukti}
+                          </p>
+                        )}
+                      </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          setFormData((prev) => ({ ...prev, bukti: file }));
+                        }}
+                      />
+                    </label>
+                    {formData.bukti && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData((prev) => ({ ...prev, bukti: null }))
+                        }
+                        className="ml-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full"
+                      >
+                        <FiPlus size={16} />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Submit Buttons */}

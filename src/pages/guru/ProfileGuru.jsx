@@ -58,13 +58,13 @@ const ProfileGuru = () => {
     try {
       setLoading(true);
       const response = await axios.get("/api/guru/profile", axiosConfig);
-      setProfile(response.data.profile);
-      setClassroom(response.data.classroom);
+      setProfile(response.data.data);
       setEditForm({
-        name: response.data.profile.user.name,
-        email: response.data.profile.user.email,
-        noHp: response.data.profile.noHp || "",
-        alamat: response.data.profile.alamat || "",
+        name: response.data.data.name,
+        email: response.data.data.email,
+        nip: response.data.data.nip || "",
+        noHp: response.data.data.noHp || "",
+        alamat: response.data.data.alamat || "",
       });
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -186,23 +186,26 @@ const ProfileGuru = () => {
               <FiUser className="text-5xl text-blue-600" />
             </div>
             <div className="text-xl font-bold text-white mb-1">
-              {profile.user.name}
+              {profile.name}
             </div>
-            <div className="text-blue-100 mb-2">{profile.user.role}</div>
+            <div className="text-blue-100 mb-2">{profile.role}</div>
             <div className="flex flex-col gap-2 w-full mt-4">
               <div className="flex items-center gap-2 text-white text-sm">
                 <FiCalendar /> {profile.nip || "-"}
               </div>
               <div className="flex items-center gap-2 text-white text-sm">
-                <FiMail /> {profile.user.email}
+                <FiMail /> {profile.email}
               </div>
               <div className="flex items-center gap-2 text-white text-sm">
                 <FiPhone /> {profile.noHp || "-"}
               </div>
+              <div className="flex items-center gap-2 text-white text-sm">
+                <FiMapPin /> {profile.alamat || "-"}
+              </div>
 
               <div className="flex items-center gap-2 mt-2">
                 <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">
-                  {profile.user.role}
+                  {profile.role}
                 </span>
               </div>
             </div>
@@ -218,7 +221,17 @@ const ProfileGuru = () => {
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setEditing(true)}
+                  onClick={() => {
+                    setEditForm((prev) => ({
+                      ...prev,
+                      nip: profile.nip || "",
+                      name: profile.name,
+                      email: profile.email,
+                      noHp: profile.noHp || "",
+                      alamat: profile.alamat || "",
+                    }));
+                    setEditing(true);
+                  }}
                   className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white px-4 py-2 rounded-lg font-semibold flex items-center gap-2 shadow"
                 >
                   <FiEdit2 /> Edit
@@ -236,17 +249,13 @@ const ProfileGuru = () => {
                 <div className="flex items-center gap-2 text-gray-500">
                   <FiUser /> Nama Lengkap
                 </div>
-                <div className="text-gray-900 font-medium">
-                  {profile.user.name}
-                </div>
+                <div className="text-gray-900 font-medium">{profile.name}</div>
               </div>
               <div className="flex items-center justify-between py-4">
                 <div className="flex items-center gap-2 text-gray-500">
                   <FiMail /> Email
                 </div>
-                <div className="text-gray-900 font-medium">
-                  {profile.user.email}
-                </div>
+                <div className="text-gray-900 font-medium">{profile.email}</div>
               </div>
               <div className="flex items-center justify-between py-4">
                 <div className="flex items-center gap-2 text-gray-500">
@@ -266,10 +275,18 @@ const ProfileGuru = () => {
               </div>
               <div className="flex items-center justify-between py-4">
                 <div className="flex items-center gap-2 text-gray-500">
+                  <FiMapPin /> Alamat
+                </div>
+                <div className="text-gray-900 font-medium">
+                  {profile.alamat || "-"}
+                </div>
+              </div>
+              <div className="flex items-center justify-between py-4">
+                <div className="flex items-center gap-2 text-gray-500">
                   <FiUsers /> Role
                 </div>
                 <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">
-                  {profile.user.role}
+                  {profile.role}
                 </span>
               </div>
             </div>
@@ -301,6 +318,22 @@ const ProfileGuru = () => {
                         setEditForm((prev) => ({
                           ...prev,
                           name: e.target.value,
+                        }))
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      NIP
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.nip || ""}
+                      onChange={(e) =>
+                        setEditForm((prev) => ({
+                          ...prev,
+                          nip: e.target.value,
                         }))
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200"

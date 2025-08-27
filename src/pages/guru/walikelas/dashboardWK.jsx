@@ -1,35 +1,74 @@
 import React, { useEffect, useState } from "react";
+import { getReportById } from "../../../api/reports";
 import axios from "../../../api/axios";
 import { useNavigate } from "react-router-dom";
 import { FiUsers, FiFileText, FiAward, FiAlertTriangle } from "react-icons/fi";
 
 const DashboardWaliKelas = () => {
   const [students, setStudents] = useState([]);
-  const [reports, setReports] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
+  const [studentsTotal, setStudentsTotal] = useState(0);
+  const [studentsPage, setStudentsPage] = useState(1);
+  const [studentsSearch, setStudentsSearch] = useState("");
+  const studentsLimit = 20;
 
+  const [reports, setReports] = useState([]);
+  const [reportsTotal, setReportsTotal] = useState(0);
+  const [reportsPage, setReportsPage] = useState(1);
+  const [reportsSearch, setReportsSearch] = useState("");
+  const reportsLimit = 20;
+  const [loadingStudents, setLoadingStudents] = useState(true);
+  const [loadingReports, setLoadingReports] = useState(true);
+  const [error, setError] = useState(null);
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
+    const fetchReports = async () => {
+      setLoadingReports(true);
       setError(null);
       try {
-        // Ganti endpoint sesuai backend Anda
-        const resSiswa = await axios.get("/walikelas/students");
-        const resLaporan = await axios.get("/walikelas/reports");
-        setStudents(resSiswa.data.students || []);
+        let laporanQuery = `/walikelas/reports?limit=${reportsLimit}&offset=${
+          (reportsPage - 1) * reportsLimit
+        }`;
+        if (reportsSearch)
+          laporanQuery += `&search=${encodeURIComponent(reportsSearch)}`;
+        const resLaporan = await axios.get(laporanQuery);
         setReports(resLaporan.data.reports || []);
+        setReportsTotal(resLaporan.data.total || 0);
       } catch (err) {
-        setError("Gagal memuat data dashboard wali kelas");
+        setError("Gagal memuat data laporan");
       } finally {
-        setLoading(false);
+        setLoadingReports(false);
       }
     };
-    fetchData();
-  }, []);
+    fetchReports();
+  }, [reportsPage, reportsSearch]);
+  const navigate = useNavigate();
+  const [showModal, setShowModal] = useState(false);
+  const [detailLaporan, setDetailLaporan] = useState(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [errorDetail, setErrorDetail] = useState(null);
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  useEffect(() => {
+    const fetchStudents = async () => {
+      setLoadingStudents(true);
+      setError(null);
+      try {
+        let siswaQuery = `/walikelas/students?limit=${studentsLimit}&offset=${
+          (studentsPage - 1) * studentsLimit
+        }`;
+        if (studentsSearch)
+          siswaQuery += `&search=${encodeURIComponent(studentsSearch)}`;
+        const resSiswa = await axios.get(siswaQuery);
+        setStudents(resSiswa.data.students || []);
+        setStudentsTotal(resSiswa.data.total || 0);
+      } catch (err) {
+        setError("Gagal memuat data siswa");
+      } finally {
+        setLoadingStudents(false);
+      }
+    };
+    fetchStudents();
+  }, [studentsPage, studentsSearch]);
+
+  // Loading seluruh halaman dihapus, loading hanya di tabel siswa
   if (error) return <div className="p-6 text-red-500">{error}</div>;
 
   // Stats
@@ -41,6 +80,27 @@ const DashboardWaliKelas = () => {
   const totalPrestasi = reports.filter(
     (r) => r.item?.tipe === "prestasi"
   ).length;
+
+  // Fungsi untuk buka modal detail laporan
+  const handleOpenDetail = async (id) => {
+    setShowModal(true);
+    setLoadingDetail(true);
+    setErrorDetail(null);
+    try {
+      const res = await getReportById(id);
+      setDetailLaporan(res.data);
+    } catch (err) {
+      setErrorDetail("Gagal memuat detail laporan");
+    } finally {
+      setLoadingDetail(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setDetailLaporan(null);
+    setErrorDetail(null);
+  };
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto min-h-screen bg-gradient-to-br from-blue-50 to-white">
@@ -102,100 +162,290 @@ const DashboardWaliKelas = () => {
 
       {/* Daftar Siswa */}
       <div className="bg-white rounded-2xl shadow-xl p-6 mb-10">
-        <h2 className="text-lg font-bold mb-4 text-blue-900">
-          Daftar Siswa di Kelas Anda
-        </h2>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+          <h2 className="text-lg font-bold text-blue-900">
+            Daftar Siswa di Kelas Anda
+          </h2>
+          <input
+            type="text"
+            className="border border-slate-300 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            placeholder="Cari nama/NISN siswa..."
+            value={studentsSearch}
+            onChange={(e) => {
+              setStudentsSearch(e.target.value);
+              setStudentsPage(1);
+            }}
+            style={{ minWidth: 220 }}
+          />
+        </div>
         <div className="overflow-x-auto rounded-xl">
-          <table className="min-w-full text-sm">
-            <thead>
-              <tr className="bg-blue-50 text-blue-900">
-                <th className="py-2 px-3 text-left font-semibold">NISN</th>
-                <th className="py-2 px-3 text-left font-semibold">Nama</th>
-                <th className="py-2 px-3 text-left font-semibold">Angkatan</th>
-                <th className="py-2 px-3 text-left font-semibold">Email</th>
-                <th className="py-2 px-3 text-center font-semibold">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {students.map((siswa) => (
-                <tr
-                  key={siswa.nisn}
-                  className="border-b hover:bg-blue-50 transition"
-                >
-                  <td className="py-2 px-3">{siswa.nisn}</td>
-                  <td className="py-2 px-3 font-medium">{siswa.user?.name}</td>
-                  <td className="py-2 px-3">{siswa.angkatan?.tahun}</td>
-                  <td className="py-2 px-3">{siswa.user?.email}</td>
-                  <td className="py-2 px-3 text-center">
-                    <button
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg font-semibold text-xs shadow"
-                      onClick={() => navigate(`/walikelas/siswa/${siswa.nisn}`)}
-                    >
-                      Detail
-                    </button>
-                  </td>
+          {loadingStudents ? (
+            <div className="py-8 text-center">Loading...</div>
+          ) : (
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="bg-blue-50 text-blue-900">
+                  <th className="py-2 px-3 text-left font-semibold">NISN</th>
+                  <th className="py-2 px-3 text-left font-semibold">Nama</th>
+                  <th className="py-2 px-3 text-left font-semibold">
+                    Angkatan
+                  </th>
+                  <th className="py-2 px-3 text-left font-semibold">Email</th>
+                  <th className="py-2 px-3 text-center font-semibold">Aksi</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {students.map((siswa) => (
+                  <tr
+                    key={siswa.nisn}
+                    className="border-b hover:bg-blue-50 transition"
+                  >
+                    <td className="py-2 px-3">{siswa.nisn}</td>
+                    <td className="py-2 px-3 font-medium">
+                      {siswa.user?.name}
+                    </td>
+                    <td className="py-2 px-3">{siswa.angkatan?.tahun}</td>
+                    <td className="py-2 px-3">{siswa.user?.email}</td>
+                    <td className="py-2 px-3 text-center">
+                      <button
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg font-semibold text-xs shadow"
+                        onClick={() =>
+                          navigate(`/walikelas/siswa/${siswa.nisn}`)
+                        }
+                      >
+                        Detail
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+        {/* Pagination Siswa */}
+        <div className="flex justify-end gap-2 mt-4">
+          <button
+            className="px-3 py-1 rounded bg-slate-200 text-slate-700 text-xs font-semibold disabled:opacity-50"
+            onClick={() => setStudentsPage((p) => Math.max(1, p - 1))}
+            disabled={studentsPage === 1}
+          >
+            Prev
+          </button>
+          <span className="text-xs py-1">
+            Page {studentsPage} of{" "}
+            {Math.ceil(studentsTotal / studentsLimit) || 1}
+          </span>
+          <button
+            className="px-3 py-1 rounded bg-slate-200 text-slate-700 text-xs font-semibold disabled:opacity-50"
+            onClick={() => setStudentsPage((p) => p + 1)}
+            disabled={studentsPage >= Math.ceil(studentsTotal / studentsLimit)}
+          >
+            Next
+          </button>
         </div>
       </div>
 
       {/* Daftar Laporan */}
       <div className="bg-white rounded-2xl shadow-xl p-6">
-        <h2 className="text-lg font-bold mb-4 text-blue-900">
-          Daftar Laporan Siswa di Kelas Anda
-        </h2>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+          <h2 className="text-lg font-bold text-blue-900">
+            Daftar Laporan Siswa di Kelas Anda
+          </h2>
+          <input
+            type="text"
+            className="border border-slate-300 rounded px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            placeholder="Cari nama/NISN siswa..."
+            value={reportsSearch}
+            onChange={(e) => {
+              setReportsSearch(e.target.value);
+              setReportsPage(1);
+            }}
+            style={{ minWidth: 220 }}
+          />
+        </div>
         <div className="overflow-x-auto rounded-xl">
-          <table className="min-w-full text-sm">
-            <thead>
-              <tr className="bg-blue-50 text-blue-900">
-                <th className="py-2 px-3 text-left font-semibold">Tanggal</th>
-                <th className="py-2 px-3 text-left font-semibold">NISN</th>
-                <th className="py-2 px-3 text-left font-semibold">
-                  Nama Siswa
-                </th>
-                <th className="py-2 px-3 text-center font-semibold">Tipe</th>
-                <th className="py-2 px-3 text-left font-semibold">Nama Item</th>
-                <th className="py-2 px-3 text-center font-semibold">Point</th>
-                <th className="py-2 px-3 text-left font-semibold">Reporter</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reports.map((lap) => (
-                <tr
-                  key={lap.id}
-                  className="border-b hover:bg-blue-50 transition"
-                >
-                  <td className="py-2 px-3">
-                    {new Date(lap.tanggal).toLocaleDateString()}
-                  </td>
-                  <td className="py-2 px-3">{lap.student?.nisn}</td>
-                  <td className="py-2 px-3">{lap.student?.user?.name}</td>
-                  <td className="py-2 px-3 text-center">
-                    {lap.item?.tipe === "pelanggaran" ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
-                        <FiAlertTriangle /> Pelanggaran
-                      </span>
-                    ) : lap.item?.tipe === "prestasi" ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
-                        <FiAward /> Prestasi
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700">
-                        -
-                      </span>
-                    )}
-                  </td>
-                  <td className="py-2 px-3">{lap.item?.nama}</td>
-                  <td className="py-2 px-3 text-center">{lap.item?.point}</td>
-                  <td className="py-2 px-3">{lap.reporter?.name}</td>
+          {loadingReports ? (
+            <div className="py-8 text-center">Loading...</div>
+          ) : (
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="bg-blue-50 text-blue-900">
+                  <th className="py-2 px-3 text-left font-semibold">Tanggal</th>
+                  <th className="py-2 px-3 text-left font-semibold">NISN</th>
+                  <th className="py-2 px-3 text-left font-semibold">
+                    Nama Siswa
+                  </th>
+                  <th className="py-2 px-3 text-center font-semibold">Tipe</th>
+                  <th className="py-2 px-3 text-left font-semibold">
+                    Nama Item
+                  </th>
+                  <th className="py-2 px-3 text-center font-semibold">Point</th>
+                  <th className="py-2 px-3 text-left font-semibold">
+                    Reporter
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {reports.map((lap) => (
+                  <tr
+                    key={lap.id}
+                    className="border-b hover:bg-blue-100 transition cursor-pointer group"
+                    onClick={(e) => {
+                      // Cegah trigger jika klik tombol Detail
+                      if (e.target.closest("button")) return;
+                      handleOpenDetail(lap.id);
+                    }}
+                  >
+                    <td className="py-2 px-3">
+                      {new Date(lap.tanggal).toLocaleDateString()}
+                    </td>
+                    <td className="py-2 px-3">{lap.student?.nisn}</td>
+                    <td className="py-2 px-3">{lap.student?.user?.name}</td>
+                    <td className="py-2 px-3 text-center">
+                      {lap.item?.tipe === "pelanggaran" ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
+                          <FiAlertTriangle /> Pelanggaran
+                        </span>
+                      ) : lap.item?.tipe === "prestasi" ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
+                          <FiAward /> Prestasi
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700">
+                          -
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-2 px-3">{lap.item?.nama}</td>
+                    <td className="py-2 px-3 text-center">
+                      {lap.item?.tipe === "pelanggaran"
+                        ? `-${lap.item?.point || 0}`
+                        : lap.item?.tipe === "prestasi"
+                        ? `+${lap.item?.point || 0}`
+                        : lap.item?.point || 0}
+                    </td>
+                    <td className="py-2 px-3">{lap.reporter?.name}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+        {/* Pagination Laporan */}
+        <div className="flex justify-end gap-2 mt-4">
+          <button
+            className="px-3 py-1 rounded bg-slate-200 text-slate-700 text-xs font-semibold disabled:opacity-50"
+            onClick={() => setReportsPage((p) => Math.max(1, p - 1))}
+            disabled={reportsPage === 1}
+          >
+            Prev
+          </button>
+          <span className="text-xs py-1">
+            Page {reportsPage} of {Math.ceil(reportsTotal / reportsLimit) || 1}
+          </span>
+          <button
+            className="px-3 py-1 rounded bg-slate-200 text-slate-700 text-xs font-semibold disabled:opacity-50"
+            onClick={() => setReportsPage((p) => p + 1)}
+            disabled={reportsPage >= Math.ceil(reportsTotal / reportsLimit)}
+          >
+            Next
+          </button>
         </div>
       </div>
+      {/* Modal Detail Laporan */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-xl shadow-lg max-w-lg w-full p-6 relative animate-fadeIn">
+            <button
+              className="absolute top-2 right-3 text-gray-500 hover:text-red-600 text-xl font-bold"
+              onClick={handleCloseModal}
+              aria-label="Tutup"
+            >
+              ×
+            </button>
+            <h2 className="text-xl font-bold mb-4 text-blue-900">
+              Detail Laporan
+            </h2>
+            {loadingDetail ? (
+              <div className="py-8 text-center">Loading...</div>
+            ) : errorDetail ? (
+              <div className="py-8 text-center text-red-500">{errorDetail}</div>
+            ) : detailLaporan ? (
+              <div className="space-y-3">
+                <div>
+                  <b>Tanggal:</b>{" "}
+                  {detailLaporan.tanggal
+                    ? new Date(detailLaporan.tanggal).toLocaleDateString(
+                        "id-ID"
+                      )
+                    : "-"}
+                </div>
+                <div>
+                  <b>Tipe:</b> {detailLaporan.item?.tipe || "-"}
+                </div>
+                <div>
+                  <b>Item:</b> {detailLaporan.item?.nama || "-"}
+                </div>
+                <div>
+                  <b>Poin:</b>{" "}
+                  {detailLaporan.item?.tipe === "pelanggaran"
+                    ? `-${detailLaporan.item?.point || 0}`
+                    : `+${detailLaporan.item?.point || 0}`}
+                </div>
+                <div>
+                  <b>Pelapor:</b> {detailLaporan.reporter || "-"}
+                </div>
+                <div>
+                  <b>Deskripsi:</b> {detailLaporan.deskripsi || "-"}
+                </div>
+                <div>
+                  <b>Bukti:</b>
+                  <br />
+                  {(() => {
+                    const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+                    let buktiArr = [];
+                    if (detailLaporan.bukti) {
+                      if (Array.isArray(detailLaporan.bukti))
+                        buktiArr = detailLaporan.bukti;
+                      else if (
+                        typeof detailLaporan.bukti === "string" &&
+                        detailLaporan.bukti.trim() !== ""
+                      )
+                        buktiArr = [detailLaporan.bukti];
+                    }
+                    return buktiArr.length > 0 ? (
+                      <div className="flex flex-wrap gap-3 mt-2">
+                        {buktiArr.map((bukti, idx) => (
+                          <div key={idx} className="flex flex-col items-center">
+                            <img
+                              src={`${BASE_URL}${bukti}`}
+                              alt="Bukti"
+                              className="w-20 h-20 object-cover rounded border mb-1"
+                              onError={(e) =>
+                                (e.target.src = "/placeholder-image.png")
+                              }
+                            />
+                            <a
+                              href={`${BASE_URL}${bukti}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-blue-600 underline"
+                            >
+                              Lihat
+                            </a>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    );
+                  })()}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

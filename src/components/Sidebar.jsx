@@ -26,6 +26,7 @@ import {
 
 const Sidebar = ({ onKelolaUserClick }) => {
   const [role, setRole] = useState("");
+  const [isWaliKelas, setIsWaliKelas] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showUserSubmenu, setShowUserSubmenu] = useState(false);
   const [showMasterDataSubmenu, setShowMasterDataSubmenu] = useState(false);
@@ -39,6 +40,13 @@ const Sidebar = ({ onKelolaUserClick }) => {
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
     if (storedRole) setRole(storedRole);
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setIsWaliKelas(!!user.isWaliKelas);
+      } catch {}
+    }
   }, []);
 
   const handleLogout = () => {
@@ -222,6 +230,20 @@ const Sidebar = ({ onKelolaUserClick }) => {
                     <span className="font-medium">Laporan Saya</span>
                   )}
                 </Link>
+                {isWaliKelas && (
+                  <Link
+                    to="/walikelas/dashboard"
+                    className={`flex items-center ${
+                      isCollapsed ? "justify-center px-3" : "gap-3 px-4"
+                    } py-3 rounded-xl hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-indigo-500/10 transition-all duration-200 group`}
+                    title={isCollapsed ? "Wali Kelas" : ""}
+                  >
+                    <FiUsers className="text-lg text-yellow-300 group-hover:text-white transition-colors" />
+                    {!isCollapsed && (
+                      <span className="font-medium">Wali Kelas</span>
+                    )}
+                  </Link>
+                )}
                 <Link
                   to="/guru/profile"
                   className={`flex items-center ${
@@ -395,6 +417,21 @@ const Sidebar = ({ onKelolaUserClick }) => {
                   <FiUser className="text-cyan-300 group-hover:text-white transition-colors text-sm" />
                   <span>Export Poin SIswa</span>
                 </Link>
+
+                {isWaliKelas && (
+                  <Link
+                    to="/walikelas/dashboard"
+                    className={`flex items-center ${
+                      isCollapsed ? "justify-center px-3" : "gap-3 px-4"
+                    } py-3 rounded-xl hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-indigo-500/10 transition-all duration-200 group`}
+                    title={isCollapsed ? "Wali Kelas" : ""}
+                  >
+                    <FiUsers className="text-lg text-yellow-300 group-hover:text-white transition-colors" />
+                    {!isCollapsed && (
+                      <span className="font-medium">Wali Kelas</span>
+                    )}
+                  </Link>
+                )}
               </div>
             )}
 
