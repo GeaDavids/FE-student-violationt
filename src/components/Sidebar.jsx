@@ -34,6 +34,7 @@ const Sidebar = ({ onKelolaUserClick }) => {
   const [showBKLaporanSubmenu, setShowBKLaporanSubmenu] = useState(false);
   const [showBKMasterDataSubmenu, setShowBKMasterDataSubmenu] = useState(false);
   const [showBKMonitoringSubmenu, setShowBKMonitoringSubmenu] = useState(false);
+  const [showBKExportSubmenu, setShowBKExportSubmenu] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -74,6 +75,10 @@ const Sidebar = ({ onKelolaUserClick }) => {
     setShowBKMonitoringSubmenu(!showBKMonitoringSubmenu);
   };
 
+  const toggleBKExportSubmenu = () => {
+    setShowBKExportSubmenu(!showBKExportSubmenu);
+  };
+
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
     // Collapse semua submenu ketika sidebar di-collapse
@@ -85,6 +90,7 @@ const Sidebar = ({ onKelolaUserClick }) => {
       setShowBKLaporanSubmenu(false);
       setShowBKMasterDataSubmenu(false);
       setShowBKMonitoringSubmenu(false);
+      setShowBKExportSubmenu(false);
     }
   };
 
@@ -151,7 +157,7 @@ const Sidebar = ({ onKelolaUserClick }) => {
           isCollapsed ? "p-2" : "p-4"
         } overflow-hidden transition-all duration-300`}
       >
-        <div className="h-full overflow-y-auto scrollbar-hide">
+        <div className="h-full overflow-y-auto scrollbar-hide scroll-smooth">
           <nav
             className={`${
               isCollapsed ? "space-y-1" : "space-y-2"
@@ -373,27 +379,55 @@ const Sidebar = ({ onKelolaUserClick }) => {
                     </div>
                   )}
                 </div>
+
+                {/* Export Data */}
+                <div>
+                  <button
+                    onClick={toggleBKExportSubmenu}
+                    className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-indigo-500/10 transition-all duration-200 group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <FiDownload className="text-lg text-purple-300 group-hover:text-white transition-colors" />
+                      {!isCollapsed && (
+                        <span className="font-medium">Export Data</span>
+                      )}
+                    </div>
+                    {showBKExportSubmenu ? (
+                      <FiChevronDown className="text-sm text-slate-200 group-hover:text-white transition-all duration-200" />
+                    ) : (
+                      <FiChevronRight className="text-sm text-slate-200 group-hover:text-white transition-all duration-200" />
+                    )}
+                  </button>
+
+                  {showBKExportSubmenu && (
+                    <div className="ml-4 mt-2 space-y-1 border-l-2 border-purple-400/30 pl-4">
+                      <Link
+                        to="/bk/export-laporan"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500/5 transition-all duration-200 group text-sm"
+                      >
+                        <FiFileText className="text-purple-300 group-hover:text-white transition-colors text-sm" />
+                        <span>Export Laporan</span>
+                      </Link>
+                      <Link
+                        to="/bk/export-poin-siswa"
+                        className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500/5 transition-all duration-200 group text-sm"
+                      >
+                        <FiBarChart2 className="text-purple-300 group-hover:text-white transition-colors text-sm" />
+                        <span>Export Poin Siswa</span>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+
+                {/* Profile */}
                 <Link
                   to="/guru/profile"
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500/5 transition-all duration-200 group text-sm"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-indigo-500/10 transition-all duration-200 group"
                 >
-                  <FiUser className="text-cyan-300 group-hover:text-white transition-colors text-sm" />
-                  <span>Profil</span>
-                </Link>
-                <Link
-                  to="/bk/export-laporan"
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500/5 transition-all duration-200 group text-sm"
-                >
-                  <FiUser className="text-cyan-300 group-hover:text-white transition-colors text-sm" />
-                  <span>Export Laporan</span>
-                </Link>
-
-                <Link
-                  to="/bk/export-poin-siswa"
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500/5 transition-all duration-200 group text-sm"
-                >
-                  <FiUser className="text-cyan-300 group-hover:text-white transition-colors text-sm" />
-                  <span>Export Poin SIswa</span>
+                  <FiUser className="text-lg text-emerald-300 group-hover:text-white transition-colors" />
+                  {!isCollapsed && (
+                    <span className="font-medium">Profile</span>
+                  )}
                 </Link>
               </div>
             )}

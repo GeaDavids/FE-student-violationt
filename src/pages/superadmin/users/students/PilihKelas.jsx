@@ -126,13 +126,15 @@ const PilihKelas = () => {
                 </p>
               </div>
             </div>
-            <Link
-              to="/import-siswa"
-              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md transition-all duration-200 hover:scale-105 font-medium text-sm"
-            >
-              <FiDownload className="text-sm" />
-              Import Data
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/import-siswa"
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md transition-all duration-200 hover:scale-105 font-medium text-sm"
+              >
+                <FiDownload className="text-sm" />
+                Import Data
+              </Link>
+            </div>
           </div>
         </div>
 
