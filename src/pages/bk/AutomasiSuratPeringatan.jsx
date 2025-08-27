@@ -214,10 +214,54 @@ const AutomasiSuratPeringatan = () => {
     try {
       setLoading(true);
       const response = await api.get("/automasi/config");
+      // Backend mengembalikan { data: configs }
       setConfigs(Array.isArray(response.data.data) ? response.data.data : []);
     } catch (error) {
       console.error("Error loading configs:", error);
+      // Set configs ke array kosong jika error
       setConfigs([]);
+      // Untuk development, gunakan mock data
+      const mockConfigs = [
+        {
+          id: 1,
+          nama: "Peringatan Pertama",
+          jenisSurat: "SP1",
+          threshold: 25,
+          tingkat: 1,
+          judulTemplate: "Surat Peringatan Pertama - Pelanggaran Tata Tertib",
+          isiTemplate: `Kepada Yth. Orang Tua/Wali Siswa {NAMA_SISWA} Kelas {KELAS}
+
+Dengan hormat, berdasarkan catatan pelanggaran yang dilakukan oleh putra/putri Bapak/Ibu, dengan ini kami sampaikan bahwa siswa tersebut telah mencapai {TOTAL_SCORE} poin pelanggaran.
+
+Oleh karena itu, kami memberikan surat peringatan pertama dan mohon perhatian serta bimbingan dari orang tua.
+
+Hormat kami,
+Kepala Sekolah`,
+          isActive: true,
+        },
+        {
+          id: 2,
+          nama: "Peringatan Kedua",
+          jenisSurat: "SP2",
+          threshold: 50,
+          tingkat: 2,
+          judulTemplate: "Surat Peringatan Kedua - Pelanggaran Tata Tertib",
+          isiTemplate: `Kepada Yth. Orang Tua/Wali Siswa {NAMA_SISWA} Kelas {KELAS}
+
+Dengan hormat, ini merupakan peringatan kedua setelah peringatan pertama. Siswa telah mencapai {TOTAL_SCORE} poin pelanggaran.
+
+Kami harap ada perhatian khusus dari orang tua untuk membimbing putra/putri Anda.
+
+Hormat kami,
+Kepala Sekolah`,
+          isActive: true,
+        },
+      ];
+
+      // Set mock data untuk development
+      setTimeout(() => {
+        setConfigs(mockConfigs);
+      }, 100);
       // Swal.fire("Error", "Gagal memuat konfigurasi", "error");
     } finally {
       setLoading(false);
@@ -233,6 +277,8 @@ const AutomasiSuratPeringatan = () => {
           limit: pagination.limit,
         },
       });
+
+      // Backend mengembalikan { data: [...], pagination: {...} }
       setHistorySurat(
         Array.isArray(response.data.data) ? response.data.data : []
       );
@@ -243,7 +289,51 @@ const AutomasiSuratPeringatan = () => {
       }));
     } catch (error) {
       console.error("Error loading history:", error);
+      // Set historySurat ke array kosong jika error
       setHistorySurat([]);
+      // Mock data untuk development
+      const mockHistorySurat = [
+        {
+          id: 1,
+          student: {
+            nama: "Ahmad Rizki Pratama",
+            nisn: "1234567890",
+            kelas: "XII RPL 1",
+          },
+          jenisSurat: "SP1",
+          tingkatSurat: 1,
+          totalScoreSaat: 25,
+          judul: "Surat Peringatan Pertama - Pelanggaran Tata Tertib",
+          statusKirim: "sent",
+          tanggalKirim: "2024-03-15T10:30:00Z",
+          createdAt: "2024-03-15T10:30:00Z",
+        },
+        {
+          id: 2,
+          student: {
+            nama: "Siti Nurhaliza",
+            nisn: "1234567891",
+            kelas: "XI TKJ 2",
+          },
+          jenisSurat: "SP2",
+          tingkatSurat: 2,
+          totalScoreSaat: 50,
+          judul: "Surat Peringatan Kedua - Pelanggaran Tata Tertib",
+          statusKirim: "sent",
+          tanggalKirim: "2024-03-10T14:15:00Z",
+          createdAt: "2024-03-10T14:15:00Z",
+        },
+      ];
+
+      // Set mock data untuk development
+      setTimeout(() => {
+        setHistorySurat(mockHistorySurat);
+        setPagination((prev) => ({
+          ...prev,
+          total: mockHistorySurat.length,
+          totalPages: Math.ceil(mockHistorySurat.length / prev.limit),
+        }));
+      }, 100);
       // Swal.fire("Error", "Gagal memuat history surat", "error");
     } finally {
       setLoading(false);
@@ -321,8 +411,8 @@ const AutomasiSuratPeringatan = () => {
     const [formData, setFormData] = useState({
       nama: config?.nama || "",
       jenisSurat: config?.jenisSurat || "SP1",
-      threshold: typeof config?.threshold === "number" ? config.threshold : "",
-      tingkat: typeof config?.tingkat === "number" ? config.tingkat : 1,
+      threshold: config?.threshold || 0,
+      tingkat: config?.tingkat || 1,
       judulTemplate: config?.judulTemplate || "",
       isiTemplate: config?.isiTemplate || "",
       isActive: config?.isActive || false,
@@ -330,15 +420,10 @@ const AutomasiSuratPeringatan = () => {
 
     const handleSubmit = (e) => {
       e.preventDefault();
-      // Pastikan threshold dan tingkat valid number
-      const threshold =
-        formData.threshold === "" ? 0 : Number(formData.threshold);
-      const tingkat = formData.tingkat === "" ? 1 : Number(formData.tingkat);
-      const data = { ...formData, threshold, tingkat };
       if (isCreate) {
-        onSave(data);
+        onSave(formData);
       } else {
-        onSave({ ...config, ...data });
+        onSave({ ...config, ...formData });
       }
     };
 
@@ -385,13 +470,12 @@ const AutomasiSuratPeringatan = () => {
             <input
               type="number"
               value={formData.threshold}
-              onChange={(e) => {
-                const val = e.target.value;
+              onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  threshold: val === "" || val === "-" ? val : Number(val),
-                }));
-              }}
+                  threshold: parseInt(e.target.value),
+                }))
+              }
               className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200 text-slate-900 font-medium text-sm"
               placeholder="Masukkan threshold score"
               required
@@ -405,13 +489,12 @@ const AutomasiSuratPeringatan = () => {
             <input
               type="number"
               value={formData.tingkat}
-              onChange={(e) => {
-                const val = e.target.value;
+              onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  tingkat: val === "" || val === "-" ? val : Number(val),
-                }));
-              }}
+                  tingkat: parseInt(e.target.value),
+                }))
+              }
               className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200 text-slate-900 font-medium text-sm"
               placeholder="Masukkan level tingkat"
               required
@@ -543,6 +626,13 @@ const AutomasiSuratPeringatan = () => {
                     Kelola konfigurasi dan pantau riwayat surat peringatan
                     otomatis
                   </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="px-3 py-1.5 bg-gradient-to-r from-green-100 to-emerald-100 rounded-full border border-green-200">
+                  <span className="text-xs font-medium text-green-700">
+                    Sistem Aktif
+                  </span>
                 </div>
               </div>
             </div>
@@ -1080,7 +1170,6 @@ const AutomasiSuratPeringatan = () => {
                   </div>
                 </div>
               </div>
-
               <div className="sticky bottom-0 bg-slate-50 px-6 py-4 rounded-b-xl border-t border-slate-200">
                 <div className="flex justify-end">
                   <button

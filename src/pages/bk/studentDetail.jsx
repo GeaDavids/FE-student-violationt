@@ -16,24 +16,6 @@ const StudentDetail = () => {
   const [suratPeringatan, setSuratPeringatan] = useState([]);
   const [loadingSurat, setLoadingSurat] = useState(false);
 
-  // Langkah 1: Tambahkan fungsi fetchSuratPeringatan dengan filter tahun ajaran
-  const fetchSuratPeringatan = async (studentNisn, tahunAjaranId = "all") => {
-    try {
-      setLoadingSurat(true);
-      let url = `/automasi/history?nisn=${studentNisn}`;
-      if (tahunAjaranId && tahunAjaranId !== "all") {
-        url += `&tahunAjaranId=${tahunAjaranId}`;
-      }
-      const response = await api.get(url);
-      setSuratPeringatan(response.data.data || []);
-    } catch (error) {
-      console.error("Error fetching surat peringatan:", error);
-      setSuratPeringatan([]);
-    } finally {
-      setLoadingSurat(false);
-    }
-  };
-
   // Icon Components
   const ArrowLeftIcon = () => (
     <svg
@@ -147,9 +129,9 @@ const StudentDetail = () => {
       }
     };
     fetchInfo();
-    // Fetch surat peringatan sesuai tahun ajaran yang dipilih
-    fetchSuratPeringatan(nisn, selectedYear);
-  }, [nisn, selectedYear]);
+    // Surat peringatan juga hanya fetch sekali
+    fetchSuratPeringatan(nisn);
+  }, [nisn]);
 
   // Fetch laporan (riwayat laporan) sesuai tahun ajaran
   useEffect(() => {
@@ -169,6 +151,20 @@ const StudentDetail = () => {
     };
     fetchLaporan();
   }, [nisn, selectedYear]);
+
+  // Fungsi untuk mengambil surat peringatan
+  const fetchSuratPeringatan = async (studentNisn) => {
+    try {
+      setLoadingSurat(true);
+      const response = await api.get(`/automasi/history?nisn=${studentNisn}`);
+      setSuratPeringatan(response.data.data || []);
+    } catch (error) {
+      console.error("Error fetching surat peringatan:", error);
+      setSuratPeringatan([]);
+    } finally {
+      setLoadingSurat(false);
+    }
+  };
 
   // Fungsi untuk melihat detail surat peringatan
   const viewSuratDetail = async (surat) => {
@@ -315,9 +311,7 @@ const StudentDetail = () => {
 
   if (!data) return null;
 
-  // Defensive fallback: siswa may be undefined if backend response is malformed
-  const siswa = data.siswa || {};
-  const laporan = data.laporan || [];
+  const { siswa, laporan } = data || {};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -366,7 +360,7 @@ const StudentDetail = () => {
                     NISN
                   </label>
                   <p className="text-sm font-semibold text-slate-900">
-                    {siswa.nisn}
+                    {siswa?.nisn || "-"}
                   </p>
                 </div>
                 <div>
@@ -374,7 +368,7 @@ const StudentDetail = () => {
                     Nama Lengkap
                   </label>
                   <p className="text-sm font-semibold text-slate-900">
-                    {siswa.nama}
+                    {siswa?.nama || "-"}
                   </p>
                 </div>
                 <div>
@@ -382,7 +376,7 @@ const StudentDetail = () => {
                     Kelas
                   </label>
                   <p className="text-sm font-semibold text-slate-900">
-                    {siswa.kelas || "-"}
+                    {siswa?.kelas || "-"}
                   </p>
                 </div>
                 <div>
@@ -390,7 +384,7 @@ const StudentDetail = () => {
                     Angkatan
                   </label>
                   <p className="text-sm font-semibold text-slate-900">
-                    {siswa.angkatan}
+                    {siswa?.angkatan || "-"}
                   </p>
                 </div>
                 <div>
@@ -398,7 +392,7 @@ const StudentDetail = () => {
                     Total Score
                   </label>
                   <p className="text-sm font-semibold text-slate-900">
-                    {siswa.totalScore}
+                    {siswa?.totalScore ?? "-"}
                   </p>
                 </div>
               </div>
