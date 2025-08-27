@@ -10,8 +10,6 @@ const StudentList = () => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [tahunOptions, setTahunOptions] = useState([]);
-  const [selectedTahun, setSelectedTahun] = useState("all");
 
   // Icon Components
   const ArrowLeftIcon = () => (
@@ -100,27 +98,12 @@ const StudentList = () => {
   );
 
   useEffect(() => {
-    const fetchTahun = async () => {
-      try {
-        const tahunList = await getTahunAjaran();
-        setTahunOptions(tahunList);
-        // Default tetap 'all', tidak perlu setSelectedTahun di sini
-      } catch {
-        setTahunOptions([]);
-      }
-    };
-    fetchTahun();
-  }, []);
-
-  useEffect(() => {
-    if (!selectedTahun) return;
     const fetchData = async () => {
       setLoading(true);
       setError(null);
       try {
-        // Jika 'all', kirim undefined agar backend handle semua tahun ajaran
-        const tahunParam = selectedTahun === "all" ? undefined : selectedTahun;
-        const res = await bkAPI.getStudentsInClassroom(classroomId, tahunParam);
+        // Ambil data siswa tanpa filter tahun ajaran
+        const res = await bkAPI.getStudentsInClassroom(classroomId);
         setData(res.data.data || []);
       } catch (err) {
         setError("Gagal memuat data siswa");
@@ -129,7 +112,7 @@ const StudentList = () => {
       }
     };
     fetchData();
-  }, [classroomId, selectedTahun]);
+  }, [classroomId]);
 
   const getScoreColor = (score) => {
     if (score <= -300) return "text-red-600 bg-red-50 border-red-200";
@@ -189,25 +172,7 @@ const StudentList = () => {
 
           {/* Filters */}
           <div className="p-4 border-b border-slate-200/60">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="block text-xs font-semibold text-slate-700">
-                  Tahun Ajaran
-                </label>
-                <select
-                  className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-100 transition-all duration-200 text-slate-900 font-medium text-sm bg-white"
-                  value={selectedTahun}
-                  onChange={(e) => setSelectedTahun(e.target.value)}
-                >
-                  <option value="all">Semua Tahun Ajaran</option>
-                  {tahunOptions.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.tahunAjaran || t.nama || t.tahun || t.id}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-3">
               <div className="space-y-1">
                 <label className="block text-xs font-semibold text-slate-700">
                   Pencarian

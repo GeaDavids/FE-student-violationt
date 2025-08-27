@@ -11,11 +11,19 @@ import bkAPI from "../../api/bk";
 import academicYearAPI from "../../api/academicYear";
 
 const DashboardBK = () => {
+  // Stats for classroom (not used in dashboard cards)
   const [stats, setStats] = useState([]);
+  // Dashboard summary and recent violations
+  const [summary, setSummary] = useState({
+    pelanggaran: 0,
+    prestasi: 0,
+    penanganan: 0,
+    surat: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [recentReports, setRecentReports] = useState([]);
-  const [loadingReports, setLoadingReports] = useState(true);
+  const [recentViolations, setRecentViolations] = useState([]);
+  const [loadingViolations, setLoadingViolations] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -59,35 +67,39 @@ const DashboardBK = () => {
     </svg>
   );
 
+  // Fetch tahun ajaran aktif, dashboard summary, and recent violations
   useEffect(() => {
-    const fetchReports = async () => {
-      setLoadingReports(true);
+    const fetchDashboard = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        // Ganti endpoint ini jika sudah ada endpoint khusus laporan terbaru
-        const res = (await bkAPI.getRecentReports)
-          ? bkAPI.getRecentReports()
-          : Promise.resolve({ data: [] });
-        setRecentReports(res.data.data || []);
+        // Get active academic year
+        const tahunRes = await academicYearAPI.getCurrent();
+        const tahunAjaranId = tahunRes.data?.data?.id;
+        // Fetch summary
+        const resSummary = await bkAPI.getDashboardSummary(tahunAjaranId);
+        setSummary(
+          resSummary.data || {
+            pelanggaran: 0,
+            prestasi: 0,
+            penanganan: 0,
+            surat: 0,
+          }
+        );
+        // Fetch recent violations
+        setLoadingViolations(true);
+        const resViol = await bkAPI.getRecentViolations(tahunAjaranId);
+        setRecentViolations(resViol.data.data || []);
+        setLoadingViolations(false);
       } catch (err) {
-        setRecentReports([]);
+        setError("Gagal memuat data dashboard");
+        setLoadingViolations(false);
       } finally {
-        setLoadingReports(false);
+        setLoading(false);
       }
     };
-    fetchReports();
+    fetchDashboard();
   }, []);
-
-  // Hitung ringkasan total
-  let totalSiswa = 0,
-    totalPelanggaran = 0,
-    totalPrestasi = 0;
-  if (stats) {
-    stats.forEach((k) => {
-      totalSiswa += k.jmlSiswa;
-      totalPelanggaran += k.jmlPelanggaran;
-      totalPrestasi += k.jmlPrestasi;
-    });
-  }
 
   return (
     <div className="p-8 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
@@ -108,28 +120,17 @@ const DashboardBK = () => {
         </button>
       </div>
 
-      {/* Ringkasan total */}
-      <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-        <div className="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-blue-400 animate-fade-in">
-          <div className="flex justify-center mb-2">
-            <FaUserGraduate className="text-blue-500 text-3xl" />
-          </div>
-          <div className="text-3xl font-bold text-blue-700 mb-1">
-            {totalSiswa}
-          </div>
-          <span className="inline-block bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full mb-1">
-            Total Siswa
-          </span>
-        </div>
+      {/* Ringkasan bulan ini */}
+      <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
         <div className="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-red-400 animate-fade-in">
           <div className="flex justify-center mb-2">
             <FaExclamationTriangle className="text-red-500 text-3xl" />
           </div>
           <div className="text-3xl font-bold text-red-600 mb-1">
-            {totalPelanggaran}
+            {summary.pelanggaran}
           </div>
           <span className="inline-block bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full mb-1">
-            Total Pelanggaran
+            Pelanggaran Bulan Ini
           </span>
         </div>
         <div className="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-green-400 animate-fade-in">
@@ -137,10 +138,32 @@ const DashboardBK = () => {
             <FaMedal className="text-green-500 text-3xl" />
           </div>
           <div className="text-3xl font-bold text-green-600 mb-1">
-            {totalPrestasi}
+            {summary.prestasi}
           </div>
           <span className="inline-block bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full mb-1">
-            Total Prestasi
+            Prestasi Bulan Ini
+          </span>
+        </div>
+        <div className="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-yellow-400 animate-fade-in">
+          <div className="flex justify-center mb-2">
+            <FaChalkboardTeacher className="text-yellow-500 text-3xl" />
+          </div>
+          <div className="text-3xl font-bold text-yellow-600 mb-1">
+            {summary.penanganan}
+          </div>
+          <span className="inline-block bg-yellow-100 text-yellow-700 text-xs px-3 py-1 rounded-full mb-1">
+            Penanganan Bulan Ini
+          </span>
+        </div>
+        <div className="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-blue-400 animate-fade-in">
+          <div className="flex justify-center mb-2">
+            <FaExclamationTriangle className="text-blue-500 text-3xl" />
+          </div>
+          <div className="text-3xl font-bold text-blue-600 mb-1">
+            {summary.surat}
+          </div>
+          <span className="inline-block bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full mb-1">
+            Surat Peringatan Bulan Ini
           </span>
         </div>
       </div>
@@ -154,109 +177,126 @@ const DashboardBK = () => {
         <div className="text-center text-red-500 font-semibold">{error}</div>
       ) : (
         <>
-          {/* Visual summary tabel kelas layout baru */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-3 py-2 border-b border-gray-200">
+          {/* Tabel pelanggaran terbaru (tampilan baru) */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mt-8">
+            <div className="flex items-center justify-between bg-gradient-to-r from-gray-50 to-gray-100 px-3 py-2 border-b border-gray-200">
               <h2 className="text-base font-semibold text-gray-800 flex items-center gap-2">
-                <ChartBarIcon />
-                Statistik Kelas
+                <FaExclamationTriangle className="text-red-500" />
+                Pelanggaran Terbaru
               </h2>
+              <button
+                onClick={() => navigate("/bk/laporan-siswa")}
+                className="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold rounded shadow"
+              >
+                Lihat Semua
+              </button>
             </div>
-
             <div className="overflow-x-auto">
               <table className="min-w-full">
                 <thead>
                   <tr className="bg-gradient-to-r from-gray-50 to-gray-100">
-                    <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase rounded-tl-md">
-                      Kode
-                    </th>
                     <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase">
-                      Nama Kelas
+                      Dibuat
                     </th>
-                    <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase">
+                    <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">
                       Siswa
                     </th>
                     <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase">
-                      Pelanggaran
+                      Tipe
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-bold text-gray-700 uppercase">
+                      Tindakan
                     </th>
                     <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase">
-                      Prestasi
+                      Tanggal
                     </th>
-                    <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase rounded-tr-md">
-                      Avg Point
+                    <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase">
+                      Poin
+                    </th>
+                    <th className="px-3 py-2 text-center text-xs font-bold text-gray-700 uppercase">
+                      Pelapor
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {stats && stats.length > 0 ? (
-                    stats.map((kelas, idx) => (
+                  {recentViolations && recentViolations.length > 0 ? (
+                    recentViolations.map((report, idx) => (
                       <tr
-                        key={kelas.id}
-                        className="hover:bg-blue-50 cursor-pointer transition-colors duration-200"
-                        onClick={() =>
-                          navigate(`/bk/classrooms/${kelas.id}/students`)
-                        }
+                        key={idx}
+                        className="hover:bg-red-50 transition-colors duration-150"
                       >
-                        {/* Kode */}
-                        <td className="px-3 py-2 whitespace-nowrap text-center">
-                          <span className="text-xs font-medium text-gray-900 bg-gray-100 px-1.5 py-0.5 rounded">
-                            {kelas.kodeKelas ||
-                              kelas.kode ||
-                              kelas.namaKelas?.split(" ").join("-") ||
-                              "-"}
+                        {/* DIBUAT */}
+                        <td className="px-3 py-2 text-center text-xs text-gray-500 whitespace-nowrap">
+                          {new Date(report.tanggal).toLocaleDateString(
+                            "id-ID",
+                            {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "2-digit",
+                            }
+                          )}
+                          ,{" "}
+                          {new Date(report.tanggal).toLocaleTimeString(
+                            "id-ID",
+                            { hour: "2-digit", minute: "2-digit" }
+                          )}
+                        </td>
+                        {/* SISWA */}
+                        <td className="px-3 py-2 text-left text-xs">
+                          <div className="font-semibold text-gray-800">
+                            {report.student?.nama || "-"}
+                          </div>
+                          <div className="text-gray-500 text-xs">
+                            {report.student?.kelas || "-"} •{" "}
+                            {report.student?.nisn || "-"}
+                          </div>
+                        </td>
+                        {/* TIPE */}
+                        <td className="px-3 py-2 text-center text-xs">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 text-red-500 border border-red-200">
+                            <FaExclamationTriangle className="inline text-red-400" />
                           </span>
                         </td>
-                        {/* Nama Kelas */}
-                        <td className="px-3 py-2 whitespace-nowrap text-center">
-                          <span className="inline-flex text-xs items-center gap-1 text-gray-700 font-semibold">
-                            <span className="flex items-center">X</span>
-                            {kelas.namaKelas}
+                        {/* TINDAKAN */}
+                        <td className="px-3 py-2 text-left text-xs">
+                          <div className="font-semibold text-gray-800">
+                            {report.item?.nama || "-"}
+                          </div>
+                          <div className="text-gray-500 text-xs">
+                            {report.item?.kategori || "Kedisiplinan"}
+                          </div>
+                        </td>
+                        {/* TANGGAL */}
+                        <td className="px-3 py-2 text-center text-xs">
+                          {new Date(report.tanggal).toLocaleDateString(
+                            "id-ID",
+                            { day: "2-digit", month: "long", year: "numeric" }
+                          )}
+                        </td>
+                        {/* POIN */}
+                        <td className="px-3 py-2 text-center text-xs">
+                          <span className="inline-block px-2 py-0.5 rounded-full bg-red-50 text-red-700 font-bold border border-red-200">
+                            -{report.item?.point || 0}
                           </span>
                         </td>
-                        {/* Siswa */}
-                        <td className="px-3 py-2 whitespace-nowrap text-center">
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r gap-1.5 from-gray-100 to-gray-200 text-gray-800">
-                            <FiUsers className="text-[#003366] text-xs" />
-                            {kelas.jmlSiswa}
-                          </span>
-                        </td>
-                        {/* Pelanggaran */}
-                        <td className="px-3 py-2 whitespace-nowrap text-center">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-50 text-red-700 rounded-lg text-sm font-medium">
-                            <span>⚠️</span>
-
-                            {kelas.jmlPelanggaran}
-                          </span>
-                        </td>
-                        {/* Prestasi */}
-                        <td className="px-4 py-3 text-center">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 text-green-700 rounded-lg text-sm font-medium">
-                            <span>🏆</span>
-                            {kelas.jmlPrestasi}
-                          </span>
-                        </td>
-                        {/* Avg Point */}
-                        <td className="px-4 py-3 text-center">
-                          <span
-                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
-                              kelas.avrgPoint < 0
-                                ? "bg-red-50 text-red-600"
-                                : "bg-green-50 text-green-600"
-                            }`}
-                          >
-                            <span className="inline-block rotate-45">↗</span>
-                            {kelas.avrgPoint ?? "-"}
-                          </span>
+                        {/* PELAPOR */}
+                        <td className="px-3 py-2 text-center text-xs">
+                          <div className="font-semibold text-gray-800">
+                            {report.pelapor?.nama || "-"}
+                          </div>
+                          <div className="text-gray-500 text-xs">
+                            {report.pelapor?.role || "Bk"}
+                          </div>
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={8}
                         className="text-center text-gray-400 py-6"
                       >
-                        Tidak ada data kelas.
+                        Tidak ada pelanggaran terbaru.
                       </td>
                     </tr>
                   )}

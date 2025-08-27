@@ -1,3 +1,19 @@
+// Get detail point adjustment by id
+export const getPointAdjustmentDetail = async (id) => {
+  const response = await API.get(`/bk/adjustments/${id}`);
+  return response.data;
+};
+
+// Update point adjustment (alasan, keterangan, bukti)
+export const updatePointAdjustment = async (id, updateData) => {
+  let dataToSend = updateData;
+  let config = {};
+  if (updateData instanceof FormData) {
+    config.headers = { "Content-Type": "multipart/form-data" };
+  }
+  const response = await API.put(`/bk/adjustments/${id}`, dataToSend, config);
+  return response.data;
+};
 import API from "./api";
 
 // Get students for monitoring (with pagination)
@@ -37,9 +53,16 @@ export const getStudentMonitoringDetail = async (studentId) => {
 
 // Create point adjustment
 export const createPointAdjustment = async (studentId, adjustmentData) => {
+  // Jika adjustmentData adalah FormData, kirim sebagai multipart
+  let dataToSend = adjustmentData;
+  let config = {};
+  if (adjustmentData instanceof FormData) {
+    config.headers = { "Content-Type": "multipart/form-data" };
+  }
   const response = await API.post(
     `/bk/students/${studentId}/adjust-points`,
-    adjustmentData
+    dataToSend,
+    config
   );
   return response.data;
 };
