@@ -100,158 +100,154 @@ const EditLaporanModal = ({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-md">
+      <div className="bg-white/95 rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative border border-gray-100">
         <button
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+          className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
           onClick={onClose}
         >
-          <FiX size={24} />
+          <FiX size={20} />
         </button>
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
-          <h2 className="text-2xl font-bold mb-4">Edit Laporan Siswa</h2>
+        <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-4">
+          <h2 className="text-base sm:text-lg font-bold mb-1 text-center">
+            Edit Laporan Siswa
+          </h2>
           {/* Item Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tipe Laporan <span className="text-red-500">*</span>
-            </label>
-            <select
-              name="tipe"
-              value={form.tipe}
-              onChange={handleFormChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="pelanggaran">🚫 Pelanggaran</option>
-              <option value="prestasi">🏆 Prestasi</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Jenis {form.tipe === "pelanggaran" ? "Pelanggaran" : "Prestasi"}{" "}
-              <span className="text-red-500">*</span>
-            </label>
-            <select
-              name="itemId"
-              value={form.itemId}
-              onChange={handleFormChange}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">
-                Pilih {form.tipe === "pelanggaran" ? "Pelanggaran" : "Prestasi"}
-              </option>
-              {getCurrentItems().map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.nama} ({item.point} poin) - {item.kategori?.nama}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tanggal *
+                Tipe Laporan <span className="text-red-500">*</span>
               </label>
-              <input
-                type="date"
-                name="tanggal"
-                value={form.tanggal}
+              <select
+                name="tipe"
+                value={form.tipe}
                 onChange={handleFormChange}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              >
+                <option value="pelanggaran">🚫 Pelanggaran</option>
+                <option value="prestasi">🏆 Prestasi</option>
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Waktu (Opsional)
+                Jenis {form.tipe === "pelanggaran" ? "Pelanggaran" : "Prestasi"}{" "}
+                <span className="text-red-500">*</span>
               </label>
-              <input
-                type="time"
-                name="waktu"
-                value={form.waktu}
+              <select
+                name="itemId"
+                value={form.itemId}
                 onChange={handleFormChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              >
+                <option value="">
+                  Pilih{" "}
+                  {form.tipe === "pelanggaran" ? "Pelanggaran" : "Prestasi"}
+                </option>
+                {getCurrentItems().map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.nama} ({item.point} poin) - {item.kategori?.nama}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="grid grid-cols-1 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Tanggal *
+                </label>
+                <input
+                  type="date"
+                  name="tanggal"
+                  value={form.tanggal}
+                  onChange={handleFormChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Waktu (Opsional)
+                </label>
+                <input
+                  type="time"
+                  name="waktu"
+                  value={form.waktu}
+                  onChange={handleFormChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Deskripsi Detail (Opsional)
+              </label>
+              <textarea
+                name="deskripsi"
+                value={form.deskripsi}
+                onChange={handleFormChange}
+                rows="2"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                placeholder="Jelaskan detail kejadian, kondisi, atau informasi tambahan..."
               />
             </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Deskripsi Detail (Opsional)
-            </label>
-            <textarea
-              name="deskripsi"
-              value={form.deskripsi}
-              onChange={handleFormChange}
-              rows="3"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Jelaskan detail kejadian, kondisi, atau informasi tambahan..."
-            />
           </div>
           {/* Evidence */}
           <div className="border border-gray-200 rounded-lg p-4 mb-4 mt-4">
-            <h4 className="font-medium text-gray-900 mb-3">
+            <h4 className="font-medium text-gray-900 mb-2">
               Upload Bukti Gambar
             </h4>
-            <div className="flex items-center justify-center w-full">
-              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <FiUpload className="w-8 h-8 mb-4 text-gray-500" />
-                  <p className="mb-2 text-sm text-gray-500">
-                    <span className="font-semibold">Klik untuk upload</span>{" "}
-                    atau drag and drop
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    PNG, JPG, JPEG (MAX. 5MB)
-                  </p>
-                  {evidenceForm.file && (
-                    <p className="text-xs text-blue-600 mt-2">
-                      Dipilih: {evidenceForm.file.name}
-                    </p>
-                  )}
-                </div>
-                <input
-                  type="file"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  ref={fileInputRef}
+            <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition mb-2">
+              <div className="flex flex-col items-center justify-center py-4">
+                <FiUpload className="w-7 h-7 mb-2 text-gray-400" />
+                <span className="text-xs text-gray-500 font-medium">
+                  Klik untuk upload atau drag & drop
+                </span>
+                <span className="text-xs text-gray-400 mt-1">
+                  PNG, JPG, JPEG (max 5MB)
+                </span>
+                {evidenceForm.file && (
+                  <span className="text-xs text-blue-600 mt-1">
+                    {evidenceForm.file.name}
+                  </span>
+                )}
+              </div>
+              <input
+                type="file"
+                className="hidden"
+                accept="image/*"
+                onChange={handleFileChange}
+                ref={fileInputRef}
+              />
+            </label>
+            {/* Preview & Remove Button */}
+            {(evidenceForm.file || form.bukti) && (
+              <div className="relative w-28 h-28 mt-2 mx-auto group">
+                <img
+                  src={
+                    evidenceForm.file
+                      ? URL.createObjectURL(evidenceForm.file)
+                      : `${import.meta.env.VITE_API_BASE_URL}${form.bukti}`
+                  }
+                  alt="Bukti"
+                  className="w-full h-full object-cover rounded-lg border border-gray-200"
+                  onError={
+                    evidenceForm.file
+                      ? undefined
+                      : (e) => {
+                          e.target.src = "/placeholder-image.png";
+                        }
+                  }
                 />
-              </label>
-              {(evidenceForm.file || form.bukti) && (
                 <button
                   type="button"
                   onClick={removeEvidence}
-                  className="ml-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full"
+                  className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full shadow-md opacity-90 group-hover:opacity-100 transition"
+                  title="Hapus gambar"
                 >
-                  <FiX size={16} />
+                  <FiX size={14} />
                 </button>
-              )}
-            </div>
-            {/* Preview */}
-            {evidenceForm.file && (
-              <div className="mt-3">
-                <div className="relative w-32 h-32 rounded-lg overflow-hidden">
-                  <img
-                    src={URL.createObjectURL(evidenceForm.file)}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-            )}
-            {!evidenceForm.file && form.bukti && (
-              <div className="mt-3">
-                <div className="relative w-32 h-32 rounded-lg overflow-hidden">
-                  <img
-                    src={`${import.meta.env.VITE_API_BASE_URL}${form.bukti}`}
-                    alt="Bukti"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.src = "/placeholder-image.png";
-                    }}
-                  />
-                </div>
               </div>
             )}
           </div>

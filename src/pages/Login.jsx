@@ -7,10 +7,12 @@ const Login = () => {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
       const response = await login(identifier, password);
@@ -51,6 +53,8 @@ const Login = () => {
       }
 
       setError(err.message || errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -105,9 +109,12 @@ const Login = () => {
 
           <button
             type="submit"
-            className="w-full bg-[#003366] text-white font-bold py-2 rounded-lg hover:bg-[#002244] transition"
+            className={`w-full bg-[#003366] text-white font-bold py-2 rounded-lg hover:bg-[#002244] transition ${
+              loading ? "opacity-60 cursor-not-allowed" : ""
+            }`}
+            disabled={loading}
           >
-            Masuk
+            {loading ? "Loading..." : "Masuk"}
           </button>
         </form>
       </div>
