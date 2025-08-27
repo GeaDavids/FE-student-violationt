@@ -1,5 +1,6 @@
 import API from "../../api/api";
 import React, { useEffect, useState } from "react";
+import academicYearAPI from "../../api/academicYear";
 import { FiSearch, FiUserCheck, FiUsers, FiTrendingDown } from "react-icons/fi";
 
 import {
@@ -14,6 +15,8 @@ import {
 
 const AdjustmentPoin = () => {
   const [editMode, setEditMode] = useState(false);
+  const [academicYears, setAcademicYears] = useState([]);
+  const [selectedYear, setSelectedYear] = useState("all");
   const [editForm, setEditForm] = useState({
     alasan: "",
     keterangan: "",
@@ -40,10 +43,25 @@ const AdjustmentPoin = () => {
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
+    fetchAcademicYears();
+  }, []);
+
+  useEffect(() => {
     fetchStudents();
     fetchStats();
     fetchAdjustments();
-  }, [page, search]);
+  }, [page, search, selectedYear]);
+  const fetchAcademicYears = async () => {
+    try {
+      const res = await academicYearAPI.getAll();
+      let arr = [];
+      if (Array.isArray(res.data)) arr = res.data;
+      else if (Array.isArray(res.data?.data)) arr = res.data.data;
+      setAcademicYears(arr);
+    } catch {
+      setAcademicYears([]);
+    }
+  };
 
   const fetchStudents = async () => {
     setLoading(true);
@@ -59,14 +77,18 @@ const AdjustmentPoin = () => {
 
   const fetchStats = async () => {
     try {
-      const res = await getAdjustmentStatistics();
+      const params = {};
+      if (selectedYear !== "all") params.academicYearId = selectedYear;
+      const res = await getAdjustmentStatistics(params);
       setStats(res.data);
     } catch {}
   };
 
   const fetchAdjustments = async () => {
     try {
-      const res = await getAllPointAdjustments({ page: 1, limit: 10 });
+      const params = { page: 1, limit: 10 };
+      if (selectedYear !== "all") params.academicYearId = selectedYear;
+      const res = await getAllPointAdjustments(params);
       setAdjustments(res.data);
     } catch {}
   };
@@ -211,6 +233,23 @@ const AdjustmentPoin = () => {
             Fitur pengurangan poin pelanggaran untuk siswa yang telah melakukan
             perbaikan perilaku.
           </p>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold mb-1 text-slate-700">
+            Tahun Ajaran
+          </label>
+          <select
+            className="border border-gray-300 rounded px-2 py-1 text-sm"
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(e.target.value)}
+          >
+            <option value="all">Semua Tahun</option>
+            {(Array.isArray(academicYears) ? academicYears : []).map((y) => (
+              <option key={y.id} value={y.id}>
+                {y.tahunAjaran} - {y.semester}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
