@@ -380,6 +380,21 @@ const Sidebar = ({ onKelolaUserClick }) => {
                   <FiUser className="text-cyan-300 group-hover:text-white transition-colors text-sm" />
                   <span>Profil</span>
                 </Link>
+                <Link
+                  to="/bk/export-laporan"
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500/5 transition-all duration-200 group text-sm"
+                >
+                  <FiUser className="text-cyan-300 group-hover:text-white transition-colors text-sm" />
+                  <span>Export Laporan</span>
+                </Link>
+
+                <Link
+                  to="/bk/export-poin-siswa"
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-500/5 transition-all duration-200 group text-sm"
+                >
+                  <FiUser className="text-cyan-300 group-hover:text-white transition-colors text-sm" />
+                  <span>Export Poin SIswa</span>
+                </Link>
               </div>
             )}
 

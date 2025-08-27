@@ -352,12 +352,7 @@ const KelolaKelas = () => {
                         </div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-center">
-                        <button
-                          onClick={() =>
-                            viewStudents(kelas.id, kelas.namaKelas)
-                          }
-                          className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-medium transition-colors text-xs bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-md"
-                        >
+                        <button className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-medium transition-colors text-xs bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-md">
                           <FiUsers className="w-3 h-3" />
                           <span>{kelas.jumlahSiswa || 0}</span>
                         </button>

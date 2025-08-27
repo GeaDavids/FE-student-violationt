@@ -16,6 +16,8 @@ import {
   DetailAngkatan,
 } from "./pages/superadmin";
 
+import { ExportLaporan, ExportPoinSiswa } from "./pages/bk/export";
+
 import {
   DashboardBK,
   MonitoringSiswa,
@@ -74,6 +76,24 @@ const App = () => {
           element={
             <MainLayout>
               <AdjustmentPoin />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/bk/export-laporan"
+          element={
+            <MainLayout>
+              <ExportLaporan />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/bk/export-poin-siswa"
+          element={
+            <MainLayout>
+              <ExportPoinSiswa />
             </MainLayout>
           }
         />
