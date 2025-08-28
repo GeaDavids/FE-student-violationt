@@ -107,7 +107,7 @@ const KenaikanKelas = () => {
         const tahunAjaran = `${currentYear}/${currentYear + 1}`;
 
         const response = await axios.post(
-          "/api/kenaikan-kelas/generate",
+          "/kenaikan-kelas/generate",
           {
             tahunAjaran,
             deskripsi: result.value || `Kenaikan kelas ${tahunAjaran}`,
@@ -164,7 +164,7 @@ const KenaikanKelas = () => {
       try {
         setLoading(true);
         const response = await axios.delete(
-          "/api/kenaikan-kelas/auto-delete-graduates",
+          "/kenaikan-kelas/auto-delete-graduates",
           axiosConfig
         );
 

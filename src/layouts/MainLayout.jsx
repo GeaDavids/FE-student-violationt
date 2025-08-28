@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { FiMenu } from "react-icons/fi";
 import Sidebar from "../components/Sidebar";
 import ModalKelolaUser from "../components/ModalKelolaUser";
 import NotificationBell from "../components/NotificationBell";
@@ -8,6 +9,7 @@ const Layout = ({ children }) => {
   const [kelolaUserTarget, setKelolaUserTarget] = useState(null);
   const [studentId, setStudentId] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const role = localStorage.getItem("role");
   const userName = localStorage.getItem("name");
@@ -29,13 +31,26 @@ const Layout = ({ children }) => {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar onKelolaUserClick={(target) => setKelolaUserTarget(target)} />
+      {/* Sidebar: pass mobile state */}
+      <Sidebar
+        onKelolaUserClick={(target) => setKelolaUserTarget(target)}
+        isMobileOpen={isMobileSidebarOpen}
+        setIsMobileOpen={setIsMobileSidebarOpen}
+      />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-white shadow-sm border-b px-6 py-4">
+        <header className="bg-white shadow-sm border-b px-6 py-4 relative">
           <div className="flex justify-between items-center">
+            {/* Hamburger menu for mobile */}
+            <button
+              className="md:hidden mr-4 text-slate-700 focus:outline-none"
+              onClick={() => setIsMobileSidebarOpen(true)}
+              aria-label="Buka Sidebar"
+            >
+              <FiMenu size={28} />
+            </button>
             <div>
               <h1 className="text-xl font-semibold text-gray-800">
                 SMKN 14 GARUT - {role?.toUpperCase()}

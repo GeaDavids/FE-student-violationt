@@ -108,6 +108,15 @@ const App = () => {
         />
 
         <Route
+          path="/walikelas/dashboard"
+          element={
+            <MainLayout>
+              <DashboardWaliKelas />
+            </MainLayout>
+          }
+        />
+
+        <Route
           path="/walikelas/siswa/:nisn"
           element={
             <MainLayout>
