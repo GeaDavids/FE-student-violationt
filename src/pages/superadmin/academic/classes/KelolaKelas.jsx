@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import axios from "axios";
+import API from "../../../../api/api";
 import { useNavigate } from "react-router-dom";
 import {
   FiHome,
@@ -37,8 +37,8 @@ const KelolaKelas = () => {
   const fetchKelas = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(
-        "/api/superadmin/masterdata/classrooms",
+      const res = await API.get(
+        "/superadmin/masterdata/classrooms",
         axiosConfig
       );
       console.log("Data kelas:", res.data);
@@ -54,10 +54,7 @@ const KelolaKelas = () => {
 
   const fetchGuru = async () => {
     try {
-      const res = await axios.get(
-        "/api/superadmin/masterdata/teachers",
-        axiosConfig
-      );
+      const res = await API.get("/superadmin/masterdata/teachers", axiosConfig);
       setGuruList(res.data.data || []); // Mengambil array data dari response
     } catch (err) {
       console.error("Gagal mengambil data guru:", err);
@@ -91,11 +88,7 @@ const KelolaKelas = () => {
     console.log("Payload:", payload);
 
     try {
-      await axios.post(
-        "/api/superadmin/masterdata/classrooms",
-        payload,
-        axiosConfig
-      );
+      await API.post("/superadmin/masterdata/classrooms", payload, axiosConfig);
       Swal.fire("Berhasil!", "Kelas baru berhasil ditambahkan.", "success");
 
       setForm({ kodeKelas: "", namaKelas: "", waliKelasId: "" });

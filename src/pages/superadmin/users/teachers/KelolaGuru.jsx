@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../../../../api/api";
 import { FiUsers, FiPlus, FiSearch, FiX } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -49,8 +49,8 @@ const KelolaGuru = () => {
         params.append("role", roleFilter);
       }
 
-      const res = await axios.get(
-        `/api/superadmin/teachers/all?${params}`,
+      const res = await API.get(
+        `/superadmin/teachers/all?${params}`,
         axiosConfig
       );
 
@@ -114,7 +114,7 @@ const KelolaGuru = () => {
 
     try {
       // Menggunakan endpoint teacher management yang sudah dibuat
-      await axios.post("/api/superadmin/teachers", payload, axiosConfig);
+      await API.post("/superadmin/teachers", payload, axiosConfig);
 
       const roleLabel = form.role === "bk" ? "BK" : "Guru";
       Swal.fire(

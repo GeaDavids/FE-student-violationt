@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import API from "../../api/api";
 import {
   FiUser,
   FiMail,
@@ -57,7 +57,7 @@ const ProfileGuru = () => {
   const fetchProfile = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("/api/guru/profile", axiosConfig);
+      const response = await API.get("/guru/profile", axiosConfig);
       setProfile(response.data.data);
       setEditForm({
         name: response.data.data.name,
@@ -76,7 +76,7 @@ const ProfileGuru = () => {
   const handleSaveProfile = async () => {
     try {
       setSaving(true);
-      await axios.put("/api/guru/profile", editForm, axiosConfig);
+      await API.put("/guru/profile", editForm, axiosConfig);
       await fetchProfile();
       setEditing(false);
       alert("Profil berhasil diperbarui!");
@@ -110,8 +110,8 @@ const ProfileGuru = () => {
     }
     setPwLoading(true);
     try {
-      await axios.put(
-        "/api/auth/change-password",
+      await API.put(
+        "/auth/change-password",
         {
           oldPassword: pwForm.oldPassword,
           newPassword: pwForm.newPassword,

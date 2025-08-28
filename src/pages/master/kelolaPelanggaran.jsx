@@ -12,7 +12,7 @@ import {
 } from "react-icons/fi";
 import violationAPI from "../../api/violation";
 import kategoriAPI from "../../api/kategori";
-import axios from "axios";
+import API from "../../api/api";
 
 const KelolaPelanggaran = () => {
   const [violations, setViolations] = useState([]);
@@ -43,9 +43,9 @@ const KelolaPelanggaran = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [violationsRes, categoriesRes] = await axios.all([
-        axios.get("/api/master/violations", axiosConfig),
-        axios.get("/api/master/kategori", axiosConfig),
+      const [violationsRes, categoriesRes] = await Promise.all([
+        API.get("/master/violations", axiosConfig),
+        API.get("/master/kategori", axiosConfig),
       ]);
       setViolations(violationsRes.data);
       setCategories(categoriesRes.data);

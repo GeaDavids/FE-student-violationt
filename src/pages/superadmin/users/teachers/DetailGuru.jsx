@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import API from "../../../../api/api";
 import Swal from "sweetalert2";
 import {
   FiUser,
@@ -63,11 +63,7 @@ const DetailGuru = () => {
       };
 
       // Menggunakan endpoint teacher management yang sudah dibuat
-      await axios.put(
-        `/api/superadmin/teachers/${guru.id}`,
-        payload,
-        axiosConfig
-      );
+      await API.put(`/superadmin/teachers/${guru.id}`, payload, axiosConfig);
 
       // Update local state
       setGuru({
@@ -111,10 +107,7 @@ const DetailGuru = () => {
       if (result.isConfirmed) {
         try {
           // Menggunakan endpoint teacher management yang sudah dibuat
-          await axios.delete(
-            `/api/superadmin/teachers/${guru.id}`,
-            axiosConfig
-          );
+          await API.delete(`/superadmin/teachers/${guru.id}`, axiosConfig);
           Swal.fire("Terhapus!", `Data ${roleLabel} telah dihapus.`, "success");
           navigate("/superadmin/kelola-guru");
         } catch (err) {
@@ -141,8 +134,8 @@ const DetailGuru = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.put(
-            `/api/superadmin/teachers/${guru.id}/reset-password`,
+          await API.put(
+            `/superadmin/teachers/${guru.id}/reset-password`,
             {},
             axiosConfig
           );

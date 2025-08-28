@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import API from "../../../../api/api";
 import Swal from "sweetalert2";
 import {
   FiUser,
@@ -54,7 +54,7 @@ const DetailBK = () => {
         email: editForm.email,
       };
 
-      await axios.put(`/api/users/bk/${bk.id}`, payload, axiosConfig);
+      await API.put(`/users/bk/${bk.id}`, payload, axiosConfig);
 
       // Update local state
       setBk({
@@ -89,7 +89,7 @@ const DetailBK = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`/api/users/bk/${bk.id}`, axiosConfig);
+          await API.delete(`/users/bk/${bk.id}`, axiosConfig);
           Swal.fire("Terhapus!", "Data BK telah dihapus.", "success");
           navigate("/superadmin/kelola-guru");
         } catch (err) {

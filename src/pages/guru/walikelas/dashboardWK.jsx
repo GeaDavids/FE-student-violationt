@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { getReportById } from "../../../api/reports";
-import axios from "../../../api/axios";
 import { useNavigate } from "react-router-dom";
 import { FiUsers, FiFileText, FiAward, FiAlertTriangle } from "react-icons/fi";
+import API from "../../../api/api";
 
 const DashboardWaliKelas = () => {
   const [students, setStudents] = useState([]);
@@ -29,7 +29,7 @@ const DashboardWaliKelas = () => {
         }`;
         if (reportsSearch)
           laporanQuery += `&search=${encodeURIComponent(reportsSearch)}`;
-        const resLaporan = await axios.get(laporanQuery);
+        const resLaporan = await API.get(laporanQuery);
         setReports(resLaporan.data.reports || []);
         setReportsTotal(resLaporan.data.total || 0);
       } catch (err) {
@@ -56,7 +56,7 @@ const DashboardWaliKelas = () => {
         }`;
         if (studentsSearch)
           siswaQuery += `&search=${encodeURIComponent(studentsSearch)}`;
-        const resSiswa = await axios.get(siswaQuery);
+        const resSiswa = await API.get(siswaQuery);
         setStudents(resSiswa.data.students || []);
         setStudentsTotal(resSiswa.data.total || 0);
       } catch (err) {

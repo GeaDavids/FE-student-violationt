@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
-import axios from "axios";
+import API from "../../../../api/api";
 import {
   FiArrowLeft,
   FiEdit2,
@@ -73,10 +73,7 @@ const DetailSiswa = () => {
   const fetchSiswa = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(
-        `/api/superadmin/students/${id}`,
-        axiosConfig
-      );
+      const res = await API.get(`/superadmin/students/${id}`, axiosConfig);
       setSiswa(res.data.data);
       setForm({
         nisn: res.data.data.nisn || "",
@@ -166,8 +163,8 @@ const DetailSiswa = () => {
     };
 
     try {
-      const res = await axios.put(
-        `/api/superadmin/students/${id}`,
+      const res = await API.put(
+        `/superadmin/students/${id}`,
         payload,
         axiosConfig
       );
@@ -210,7 +207,7 @@ const DetailSiswa = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`/api/superadmin/students/${id}`, axiosConfig);
+          await API.delete(`/superadmin/students/${id}`, axiosConfig);
           Swal.fire("Terhapus!", "Siswa berhasil dihapus.", "success");
           // Navigate back to class list
           if (kelasDipilih) {
@@ -242,8 +239,8 @@ const DetailSiswa = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.put(
-            `/api/superadmin/students/${id}/reset-password`,
+          await API.put(
+            `/superadmin/students/${id}/reset-password`,
             {},
             axiosConfig
           );

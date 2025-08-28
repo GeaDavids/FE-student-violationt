@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import API from "../../../../api/api";
 import {
   FiBookOpen,
   FiUsers,
@@ -31,8 +31,8 @@ const PilihKelas = () => {
   useEffect(() => {
     const fetchKelas = async () => {
       try {
-        const res = await axios.get(
-          `/api/superadmin/students/classrooms`,
+        const res = await API.get(
+          `/superadmin/students/classrooms`,
           axiosConfig
         );
         console.log("Data kelas response:", res.data);
@@ -55,8 +55,8 @@ const PilihKelas = () => {
 
     setLoadingSiswa(true);
     try {
-      const res = await axios.get(
-        `/api/superadmin/students/students?search=${encodeURIComponent(
+      const res = await API.get(
+        `/superadmin/students/students?search=${encodeURIComponent(
           searchSiswa
         )}`,
         axiosConfig

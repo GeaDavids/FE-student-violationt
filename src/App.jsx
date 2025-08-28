@@ -4,7 +4,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import MainLayout from "./layouts/MainLayout";
 import SiswaDashboard from "./pages/siswa/SiswaDashboard";
-import { ImportSiswa } from "./pages/import";
+import { ImportSiswa, ImportPelanggaran, ImportPrestasi } from "./pages/import";
 // Import all superadmin components from the new structured folders
 import {
   DetailSiswa,
@@ -63,10 +63,19 @@ const App = () => {
         />
 
         <Route
-          path="/walikelas/dashboard"
+          path="/import-pelanggaran"
           element={
             <MainLayout>
-              <DashboardWaliKelas />
+              <ImportPelanggaran />
+            </MainLayout>
+          }
+        />
+
+        <Route
+          path="/import-prestasi"
+          element={
+            <MainLayout>
+              <ImportPrestasi />
             </MainLayout>
           }
         />

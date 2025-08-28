@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import API from "../../../../api/api";
 import Swal from "sweetalert2";
 import {
   FiHome,
@@ -43,8 +43,8 @@ const DetailKelas = () => {
 
   const fetchClassroomDetail = async (classroomId) => {
     try {
-      const res = await axios.get(
-        `/api/superadmin/masterdata/classrooms/${classroomId}`,
+      const res = await API.get(
+        `/superadmin/masterdata/classrooms/${classroomId}`,
         axiosConfig
       );
       const classroomData = res.data.data;
@@ -68,10 +68,7 @@ const DetailKelas = () => {
   const fetchGuru = async () => {
     try {
       // Menggunakan endpoint masterData untuk mendapatkan semua guru
-      const res = await axios.get(
-        "/api/superadmin/masterdata/teachers",
-        axiosConfig
-      );
+      const res = await API.get("/superadmin/masterdata/teachers", axiosConfig);
       setGuruList(res.data.data);
     } catch (err) {
       console.error("Gagal mengambil data guru:", err);
@@ -95,8 +92,8 @@ const DetailKelas = () => {
       };
 
       // Menggunakan endpoint masterData controller
-      await axios.put(
-        `/api/superadmin/masterdata/classrooms/${kelas.id}`,
+      await API.put(
+        `/superadmin/masterdata/classrooms/${kelas.id}`,
         payload,
         axiosConfig
       );
@@ -140,8 +137,8 @@ const DetailKelas = () => {
       if (result.isConfirmed) {
         try {
           // Menggunakan endpoint masterData controller
-          await axios.delete(
-            `/api/superadmin/masterdata/classrooms/${kelas.id}`,
+          await API.delete(
+            `/superadmin/masterdata/classrooms/${kelas.id}`,
             axiosConfig
           );
           Swal.fire("Terhapus!", "Data kelas telah dihapus.", "success");

@@ -13,7 +13,7 @@ import {
 } from "react-icons/fi";
 import achievementAPI from "../../api/achievement";
 import kategoriAPI from "../../api/kategori";
-import axios from "axios";
+import API from "../../api/api";
 
 const KelolaPrestasi = () => {
   const [achievements, setAchievements] = useState([]);
@@ -44,9 +44,9 @@ const KelolaPrestasi = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [achievementsRes, categoriesRes] = await axios.all([
-        axios.get("/api/master/achievements", axiosConfig),
-        axios.get("/api/master/kategori", axiosConfig),
+      const [achievementsRes, categoriesRes] = await Promise.all([
+        API.get("/master/achievements", axiosConfig),
+        API.get("/master/kategori", axiosConfig),
       ]);
       setAchievements(achievementsRes.data);
       setCategories(categoriesRes.data);

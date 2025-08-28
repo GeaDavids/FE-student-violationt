@@ -77,9 +77,7 @@ const AdjustmentPoin = () => {
 
   const fetchStats = async () => {
     try {
-      const params = {};
-      if (selectedYear !== "all") params.academicYearId = selectedYear;
-      const res = await getAdjustmentStatistics(params);
+      const res = await getAdjustmentStatistics();
       setStats(res.data);
     } catch {}
   };

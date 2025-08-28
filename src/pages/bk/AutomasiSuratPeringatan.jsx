@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import api from "../../api/api";
+import academicYearAPI from "../../api/academicYear";
 
 const AutomasiSuratPeringatan = () => {
   const [configs, setConfigs] = useState([]);
@@ -16,6 +17,23 @@ const AutomasiSuratPeringatan = () => {
     total: 0,
     totalPages: 0,
   });
+  const [academicYears, setAcademicYears] = useState([]);
+  const [selectedYear, setSelectedYear] = useState("all");
+  useEffect(() => {
+    // Load academic years on mount
+    const fetchYears = async () => {
+      try {
+        const res = await academicYearAPI.getAll();
+        let arr = [];
+        if (Array.isArray(res.data)) arr = res.data;
+        else if (Array.isArray(res.data?.data)) arr = res.data.data;
+        setAcademicYears(arr);
+      } catch {
+        setAcademicYears([]);
+      }
+    };
+    fetchYears();
+  }, []);
 
   // Ensure configs and historySurat are always arrays
   const safeConfigs = Array.isArray(configs) ? configs : [];
@@ -167,7 +185,7 @@ const AutomasiSuratPeringatan = () => {
     if (activeTab === "history") {
       loadHistorySurat();
     }
-  }, [activeTab, pagination.page]);
+  }, [activeTab, pagination.page, selectedYear]);
 
   const loadConfigs = async () => {
     try {
@@ -231,12 +249,14 @@ Kepala Sekolah`,
   const loadHistorySurat = async () => {
     try {
       setLoading(true);
-      const response = await api.get("/automasi/history", {
-        params: {
-          page: pagination.page,
-          limit: pagination.limit,
-        },
-      });
+      const params = {
+        page: pagination.page,
+        limit: pagination.limit,
+      };
+      if (selectedYear && selectedYear !== "all") {
+        params.tahunAjaranId = selectedYear;
+      }
+      const response = await api.get("/automasi/history", { params });
 
       // Backend mengembalikan { data: [...], pagination: {...} }
       setHistorySurat(
@@ -249,54 +269,7 @@ Kepala Sekolah`,
       }));
     } catch (error) {
       console.error("Error loading history:", error);
-      // Set historySurat ke array kosong jika error
       setHistorySurat([]);
-
-      // Mock data untuk development
-      const mockHistorySurat = [
-        {
-          id: 1,
-          student: {
-            nama: "Ahmad Rizki Pratama",
-            nisn: "1234567890",
-            kelas: "XII RPL 1",
-          },
-          jenisSurat: "SP1",
-          tingkatSurat: 1,
-          totalScoreSaat: 25,
-          judul: "Surat Peringatan Pertama - Pelanggaran Tata Tertib",
-          statusKirim: "sent",
-          tanggalKirim: "2024-03-15T10:30:00Z",
-          createdAt: "2024-03-15T10:30:00Z",
-        },
-        {
-          id: 2,
-          student: {
-            nama: "Siti Nurhaliza",
-            nisn: "1234567891",
-            kelas: "XI TKJ 2",
-          },
-          jenisSurat: "SP2",
-          tingkatSurat: 2,
-          totalScoreSaat: 50,
-          judul: "Surat Peringatan Kedua - Pelanggaran Tata Tertib",
-          statusKirim: "sent",
-          tanggalKirim: "2024-03-10T14:15:00Z",
-          createdAt: "2024-03-10T14:15:00Z",
-        },
-      ];
-
-      // Set mock data untuk development
-      setTimeout(() => {
-        setHistorySurat(mockHistorySurat);
-        setPagination((prev) => ({
-          ...prev,
-          total: mockHistorySurat.length,
-          totalPages: Math.ceil(mockHistorySurat.length / prev.limit),
-        }));
-      }, 100);
-
-      // Swal.fire("Error", "Gagal memuat history surat", "error");
     } finally {
       setLoading(false);
     }
@@ -545,6 +518,31 @@ Kepala Sekolah`,
 
           {/* Content Area */}
           <div className="p-6">
+            {/* Filter Tahun Ajaran untuk tab history */}
+            {activeTab === "history" && (
+              <div className="mb-4 flex flex-col md:flex-row md:items-center md:justify-end gap-2">
+                <label className="text-xs font-semibold text-slate-700 mr-2">
+                  Tahun Ajaran:
+                </label>
+                <select
+                  className="border border-gray-300 rounded px-2 py-1 text-sm"
+                  value={selectedYear}
+                  onChange={(e) => {
+                    setSelectedYear(e.target.value);
+                    setPagination((prev) => ({ ...prev, page: 1 }));
+                  }}
+                >
+                  <option value="all">Semua Tahun</option>
+                  {(Array.isArray(academicYears) ? academicYears : []).map(
+                    (y) => (
+                      <option key={y.id} value={y.id}>
+                        {y.tahunAjaran} - {y.semester}
+                      </option>
+                    )
+                  )}
+                </select>
+              </div>
+            )}
             {loading ? (
               <LoadingSpinner />
             ) : activeTab === "config" ? (

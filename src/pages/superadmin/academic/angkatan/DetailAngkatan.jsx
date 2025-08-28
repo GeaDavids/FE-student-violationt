@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import API from "../../../../api/api";
 import Swal from "sweetalert2";
 import {
   FiCalendar,
@@ -54,8 +54,8 @@ const DetailAngkatan = () => {
         tahun: editForm.tahun,
       };
 
-      await axios.put(
-        `/api/superadmin/masterdata/angkatan/${angkatan.id}`,
+      await API.put(
+        `/superadmin/masterdata/angkatan/${angkatan.id}`,
         payload,
         axiosConfig
       );
@@ -92,8 +92,8 @@ const DetailAngkatan = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(
-            `/api/superadmin/masterdata/angkatan/${angkatan.id}`,
+          await API.delete(
+            `/superadmin/masterdata/angkatan/${angkatan.id}`,
             axiosConfig
           );
           Swal.fire("Terhapus!", "Data angkatan telah dihapus.", "success");

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import axios from "axios";
+import API from "../../../../api/api";
 import { useNavigate } from "react-router-dom";
 import {
   FiCalendar,
@@ -41,10 +41,7 @@ const KelolaAngkatan = () => {
   const fetchAngkatan = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(
-        "/api/superadmin/masterdata/angkatan",
-        axiosConfig
-      );
+      const res = await API.get("/superadmin/masterdata/angkatan", axiosConfig);
       console.log("Data angkatan:", res.data);
       setDataAngkatan(res.data.data || []);
       setFilteredAngkatan(res.data.data || []);
@@ -75,18 +72,14 @@ const KelolaAngkatan = () => {
 
     try {
       if (editingId) {
-        await axios.put(
-          `/api/superadmin/masterdata/angkatan/${editingId}`,
+        await API.put(
+          `/superadmin/masterdata/angkatan/${editingId}`,
           payload,
           axiosConfig
         );
         Swal.fire("Berhasil!", "Data angkatan berhasil diperbarui.", "success");
       } else {
-        await axios.post(
-          "/api/superadmin/masterdata/angkatan",
-          payload,
-          axiosConfig
-        );
+        await API.post("/superadmin/masterdata/angkatan", payload, axiosConfig);
         Swal.fire(
           "Berhasil!",
           "Data angkatan baru berhasil ditambahkan.",
@@ -126,8 +119,8 @@ const KelolaAngkatan = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(
-            `/api/superadmin/masterdata/angkatan/${id}`,
+          await API.delete(
+            `/superadmin/masterdata/angkatan/${id}`,
             axiosConfig
           );
           Swal.fire("Terhapus!", "Data angkatan telah dihapus.", "success");

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import API from "../../api/api";
+
 import {
   FiUsers,
   FiBarChart2,
@@ -41,7 +42,7 @@ const DashboardGuru = () => {
 
   const fetchMyReportSummary = async () => {
     try {
-      const response = await axios.get("/api/guru/dashboard", axiosConfig);
+      const response = await API.get("/guru/dashboard", axiosConfig);
       setMyReportSummary(response.data);
     } catch (error) {
       setMyReportSummary(null);
@@ -51,7 +52,7 @@ const DashboardGuru = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("/api/guru/dashboard", axiosConfig);
+      const response = await API.get("/guru/dashboard", axiosConfig);
       setDashboardData(response.data);
 
       // If user is wali kelas, fetch class students
@@ -69,10 +70,7 @@ const DashboardGuru = () => {
   const fetchClassStudents = async () => {
     try {
       setStudentsLoading(true);
-      const response = await axios.get(
-        "/api/guru/my-class-students",
-        axiosConfig
-      );
+      const response = await API.get("/guru/my-class-students", axiosConfig);
       setClassStudents(response.data.data || []);
     } catch (error) {
       console.error("Error fetching class students:", error);

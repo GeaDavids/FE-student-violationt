@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import axios from "axios";
+import API from "../../../../api/api";
 import {
   FiAlertTriangle,
   FiEdit2,
@@ -53,7 +53,7 @@ const KelolaViolation = () => {
     try {
       setLoading(true);
       console.log("Fetching violations...");
-      const res = await axios.get("/api/violations", axiosConfig);
+      const res = await API.get("/violations", axiosConfig);
       console.log("Violations data received:", res.data);
       setDataViolation(res.data);
       setFilteredViolation(res.data);
@@ -88,14 +88,14 @@ const KelolaViolation = () => {
 
     try {
       if (editingId) {
-        await axios.put(`/api/violations/${editingId}`, payload, axiosConfig);
+        await API.put(`/violations/${editingId}`, payload, axiosConfig);
         Swal.fire(
           "Berhasil!",
           "Data jenis pelanggaran berhasil diperbarui.",
           "success"
         );
       } else {
-        await axios.post("/api/violations", payload, axiosConfig);
+        await API.post("/violations", payload, axiosConfig);
         Swal.fire(
           "Berhasil!",
           "Jenis pelanggaran baru berhasil ditambahkan.",
@@ -145,7 +145,7 @@ const KelolaViolation = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`/api/violations/${id}`, axiosConfig);
+          await API.delete(`/violations/${id}`, axiosConfig);
           Swal.fire(
             "Terhapus!",
             "Data jenis pelanggaran telah dihapus.",

@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Swal from "sweetalert2";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
-import axios from "axios";
+import API from "../../../../api/api";
 import {
   FiUsers,
   FiPlus,
@@ -69,8 +69,8 @@ const DaftarSiswa = () => {
           },
         };
 
-        const res = await axios.get(
-          `/api/superadmin/students/classrooms/${classroomId}`,
+        const res = await API.get(
+          `/superadmin/students/classrooms/${classroomId}`,
           axiosConfig
         );
         console.log("Data siswa response:", res.data);
@@ -104,10 +104,7 @@ const DaftarSiswa = () => {
         },
       };
 
-      const res = await axios.get(
-        `/api/superadmin/masterdata/angkatan`,
-        axiosConfig
-      );
+      const res = await API.get(`/superadmin/masterdata/angkatan`, axiosConfig);
       console.log("Data angkatan response:", res.data);
       setAngkatanList(res.data.data || res.data || []);
     } catch (err) {
@@ -185,16 +182,12 @@ const DaftarSiswa = () => {
       };
 
       if (editingId) {
-        await axios.put(
-          `/api/users/students/${editingId}`,
-          payload,
-          axiosConfig
-        );
+        await API.put(`/users/students/${editingId}`, payload, axiosConfig);
         Swal.fire("Berhasil!", "Data siswa berhasil diupdate!", "success");
       } else {
         // Update endpoint untuk create student dengan classroomId di URL
-        await axios.post(
-          `/api/superadmin/students/classrooms/${kelasInfo.id}/students`,
+        await API.post(
+          `/superadmin/students/classrooms/${kelasInfo.id}/students`,
           payload,
           axiosConfig
         );

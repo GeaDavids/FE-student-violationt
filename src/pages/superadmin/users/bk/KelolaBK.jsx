@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../../../../api/api";
 import { FiUsers, FiPlus, FiSearch } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -49,8 +49,8 @@ const KelolaGuru = () => {
         params.append("role", roleFilter);
       }
 
-      const res = await axios.get(
-        `/api/superadmin/teachers/all?${params}`,
+      const res = await API.get(
+        `/superadmin/teachers/all?${params}`,
         axiosConfig
       );
 
@@ -103,9 +103,8 @@ const KelolaGuru = () => {
 
     try {
       // Endpoint untuk create guru/BK tergantung role
-      const endpoint =
-        form.role === "bk" ? "/api/users/bk" : "/api/users/teachers";
-      await axios.post(endpoint, payload, axiosConfig);
+      const endpoint = form.role === "bk" ? "/users/bk" : "/users/teachers";
+      await API.post(endpoint, payload, axiosConfig);
 
       const roleLabel = form.role === "bk" ? "BK" : "Guru";
       Swal.fire(

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import API from "../../api/api";
 import Swal from "sweetalert2";
 import {
   FiUsers,
@@ -45,10 +45,7 @@ const KenaikanKelas = () => {
   const fetchPreview = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        "/api/kenaikan-kelas/preview",
-        axiosConfig
-      );
+      const response = await API.get("/kenaikan-kelas/preview", axiosConfig);
       setPreview(response.data.data);
     } catch (error) {
       console.error("Error fetching preview:", error);
@@ -61,8 +58,8 @@ const KenaikanKelas = () => {
   const fetchArchivedStudents = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        "/api/kenaikan-kelas/archived-students",
+      const response = await API.get(
+        "/kenaikan-kelas/archived-students",
         axiosConfig
       );
       setArchivedStudents(response.data.data);
@@ -77,7 +74,7 @@ const KenaikanKelas = () => {
   const fetchKenaikanHistory = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("/api/kenaikan-kelas", axiosConfig);
+      const response = await API.get("/kenaikan-kelas", axiosConfig);
       setKenaikanHistory(response.data);
     } catch (error) {
       console.error("Error fetching history:", error);

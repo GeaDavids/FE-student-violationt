@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FiTag,
   FiPlus,
@@ -7,11 +8,12 @@ import {
   FiAlertTriangle,
   FiAward,
   FiX,
+  FiUpload,
 } from "react-icons/fi";
 import kategoriAPI from "../../api/kategori";
-import axios from "axios";
-
+import API from "../../api/api";
 const Kategori = () => {
+  const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -37,7 +39,7 @@ const Kategori = () => {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("/api/master/kategori", axiosConfig);
+      const response = await API.get("/master/kategori", axiosConfig);
       setCategories(response.data);
       setError("");
     } catch (err) {
@@ -284,55 +286,77 @@ const Kategori = () => {
           </div>
         )}
 
-        {/* Category Tables */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
-          {/* Kategori Pelanggaran */}
-          <div className="h-full space-y-3">
-            {/* Header dengan tombol tambah */}
-            <div className="flex justify-between items-center">
-              <h3 className="text-sm font-semibold text-gray-800">
-                Kategori Pelanggaran
-              </h3>
+        {/* Kategori Pelanggaran */}
+        <div className="h-full space-y-3">
+          <div className="flex justify-between items-center">
+            <h3 className="text-sm font-semibold text-gray-800">
+              Kategori Pelanggaran
+            </h3>
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => handleAddCategory("pelanggaran")}
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-3 py-1.5 rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-1.5 text-xs"
               >
                 <FiPlus className="text-xs" />
-                Tambah Pelanggaran
+                Tambah
+              </button>
+
+              <button
+                onClick={() => navigate("/import-pelanggaran")}
+                disabled={pelanggaranCategories.length === 0}
+                className={`px-3 py-1.5 rounded-lg font-medium text-xs flex items-center gap-1.5 shadow-md transition-all duration-200
+        ${
+          pelanggaranCategories.length === 0
+            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+            : "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white hover:shadow-lg"
+        }`}
+              >
+                <FiUpload className="text-xs" />
+                Import
               </button>
             </div>
-            <CategoryTable
-              categories={pelanggaranCategories}
-              title="Pelanggaran"
-              tipe="pelanggaran"
-              bgColor="bg-gradient-to-r from-red-50 to-red-100"
-              textColor="text-red-800"
-            />
           </div>
 
-          {/* Kategori Prestasi */}
-          <div className="h-full space-y-3">
-            {/* Header dengan tombol tambah */}
-            <div className="flex justify-between items-center">
-              <h3 className="text-sm font-semibold text-gray-800">
-                Kategori Prestasi
-              </h3>
+          <CategoryTable
+            categories={pelanggaranCategories}
+            title="Pelanggaran"
+            tipe="pelanggaran"
+            bgColor="bg-gradient-to-r from-red-50 to-red-100"
+            textColor="text-red-800"
+          />
+        </div>
+
+        {/* Kategori Prestasi */}
+        <div className="h-full space-y-3">
+          <div className="flex justify-between items-center">
+            <h3 className="text-sm font-semibold text-gray-800">
+              Kategori Prestasi
+            </h3>
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => handleAddCategory("prestasi")}
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-3 py-1.5 rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-1.5 text-xs"
               >
                 <FiPlus className="text-xs" />
-                Tambah Prestasi
+                Tambah
+              </button>
+
+              <button
+                onClick={() => navigate("/import-prestasi")}
+                className="px-3 py-1.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 text-xs flex items-center gap-1.5"
+              >
+                Import Prestasi
               </button>
             </div>
-            <CategoryTable
-              categories={prestasiCategories}
-              title="Prestasi"
-              tipe="prestasi"
-              bgColor="bg-gradient-to-r from-green-50 to-green-100"
-              textColor="text-green-800"
-            />
           </div>
+
+          <CategoryTable
+            categories={prestasiCategories}
+            title="Prestasi"
+            tipe="prestasi"
+            bgColor="bg-gradient-to-r from-green-50 to-green-100"
+            textColor="text-green-800"
+          />
         </div>
 
         {/* Modal */}

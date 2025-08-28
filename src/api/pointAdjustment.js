@@ -75,6 +75,7 @@ export const getAllPointAdjustments = async ({
   teacherId,
   startDate,
   endDate,
+  academicYearId,
 } = {}) => {
   const params = new URLSearchParams({
     page: page.toString(),
@@ -85,6 +86,7 @@ export const getAllPointAdjustments = async ({
   if (teacherId) params.append("teacherId", teacherId.toString());
   if (startDate) params.append("startDate", startDate);
   if (endDate) params.append("endDate", endDate);
+  if (academicYearId) params.append("tahunAjaranId", academicYearId);
 
   const response = await API.get(`/bk/adjustments?${params.toString()}`);
   return response.data;

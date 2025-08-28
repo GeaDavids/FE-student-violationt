@@ -1,4 +1,4 @@
-import axios from "axios";
+import API from "../../api/api";
 import Swal from "sweetalert2";
 
 import { useState, useEffect } from "react";
@@ -141,10 +141,7 @@ const ReportsGuru = () => {
   const fetchReportDetail = async (id) => {
     setDetailModal({ open: true, data: null, loading: true });
     try {
-      const response = await axios.get(
-        `/api/guru/report-detail/${id}`,
-        axiosConfig
-      );
+      const response = await API.get(`/guru/report-detail/${id}`, axiosConfig);
       setDetailModal({ open: true, data: response.data.data, loading: false });
     } catch (error) {
       setDetailModal({ open: false, data: null, loading: false });
@@ -158,7 +155,7 @@ const ReportsGuru = () => {
 
   const fetchReportItems = async () => {
     try {
-      const response = await axios.get("/api/guru/report-items", axiosConfig);
+      const response = await API.get("/guru/report-items", axiosConfig);
       setReportItems({
         pelanggaran: response.data.data.pelanggaran || [],
         prestasi: response.data.data.prestasi || [],
@@ -174,8 +171,8 @@ const ReportsGuru = () => {
         setItemSearchResults([]);
         return;
       }
-      const response = await axios.get(
-        `/api/guru/search-report-items?query=${encodeURIComponent(
+      const response = await API.get(
+        `/guru/search-report-items?query=${encodeURIComponent(
           query
         )}&type=${type}`,
         axiosConfig
@@ -192,8 +189,8 @@ const ReportsGuru = () => {
         setStudents([]);
         return;
       }
-      const response = await axios.get(
-        `/api/guru/search-students?query=${encodeURIComponent(query)}`,
+      const response = await API.get(
+        `/guru/search-students?query=${encodeURIComponent(query)}`,
         axiosConfig
       );
       setStudents(response.data.data);
@@ -215,7 +212,7 @@ const ReportsGuru = () => {
       if (formData.bukti) {
         data.append("bukti", formData.bukti);
       }
-      await axios.post("/api/guru/report-student", data, {
+      await API.post("/guru/report-student", data, {
         headers: {
           Authorization: `Bearer ${token}`,
           // Jangan set Content-Type, biarkan browser yang mengatur

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import axios from "axios";
+import API from "../../../../api/api";
 import {
   FiAward,
   FiEdit2,
@@ -45,7 +45,7 @@ const KelolaPrestasi = () => {
     try {
       setLoading(true);
       console.log("Fetching achievements...");
-      const res = await axios.get("/api/achievements", axiosConfig);
+      const res = await API.get("/achievements", axiosConfig);
       console.log("Achievements data received:", res.data);
       setDataPrestasi(res.data);
       setFilteredPrestasi(res.data);
@@ -79,10 +79,10 @@ const KelolaPrestasi = () => {
 
     try {
       if (editingId) {
-        await axios.put(`/api/achievements/${editingId}`, payload, axiosConfig);
+        await API.put(`/achievements/${editingId}`, payload, axiosConfig);
         Swal.fire("Berhasil!", "Data prestasi berhasil diperbarui.", "success");
       } else {
-        await axios.post("/api/achievements", payload, axiosConfig);
+        await API.post("/achievements", payload, axiosConfig);
         Swal.fire(
           "Berhasil!",
           "Prestasi baru berhasil ditambahkan.",
@@ -122,7 +122,7 @@ const KelolaPrestasi = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`/api/achievements/${id}`, axiosConfig);
+          await API.delete(`/achievements/${id}`, axiosConfig);
           Swal.fire("Terhapus!", "Data prestasi telah dihapus.", "success");
           fetchPrestasi();
         } catch (err) {
