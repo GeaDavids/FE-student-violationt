@@ -234,13 +234,22 @@ const ReportsGuru = () => {
 
       // Refresh reports
       fetchReports();
-      alert("Laporan berhasil dibuat!");
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: "Laporan berhasil dibuat!",
+        timer: 2000,
+        showConfirmButton: false,
+      });
     } catch (error) {
       console.error("Error creating report:", error);
-      alert(
-        "Gagal membuat laporan: " +
-          (error.response?.data?.error || error.message)
-      );
+      Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text:
+          "Gagal membuat laporan: " +
+          (error.response?.data?.error || error.message),
+      });
     } finally {
       setSubmitting(false);
     }
@@ -561,7 +570,7 @@ const ReportsGuru = () => {
 
       {/* Modal Detail Laporan (hanya satu, di luar map/table) */}
       {detailModal.open && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 backdrop-blur-sm bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-lg max-w-lg w-full p-6 relative">
             <button
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-xl"
@@ -579,75 +588,137 @@ const ReportsGuru = () => {
               </div>
             ) : detailModal.data ? (
               <div>
-                <h3 className="text-xl font-bold mb-2 text-[#003366]">
-                  Detail Laporan
-                </h3>
-                <div className="mb-2">
-                  <b>Nama Siswa:</b> {detailModal.data.namaSiswa}
+                <div className="flex items-center gap-3 mb-4">
+                  <div
+                    className={`rounded-full p-2 text-white ${
+                      detailModal.data.tipe === "pelanggaran"
+                        ? "bg-red-500"
+                        : "bg-green-500"
+                    }`}
+                  >
+                    {detailModal.data.tipe === "pelanggaran" ? (
+                      <FiAlertTriangle size={22} />
+                    ) : (
+                      <FiAward size={22} />
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-[#003366] leading-tight">
+                      {detailModal.data.tipe === "pelanggaran"
+                        ? "Pelanggaran"
+                        : "Prestasi"}
+                    </h3>
+                    <div className="text-sm text-gray-500">
+                      {formatDate(detailModal.data.tanggal)}
+                    </div>
+                  </div>
                 </div>
-                <div className="mb-2">
-                  <b>NISN:</b> {detailModal.data.nisn}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 mb-4">
+                  <div>
+                    <span className="font-semibold text-gray-700">
+                      Nama Siswa:
+                    </span>{" "}
+                    <span className="text-gray-900">
+                      {detailModal.data.namaSiswa}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">NISN:</span>{" "}
+                    <span className="text-gray-900">
+                      {detailModal.data.nisn}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">Kelas:</span>{" "}
+                    <span className="text-gray-900">
+                      {detailModal.data.classAtTime}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">
+                      Kategori:
+                    </span>{" "}
+                    <span className="inline-block px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-semibold">
+                      {detailModal.data.kategori}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">Item:</span>{" "}
+                    <span className="text-gray-900">
+                      {detailModal.data.itemNama}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">Poin:</span>{" "}
+                    <span
+                      className={`font-bold ${
+                        detailModal.data.tipe === "pelanggaran"
+                          ? "text-red-600"
+                          : "text-green-600"
+                      }`}
+                    >
+                      {detailModal.data.tipe === "pelanggaran"
+                        ? `-${detailModal.data.pointSaat}`
+                        : `+${detailModal.data.pointSaat}`}
+                    </span>
+                  </div>
                 </div>
-                <div className="mb-2">
-                  <b>Kelas:</b> {detailModal.data.classAtTime}
+                <hr className="my-3" />
+                <div className="mb-3">
+                  <span className="font-semibold text-gray-700">
+                    Deskripsi:
+                  </span>
+                  <div className="bg-gray-50 rounded p-2 mt-1 text-gray-800 min-h-[40px]">
+                    {detailModal.data.deskripsi || (
+                      <span className="italic text-gray-400">
+                        Tidak ada deskripsi
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div className="mb-2">
-                  <b>Tanggal:</b> {formatDate(detailModal.data.tanggal)}
+                <div className="mb-3">
+                  <span className="font-semibold text-gray-700">Bukti:</span>
+                  <div className="mt-2">
+                    {detailModal.data.bukti ? (
+                      <div className="flex items-center gap-4">
+                        <img
+                          src={`${import.meta.env.VITE_API_BASE_URL}${
+                            detailModal.data.bukti
+                          }`}
+                          alt="Bukti"
+                          className="w-28 h-28 object-cover border rounded-lg shadow-md bg-white"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/no-image.png";
+                          }}
+                        />
+                        <a
+                          href={`${import.meta.env.VITE_API_BASE_URL}${
+                            detailModal.data.bukti
+                          }`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 underline text-sm hover:text-blue-800"
+                        >
+                          Lihat Bukti
+                        </a>
+                      </div>
+                    ) : (
+                      <span className="italic text-gray-400">
+                        Tidak ada bukti
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div className="mb-2">
-                  <b>Jenis:</b> {detailModal.data.tipe}
-                </div>
-                <div className="mb-2">
-                  <b>Kategori:</b> {detailModal.data.kategori}
-                </div>
-                <div className="mb-2">
-                  <b>Item:</b> {detailModal.data.itemNama}
-                </div>
-                <div className="mb-2">
-                  <b>Poin:</b>{" "}
-                  {detailModal.data.tipe === "pelanggaran"
-                    ? `-${detailModal.data.pointSaat}`
-                    : `+${detailModal.data.pointSaat}`}
-                </div>
-                <div className="mb-2">
-                  <b>Deskripsi:</b> {detailModal.data.deskripsi || "-"}
-                </div>
-                <div className="mb-2">
-                  <b>Bukti:</b>
-                  <br />
-                  {detailModal.data.bukti ? (
-                    <>
-                      <img
-                        src={`${import.meta.env.VITE_API_BASE_URL}${
-                          detailModal.data.bukti
-                        }`}
-                        alt="Bukti"
-                        className="w-24 h-24 object-cover border mt-2 rounded shadow"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = "/no-image.png";
-                        }}
-                      />
-                      <a
-                        href={`${import.meta.env.VITE_API_BASE_URL}${
-                          detailModal.data.bukti
-                        }`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ml-3 text-blue-600 underline text-sm hover:text-blue-800"
-                      >
-                        Lihat
-                      </a>
-                    </>
-                  ) : (
-                    <span className="text-gray-500">Tidak ada bukti</span>
-                  )}
-                </div>
-                <div className="mb-2">
-                  <b>Dibuat:</b> {formatDate(detailModal.data.createdAt)}
-                </div>
-                <div className="mb-2">
-                  <b>Diupdate:</b> {formatDate(detailModal.data.updatedAt)}
+                <div className="grid grid-cols-2 gap-4 text-xs text-gray-500 mt-4">
+                  <div>
+                    <span className="font-semibold">Dibuat:</span>{" "}
+                    {formatDate(detailModal.data.createdAt)}
+                  </div>
+                  <div>
+                    <span className="font-semibold">Diupdate:</span>{" "}
+                    {formatDate(detailModal.data.updatedAt)}
+                  </div>
                 </div>
               </div>
             ) : null}
@@ -657,7 +728,7 @@ const ReportsGuru = () => {
 
       {/* Create Report Modal */}
       {showCreateForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">

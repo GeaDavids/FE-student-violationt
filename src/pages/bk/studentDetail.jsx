@@ -204,35 +204,68 @@ const StudentDetail = () => {
       const detailSurat = response.data.data;
 
       Swal.fire({
-        title: detailSurat.judul,
+        title: "",
         html: `
-          <div class="text-left space-y-3">
-            <div class="border-b pb-2 mb-3">
-              <p><strong>Jenis:</strong> ${getJenisSuratText(
-                detailSurat.jenisSurat
-              )}</p>
-              <p><strong>Tingkat:</strong> Level ${detailSurat.tingkatSurat}</p>
-              <p><strong>Total Score:</strong> <span class="text-red-600 font-bold">${
-                detailSurat.totalScoreSaat
-              }</span></p>
-              <p><strong>Status:</strong> ${getStatusText(
-                detailSurat.statusKirim
-              )}</p>
-              <p><strong>Tanggal Dibuat:</strong> ${new Date(
-                detailSurat.createdAt
-              ).toLocaleDateString("id-ID")}</p>
+          <div class="flex flex-col items-start">
+            <div class="flex items-center gap-3 mb-1">
+              <div class="bg-slate-200 text-slate-600 rounded-full p-2 flex items-center justify-center">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1.2"/></svg>
+              </div>
+              <div>
+                <div class="font-bold text-lg text-slate-800">Surat Peringatan</div>
+                <div class="text-xs text-slate-500">Detail Surat</div>
+              </div>
             </div>
-            <div>
-              <h4 class="font-bold mb-2">Isi Surat:</h4>
-              <div class="bg-gray-50 p-3 rounded text-sm max-h-60 overflow-y-auto whitespace-pre-line">${
+            <div class="font-semibold text-base text-slate-800 mb-2">${
+              detailSurat.judul
+            }</div>
+            <div class="bg-gray-50 border rounded p-4 w-full mb-4">
+              <div class="text-slate-700 font-medium mb-1">${
+                detailSurat.namaSiswa || ""
+              }</div>
+              <div class="text-slate-500 text-sm">${
+                detailSurat.nisn || ""
+              }</div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 w-full mb-2">
+              <div class="text-xs text-slate-500">Jenis Surat</div>
+              <div class="text-xs text-slate-700 font-semibold text-right">${getJenisSuratText(
+                detailSurat.jenisSurat
+              )}</div>
+              <div class="text-xs text-slate-500">Tingkat</div>
+              <div class="text-xs text-slate-700 font-semibold text-right">Level ${
+                detailSurat.tingkatSurat
+              }</div>
+              <div class="text-xs text-slate-500">Total Score</div>
+              <div class="text-xs text-red-600 font-bold text-right">${
+                detailSurat.totalScoreSaat
+              }</div>
+              <div class="text-xs text-slate-500">Status</div>
+              <div class="text-xs text-slate-700 font-semibold text-right">${getStatusText(
+                detailSurat.statusKirim
+              )}</div>
+              <div class="text-xs text-slate-500">Tanggal Dibuat</div>
+              <div class="text-xs text-slate-700 font-semibold text-right">${new Date(
+                detailSurat.createdAt
+              ).toLocaleDateString("id-ID")}</div>
+            </div>
+            <div class="w-full mt-2">
+              <div class="font-bold text-sm mb-1">Isi Surat:</div>
+              <div class="bg-gray-50 p-3 rounded text-sm max-h-60 overflow-y-auto whitespace-pre-line border">${
                 detailSurat.isiSurat
               }</div>
             </div>
           </div>
         `,
-        width: "600px",
-        confirmButtonText: "Tutup",
-        confirmButtonColor: "#3B82F6",
+        width: "480px",
+        showCloseButton: true,
+        confirmButtonText:
+          '<span style="display:flex;align-items:center;gap:6px"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="9 12 12 15 15 9"/></svg> Tutup</span>',
+        confirmButtonColor: "#374151",
+        customClass: {
+          popup: "rounded-xl shadow-2xl",
+          confirmButton: "rounded-lg px-6 py-2 font-semibold text-base",
+        },
       });
     } catch (error) {
       console.error("Error fetching surat detail:", error);

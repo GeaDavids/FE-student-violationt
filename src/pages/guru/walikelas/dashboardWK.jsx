@@ -354,8 +354,8 @@ const DashboardWaliKelas = () => {
       </div>
       {/* Modal Detail Laporan */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-xl shadow-lg max-w-lg w-full p-6 relative animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30">
+          <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-7 relative animate-fadeInUp">
             <button
               className="absolute top-2 right-3 text-gray-500 hover:text-red-600 text-xl font-bold"
               onClick={handleCloseModal}
@@ -363,85 +363,160 @@ const DashboardWaliKelas = () => {
             >
               ×
             </button>
-            <h2 className="text-xl font-bold mb-4 text-blue-900">
-              Detail Laporan
-            </h2>
             {loadingDetail ? (
               <div className="py-8 text-center">Loading...</div>
             ) : errorDetail ? (
               <div className="py-8 text-center text-red-500">{errorDetail}</div>
             ) : detailLaporan ? (
-              <div className="space-y-3">
-                <div>
-                  <b>Tanggal:</b>{" "}
-                  {detailLaporan.tanggal
-                    ? new Date(detailLaporan.tanggal).toLocaleDateString(
-                        "id-ID"
-                      )
-                    : "-"}
-                </div>
-                <div>
-                  <b>Tipe:</b> {detailLaporan.item?.tipe || "-"}
-                </div>
-                <div>
-                  <b>Item:</b> {detailLaporan.item?.nama || "-"}
-                </div>
-                <div>
-                  <b>Poin:</b>{" "}
-                  {detailLaporan.item?.tipe === "pelanggaran"
-                    ? `-${detailLaporan.item?.point || 0}`
-                    : `+${detailLaporan.item?.point || 0}`}
-                </div>
-                <div>
-                  <b>Pelapor:</b> {detailLaporan.reporter || "-"}
-                </div>
-                <div>
-                  <b>Deskripsi:</b> {detailLaporan.deskripsi || "-"}
-                </div>
-                <div>
-                  <b>Bukti:</b>
-                  <br />
-                  {(() => {
-                    const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
-                    let buktiArr = [];
-                    if (detailLaporan.bukti) {
-                      if (Array.isArray(detailLaporan.bukti))
-                        buktiArr = detailLaporan.bukti;
-                      else if (
-                        typeof detailLaporan.bukti === "string" &&
-                        detailLaporan.bukti.trim() !== ""
-                      )
-                        buktiArr = [detailLaporan.bukti];
-                    }
-                    return buktiArr.length > 0 ? (
-                      <div className="flex flex-wrap gap-3 mt-2">
-                        {buktiArr.map((bukti, idx) => (
-                          <div key={idx} className="flex flex-col items-center">
-                            <img
-                              src={`${BASE_URL}${bukti}`}
-                              alt="Bukti"
-                              className="w-20 h-20 object-cover rounded border mb-1"
-                              onError={(e) =>
-                                (e.target.src = "/placeholder-image.png")
-                              }
-                            />
-                            <a
-                              href={`${BASE_URL}${bukti}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-blue-600 underline"
-                            >
-                              Lihat
-                            </a>
-                          </div>
-                        ))}
-                      </div>
+              <>
+                <div className="flex items-center gap-3 mb-5 mt-2">
+                  <div
+                    className={`rounded-full p-2 text-white ${
+                      detailLaporan.item?.tipe === "pelanggaran"
+                        ? "bg-red-500"
+                        : "bg-green-500"
+                    }`}
+                  >
+                    {detailLaporan.item?.tipe === "pelanggaran" ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
                     ) : (
-                      <span className="text-gray-400">-</span>
-                    );
-                  })()}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8c-1.657 0-3 1.343-3 3 0 1.657 1.343 3 3 3s3-1.343 3-3c0-1.657-1.343-3-3-3zm0 0V4m0 7v7m0 0h7m-7 0H5"
+                        />
+                      </svg>
+                    )}
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-[#003366] leading-tight mb-0">
+                      {detailLaporan.item?.tipe === "pelanggaran"
+                        ? "Pelanggaran"
+                        : "Prestasi"}
+                    </h2>
+                    <div className="text-xs text-gray-500">
+                      {detailLaporan.tanggal
+                        ? new Date(detailLaporan.tanggal).toLocaleDateString(
+                            "id-ID"
+                          )
+                        : "-"}
+                    </div>
+                  </div>
                 </div>
-              </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 mb-4">
+                  <div>
+                    <span className="font-semibold text-gray-700">Item:</span>{" "}
+                    <span className="text-gray-900">
+                      {detailLaporan.item?.nama || "-"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">Poin:</span>{" "}
+                    <span
+                      className={`font-bold ${
+                        detailLaporan.item?.tipe === "pelanggaran"
+                          ? "text-red-600"
+                          : "text-green-600"
+                      }`}
+                    >
+                      {detailLaporan.item?.tipe === "pelanggaran"
+                        ? `-${detailLaporan.item?.point || 0}`
+                        : `+${detailLaporan.item?.point || 0}`}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">
+                      Pelapor:
+                    </span>{" "}
+                    <span className="text-gray-900">
+                      {detailLaporan.reporter || "-"}
+                    </span>
+                  </div>
+                </div>
+                <hr className="my-3" />
+                <div className="mb-3">
+                  <span className="font-semibold text-gray-700">
+                    Deskripsi:
+                  </span>
+                  <div className="bg-gray-50 rounded p-2 mt-1 text-gray-800 min-h-[40px]">
+                    {detailLaporan.deskripsi || (
+                      <span className="italic text-gray-400">
+                        Tidak ada deskripsi
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="mb-3">
+                  <span className="font-semibold text-gray-700">Bukti:</span>
+                  <div className="mt-2">
+                    {(() => {
+                      const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+                      let buktiArr = [];
+                      if (detailLaporan.bukti) {
+                        if (Array.isArray(detailLaporan.bukti))
+                          buktiArr = detailLaporan.bukti;
+                        else if (
+                          typeof detailLaporan.bukti === "string" &&
+                          detailLaporan.bukti.trim() !== ""
+                        )
+                          buktiArr = [detailLaporan.bukti];
+                      }
+                      return buktiArr.length > 0 ? (
+                        <div className="flex flex-wrap gap-4">
+                          {buktiArr.map((bukti, idx) => (
+                            <div
+                              key={idx}
+                              className="flex flex-col items-center"
+                            >
+                              <img
+                                src={`${BASE_URL}${bukti}`}
+                                alt="Bukti"
+                                className="w-28 h-28 object-cover rounded-lg border shadow bg-white mb-1"
+                                onError={(e) =>
+                                  (e.target.src = "/placeholder-image.png")
+                                }
+                              />
+                              <a
+                                href={`${BASE_URL}${bukti}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-600 underline hover:text-blue-800"
+                              >
+                                Lihat Bukti
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="italic text-gray-400">
+                          Tidak ada bukti
+                        </span>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </>
             ) : null}
           </div>
         </div>
